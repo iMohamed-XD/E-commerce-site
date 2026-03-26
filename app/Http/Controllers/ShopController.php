@@ -7,7 +7,8 @@ use App\Models\Shop;
 use App\Models\Order;
 use App\Models\OrderItem;
 use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Storage; // Added for explicit Storage facade usage
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Auth;
 
 class ShopController extends Controller
 {
@@ -42,7 +43,7 @@ class ShopController extends Controller
         }
 
         $shop = Shop::create([
-            'user_id' => auth()->id(),
+            'user_id' => Auth::id(),
             'name' => $request->name,
             'slug' => $request->slug,
             'description' => $request->description,
@@ -159,7 +160,7 @@ class ShopController extends Controller
 
     public function update(Request $request)
     {
-        $shop = auth()->user()->shop;
+        $shop = Auth::user()->shop;
         if (!$shop) {
             abort(404);
         }

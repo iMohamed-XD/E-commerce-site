@@ -5,12 +5,14 @@ namespace App\Http\Controllers;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Auth;
 
 class ProductController extends Controller
 {
     public function index()
     {
-        $shop = auth()->user()->shop;
+        $shop = Auth::user()->shop;
         if (!$shop) {
             return redirect()->route('dashboard');
         }
@@ -35,7 +37,7 @@ class ProductController extends Controller
             'discount_percent' => 'nullable|numeric|min:0|max:100',
         ]);
 
-        $shop = auth()->user()->shop;
+        $shop = Auth::user()->shop;
 
         $imagePath = null;
         if ($request->hasFile('image')) {
@@ -58,17 +60,13 @@ class ProductController extends Controller
 
     public function edit(Product $product)
     {
-        if ($product->shop_id !== auth()->user()->shop->id) {
-            abort(403);
-        }
+        Gate::authorize('manage', $product);
         return view('products.edit', compact('product'));
     }
 
     public function update(Request $request, Product $product)
     {
-        if ($product->shop_id !== auth()->user()->shop->id) {
-            abort(403);
-        }
+        Gate::authorize('manage', $product);
 
         $request->validate([
             'name' => 'required|string|max:255',
@@ -100,9 +98,7 @@ class ProductController extends Controller
 
     public function destroy(Product $product)
     {
-        if ($product->shop_id !== auth()->user()->shop->id) {
-            abort(403);
-        }
+        Gate::authorize('manage', $product);
 
         if ($product->image_path) {
             Storage::disk('public')->delete($product->image_path);
@@ -115,7 +111,7 @@ class ProductController extends Controller
 
     public function bulkAction(Request $request)
     {
-        $shop = auth()->user()->shop;
+        $shop = Auth::user()->shop;
         
         $request->validate([
             'action' => 'required|in:delete,discount,remove_discount',
@@ -163,9 +159,7 @@ class ProductController extends Controller
     }
     public function toggleDiscount(Product $product)
     {
-        if ($product->shop_id !== auth()->user()->shop->id) {
-            abort(403);
-        }
+        Gate::authorize('manage', $product);
 
         if (!$product->discount_percent) {
             return back()->with('error', 'يرجى تحديد نسبة الخصم أولاً.');

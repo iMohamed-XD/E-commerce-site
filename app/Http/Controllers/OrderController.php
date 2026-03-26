@@ -4,12 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Models\Order;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Auth;
 
 class OrderController extends Controller
 {
     public function index()
     {
-        $shop = auth()->user()->shop;
+        $shop = Auth::user()->shop;
         if (!$shop) {
             return redirect()->route('dashboard');
         }
@@ -20,9 +22,7 @@ class OrderController extends Controller
 
     public function updateStatus(Request $request, Order $order)
     {
-        if ($order->shop_id !== auth()->user()->shop->id) {
-            abort(403);
-        }
+        Gate::authorize('manage', $order);
 
         $request->validate([
             'status' => 'required|in:pending,completed,cancelled'

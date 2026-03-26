@@ -4,12 +4,15 @@ namespace App\Http\Controllers;
 
 use App\Models\PromoCode;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Auth;
 
 class PromoCodeController extends Controller
 {
     public function index()
     {
-        $shop = auth()->user()->shop;
+        $user = Auth::user();
+        $shop = $user->shop;
         if (!$shop) {
             return redirect()->route('dashboard');
         }
@@ -20,7 +23,7 @@ class PromoCodeController extends Controller
 
     public function store(Request $request)
     {
-        $shop = auth()->user()->shop;
+        $shop = Auth::user()->shop;
 
         $request->validate([
             'code' => 'required|string|max:50|unique:promo_codes,code,NULL,id,shop_id,' . $shop->id,
@@ -38,9 +41,7 @@ class PromoCodeController extends Controller
 
     public function destroy(PromoCode $promoCode)
     {
-        if ($promoCode->shop_id !== auth()->user()->shop->id) {
-            abort(403);
-        }
+        Gate::authorize('manage', $promoCode);
 
         $promoCode->delete();
 
@@ -48,9 +49,7 @@ class PromoCodeController extends Controller
     }
     public function toggle(PromoCode $promoCode)
     {
-        if ($promoCode->shop_id !== auth()->user()->shop->id) {
-            abort(403);
-        }
+        Gate::authorize('manage', $promoCode);
 
         $promoCode->update(['is_active' => !$promoCode->is_active]);
 
