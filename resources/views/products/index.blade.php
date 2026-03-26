@@ -121,12 +121,16 @@
                                             @endif
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-                                            <a href="{{ route('products.edit', $product) }}" class="text-indigo-400 hover:text-indigo-200 inline-block ms-3 font-semibold transition">تعديل</a>
-                                            <form action="{{ route('products.destroy', $product) }}" method="POST" class="inline-block" onsubmit="return confirm('هل أنت متأكد من الحذف؟');">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="text-red-400 hover:text-red-300 border-0 bg-transparent cursor-pointer font-semibold ms-2 transition">حذف</button>
-                                            </form>
+                                            @can('manage', $product)
+                                                <a href="{{ route('products.edit', $product) }}" class="text-indigo-400 hover:text-indigo-200 inline-block ms-3 font-semibold transition">تعديل</a>
+                                                <form action="{{ route('products.destroy', $product) }}" method="POST" class="inline-block" onsubmit="return confirm('هل أنت متأكد من الحذف؟');">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="text-red-400 hover:text-red-300 border-0 bg-transparent cursor-pointer font-semibold ms-2 transition">حذف</button>
+                                                </form>
+                                            @else
+                                                <span class="text-gray-500 italic">غير مصرح</span>
+                                            @endcan
                                         </td>
                                     </tr>
                                 @endforeach

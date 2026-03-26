@@ -120,24 +120,28 @@
                             <!-- Actions -->
                             @if($order->status === 'pending')
                                 <div class="px-6 py-4 bg-gray-900 border-t border-gray-700 flex flex-wrap gap-3">
-                                    <form action="{{ route('orders.updateStatus', $order) }}" method="POST">
-                                        @csrf
-                                        @method('PATCH')
-                                        <input type="hidden" name="status" value="completed">
-                                        <button type="submit" class="inline-flex items-center gap-2 px-5 py-2 bg-green-700 hover:bg-green-600 text-white font-semibold rounded-lg text-sm transition">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                                            تأكيد اكتمال الطلب
-                                        </button>
-                                    </form>
-                                    <form action="{{ route('orders.updateStatus', $order) }}" method="POST">
-                                        @csrf
-                                        @method('PATCH')
-                                        <input type="hidden" name="status" value="cancelled">
-                                        <button type="submit" onclick="return confirm('هل أنت متأكد من إلغاء هذا الطلب؟')" class="inline-flex items-center gap-2 px-5 py-2 bg-red-800 hover:bg-red-700 text-white font-semibold rounded-lg text-sm transition">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                                            إلغاء الطلب
-                                        </button>
-                                    </form>
+                                    @can('manage', $order)
+                                        <form action="{{ route('orders.updateStatus', $order) }}" method="POST">
+                                            @csrf
+                                            @method('PATCH')
+                                            <input type="hidden" name="status" value="completed">
+                                            <button type="submit" class="inline-flex items-center gap-2 px-5 py-2 bg-green-700 hover:bg-green-600 text-white font-semibold rounded-lg text-sm transition">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                                تأكيد اكتمال الطلب
+                                            </button>
+                                        </form>
+                                        <form action="{{ route('orders.updateStatus', $order) }}" method="POST">
+                                            @csrf
+                                            @method('PATCH')
+                                            <input type="hidden" name="status" value="cancelled">
+                                            <button type="submit" onclick="return confirm('هل أنت متأكد من إلغاء هذا الطلب؟')" class="inline-flex items-center gap-2 px-5 py-2 bg-red-800 hover:bg-red-700 text-white font-semibold rounded-lg text-sm transition">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                                إلغاء الطلب
+                                            </button>
+                                        </form>
+                                    @else
+                                        <span class="text-gray-500 text-sm italic">إجراءات غير متاحة</span>
+                                    @endcan
                                 </div>
                             @endif
                         </div>
