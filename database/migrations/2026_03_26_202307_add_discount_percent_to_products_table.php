@@ -18,7 +18,7 @@ return new class extends Migration
         });
 
         // Null out all old discount_price values since the field semantics are changing
-        \DB::statement("UPDATE products SET discount_price = NULL, discount_starts_at = NULL, discount_ends_at = NULL WHERE discount_price IS NOT NULL");
+        DB::statement("UPDATE products SET discount_price = NULL, discount_starts_at = NULL, discount_ends_at = NULL WHERE discount_price IS NOT NULL");
     }
 
     public function down(): void
