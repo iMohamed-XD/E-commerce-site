@@ -4,13 +4,13 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 
-// Redirect root to login (or dashboard if already authenticated)
+// Landing Page
 Route::get('/', function () {
     if (Auth::check()) {
         return redirect()->route('dashboard');
     }
-    return redirect()->route('login');
-});
+    return view('landing');
+})->name('landing');
 
 Route::get('/dashboard', function () {
     return view('dashboard');
@@ -21,7 +21,7 @@ Route::get('/shop/{slug}', [\App\Http\Controllers\ShopController::class, 'show']
 Route::post('/shop/{slug}/checkout', [\App\Http\Controllers\ShopController::class, 'checkout'])
     ->middleware('throttle:5,1')
     ->name('shop.checkout');
-Route::post('/shop/{slug}/apply-promo', [\App\Http\Controllers\ShopController::class, 'apply_promo'])
+Route::post('/shop/{slug}/apply-promo', [\App\Http\Controllers\ShopController::class, 'applyPromo'])
     ->middleware('throttle:10,1')
     ->name('shop.apply_promo');
 
@@ -42,6 +42,9 @@ Route::middleware(['auth', 'seller'])->group(function () {
     // Promo Code Management
     Route::resource('promo-codes', \App\Http\Controllers\PromoCodeController::class)->only(['index', 'store', 'destroy']);
     Route::patch('/promo-codes/{promoCode}/toggle', [\App\Http\Controllers\PromoCodeController::class, 'toggle'])->name('promo-codes.toggle');
+
+    // Category Management
+    Route::resource('categories', \App\Http\Controllers\CategoryController::class)->only(['index', 'store', 'destroy']);
 });
 
 Route::middleware('auth')->group(function () {

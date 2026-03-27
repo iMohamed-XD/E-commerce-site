@@ -187,8 +187,6 @@
                 showDiscountModal: false,
                 bulkAction: '',
                 discountPercent: '',
-                discountStarts: '',
-                discountEnds: '',
 
                 toggleAll(e) {
                     if (e.target.checked) {

@@ -60,7 +60,10 @@ class ShopController extends Controller
             $query->where('is_active', true)->orderBy('created_at', 'desc');
         }])->firstOrFail();
 
-        $categories = $shop->products->pluck('category')->unique()->filter()->values();
+        $categories = $shop->categories()
+            ->whereHas('products', function($query) {
+                $query->where('is_active', true);
+            })->get();
 
         return view('shop.show', compact('shop', 'categories'));
     }
@@ -69,9 +72,8 @@ class ShopController extends Controller
     {
         $shop = Shop::where('slug', $slug)->firstOrFail();
         
-        $request->validate(['code' => 'required|string']);
-        
-        $promo = $shop->promoCodes()->where('code', $request->code)->first();
+        $code = strtoupper(trim($request->code));
+        $promo = $shop->promoCodes()->where('code', $code)->first();
         
         if (!$promo || !$promo->isValid()) {
             return response()->json(['valid' => false, 'message' => 'كود الخصم غير صحيح أو منتهي الصلاحية.']);

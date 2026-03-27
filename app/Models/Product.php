@@ -7,17 +7,27 @@ use Illuminate\Database\Eloquent\Model;
 class Product extends Model
 {
     protected $fillable = [
-        'shop_id', 'name', 'category', 'description', 'price', 'image_path', 'is_active',
-        'discount_percent', 'discount_active', 'discount_starts_at', 'discount_ends_at'
+        'shop_id',
+        'category_id',
+        'name',
+        'description',
+        'price',
+        'image_path',
+        'is_active',
+        'discount_percent',
+        'discount_active'
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
         'discount_active' => 'boolean',
         'discount_percent' => 'decimal:2',
-        'discount_starts_at' => 'datetime',
-        'discount_ends_at' => 'datetime',
     ];
+
+    public function category()
+    {
+        return $this->belongsTo(Category::class);
+    }
 
     /**
      * Get the effective price for display/orders (applies discount_percent if active).

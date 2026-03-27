@@ -110,9 +110,27 @@
                                             </li>
                                         @endforeach
                                     </ul>
-                                    <div class="mt-4 pt-4 border-t border-gray-700 flex justify-between items-center">
-                                        <div class="text-sm text-gray-400 font-medium italic">إجمالي الطلب:</div>
-                                        <div class="text-[#d4af37] font-black text-2xl tracking-tight">{{ number_format($order->total_amount, 2) }} ل.س</div>
+                                    <div class="mt-4 pt-4 border-t border-gray-700 flex flex-col gap-2">
+                                        @php
+                                            $subtotal = $order->items->sum(fn($i) => $i->price_at_time_of_order * $i->quantity);
+                                            $discountAmount = $subtotal - $order->total_amount;
+                                        @endphp
+                                        <div class="flex justify-between items-center text-sm">
+                                            <div class="text-gray-400 font-medium italic">المجموع الفرعي:</div>
+                                            <div class="text-gray-200 font-semibold">{{ number_format($subtotal, 2) }} ل.س</div>
+                                        </div>
+                                        @if($discountAmount > 0)
+                                            <div class="flex justify-between items-center text-sm">
+                                                <div class="text-purple-400 font-bold flex items-center gap-1">
+                                                    🎟 كود الخصم ({{ $order->promo_code_used }}):
+                                                </div>
+                                                <div class="text-green-500 font-black">-{{ number_format($discountAmount, 2) }} ل.س</div>
+                                            </div>
+                                        @endif
+                                        <div class="flex justify-between items-center pt-2 border-t border-gray-700 mt-1">
+                                            <div class="text-gray-100 font-black">إجمالي الطلب:</div>
+                                            <div class="text-[#d4af37] font-black text-2xl tracking-tight">{{ number_format($order->total_amount, 2) }} ل.س</div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

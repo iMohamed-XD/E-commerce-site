@@ -42,12 +42,7 @@
                                 </div>
 
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div>
-                                        <x-input-label for="logo" :value="__('شعار المتجر')" />
-                                        <input id="logo" class="block mt-1 w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-900 file:text-indigo-200 hover:file:bg-indigo-800" type="file" name="logo" accept="image/*" />
-                                        <x-input-error :messages="$errors->get('logo')" class="mt-2" />
-                                    </div>
-                                    <div>
+                                    <div class="md:col-span-2">
                                         <x-input-label for="hero_image" :value="__('صورة الغلاف (Hero Image)')" />
                                         <input id="hero_image" class="block mt-1 w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-900 file:text-indigo-200 hover:file:bg-indigo-800" type="file" name="hero_image" accept="image/*" />
                                         <x-input-error :messages="$errors->get('hero_image')" class="mt-2" />
@@ -60,8 +55,9 @@
                                     <x-input-error :messages="$errors->get('description')" class="mt-2" />
                                 </div>
 
-                                    <x-input-label for="logo" :value="__('شعار المتجر (اختياري)')" />
-                                    <input id="logo" class="block mt-1 w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100" type="file" name="logo" accept="image/*" @change="loadFile" />
+                                <div class="mt-4">
+                                    <x-input-label for="logo_wizard" :value="__('شعار المتجر (اختياري)')" />
+                                    <input id="logo_wizard" class="block mt-1 w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-gray-700 file:text-indigo-200 hover:file:bg-indigo-800" type="file" name="logo" accept="image/*" @change="loadFile" />
                                     <x-input-error :messages="$errors->get('logo')" class="mt-2" />
                                     <input type="hidden" name="cropped_logo" :value="croppedData">
                                 </div>
@@ -69,12 +65,14 @@
                                 <!-- Cropped Preview -->
                                 <div x-show="croppedData" class="mt-4" x-cloak>
                                     <label class="block text-sm font-medium text-gray-300 mb-2">معاينة الشعار المقتطع</label>
-                                    <img :src="croppedData" class="w-32 h-32 rounded-full object-cover border-2 border-indigo-200 shadow-sm" alt="Preview">
-                                    <button type="button" @click="croppedData = ''; document.getElementById('logo').value = ''" class="mt-2 text-sm text-red-600 hover:text-red-800">إزالة</button>
+                                    <img :src="croppedData" class="w-32 h-32 rounded-full object-cover border-2 border-[#d4af37] shadow-sm" alt="Preview">
+                                    <button type="button" @click="croppedData = ''; document.getElementById('logo_wizard').value = ''" class="mt-2 text-sm text-red-600 hover:text-red-800">إزالة</button>
                                 </div>
 
-                                <div class="flex items-center gap-4">
-                                    <x-primary-button>{{ __('إنشاء المتجر والتالي') }}</x-primary-button>
+                                <div class="flex items-center justify-start gap-4 pt-6">
+                                    <x-primary-button class="bg-[#d4af37] text-black font-black hover:bg-[#c5a02e]">
+                                        {{ __('إنشاء المتجر وحفظ البيانات') }}
+                                    </x-primary-button>
                                 </div>
                             </form>
 
@@ -139,6 +137,9 @@
                                 </a>
                                 <a href="{{ route('orders.index') }}" class="inline-flex items-center px-6 py-3 bg-gray-700 border border-transparent rounded-md font-bold text-sm text-white uppercase tracking-widest hover:bg-gray-600 shadow-md transition">
                                     سجل الطلبات
+                                </a>
+                                <a href="{{ route('categories.index') }}" class="inline-flex items-center px-6 py-3 bg-gray-700 border border-gray-600 text-green-400 rounded-md font-bold text-sm uppercase tracking-widest hover:bg-gray-600 shadow-md transition">
+                                    إدارة التصنيفات
                                 </a>
                             </div>
 

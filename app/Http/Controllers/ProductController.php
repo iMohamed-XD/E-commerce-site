@@ -3,6 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
+use App\Models\Shop;
+use App\Models\Category;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Gate;
@@ -23,14 +26,16 @@ class ProductController extends Controller
 
     public function create()
     {
-        return view('products.create');
+        $shop = Auth::user()->shop;
+        $categories = $shop->categories;
+        return view('products.create', compact('categories'));
     }
 
     public function store(Request $request)
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'category' => 'nullable|string|max:100',
+            'category_id' => 'nullable|exists:categories,id', // Changed from 'category' to 'category_id'
             'description' => 'nullable|string',
             'price' => 'required|numeric|min:0',
             'image' => 'nullable|image|max:2048',
@@ -46,7 +51,7 @@ class ProductController extends Controller
 
         $shop->products()->create([
             'name' => $request->name,
-            'category' => $request->category,
+            'category_id' => $request->category_id,
             'description' => $request->description,
             'price' => $request->price,
             'image_path' => $imagePath,
@@ -61,7 +66,8 @@ class ProductController extends Controller
     public function edit(Product $product)
     {
         Gate::authorize('manage', $product);
-        return view('products.edit', compact('product'));
+        $categories = Auth::user()->shop->categories;
+        return view('products.edit', compact('product', 'categories'));
     }
 
     public function update(Request $request, Product $product)
@@ -70,7 +76,7 @@ class ProductController extends Controller
 
         $request->validate([
             'name' => 'required|string|max:255',
-            'category' => 'nullable|string|max:100',
+            'category_id' => 'nullable|exists:categories,id', // Changed from 'category' to 'category_id'
             'description' => 'nullable|string',
             'price' => 'required|numeric|min:0',
             'image' => 'nullable|image|max:2048',
@@ -86,7 +92,7 @@ class ProductController extends Controller
 
         $product->update([
             'name' => $request->name,
-            'category' => $request->category,
+            'category_id' => $request->category_id,
             'description' => $request->description,
             'price' => $request->price,
             'is_active' => $request->has('is_active'),
@@ -96,7 +102,7 @@ class ProductController extends Controller
         return redirect()->route('products.index')->with('success', 'تم تعديل المنتج بنجاح!');
     }
 
-    public function destroy(Product $product)
+    public function destroy(Product $product) // Kept Product $product as this is ProductController
     {
         Gate::authorize('manage', $product);
 

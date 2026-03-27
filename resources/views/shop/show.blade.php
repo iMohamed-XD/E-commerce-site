@@ -164,10 +164,10 @@
                         الكل
                     </button>
                     @foreach($categories as $cat)
-                    <button @click="activeCategory = '{{ $cat }}'; $dispatch('filter-category', '{{ $cat }}')"
-                            :class="activeCategory === '{{ $cat }}' ? 'bg-indigo-600 text-white shadow-indigo-500/20' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'"
+                    <button @click="activeCategory = '{{ $cat->id }}'; $dispatch('filter-category', '{{ $cat->id }}')"
+                            :class="activeCategory === '{{ $cat->id }}' ? 'bg-indigo-600 text-white shadow-indigo-500/20' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'"
                             class="px-5 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 shadow-sm border border-transparent">
-                        {{ $cat }}
+                        {{ $cat->name }}
                     </button>
                     @endforeach
                 </div>
@@ -188,7 +188,7 @@
                             $isDiscounted = $product->hasActiveDiscount();
                             $currentPrice = $product->effectivePrice();
                         @endphp
-                        <div x-show="currentFilter === 'all' || currentFilter === '{{ $product->category }}'" 
+                        <div x-show="currentFilter === 'all' || currentFilter === '{{ $product->category_id }}'" 
                              x-transition:enter="transition ease-out duration-300"
                              x-transition:enter-start="opacity-0 scale-95"
                              x-transition:enter-end="opacity-100 scale-100"
@@ -214,7 +214,7 @@
 
                             <div class="p-8 flex flex-col flex-grow relative">
                                 @if($product->category)
-                                    <span class="text-indigo-400 text-[10px] font-black uppercase tracking-widest mb-2 block">{{ $product->category }}</span>
+                                    <span class="text-indigo-400 text-[10px] font-black uppercase tracking-widest mb-2 block">{{ $product->category->name }}</span>
                                 @endif
                                 <h3 class="text-xl font-extrabold text-white mb-3 group-hover:text-indigo-400 transition-colors duration-300 leading-tight">{{ $product->name }}</h3>
                                 

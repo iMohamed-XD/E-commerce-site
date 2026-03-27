@@ -23,9 +23,19 @@
                                 <x-input-error :messages="$errors->get('name')" class="mt-2" />
                             </div>
                             <div>
-                                <x-input-label for="category" :value="__('التصنيف (فئة المنتج)')" />
-                                <x-text-input id="category" class="block mt-1 w-full" type="text" name="category" :value="old('category')" placeholder="مثلاً: حلويات، مفروشات..." />
-                                <x-input-error :messages="$errors->get('category')" class="mt-2" />
+                                <x-input-label for="category_id" :value="__('تصنيف المنتج')" />
+                                <select id="category_id" name="category_id" class="block mt-1 w-full bg-gray-700 border-gray-600 text-gray-100 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
+                                    <option value="">-- اختر تصنيفاً --</option>
+                                    @foreach($categories as $category)
+                                        <option value="{{ $category->id }}" {{ old('category_id') == $category->id ? 'selected' : '' }}>
+                                            {{ $category->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                <x-input-error :messages="$errors->get('category_id')" class="mt-2" />
+                                <p class="mt-1 text-xs text-gray-500">
+                                    يمكنك إضافة تصنيفات جديدة من صفحة <a href="{{ route('categories.index') }}" class="text-indigo-400 hover:underline">إدارة التصنيفات</a>.
+                                </p>
                             </div>
                         </div>
 
