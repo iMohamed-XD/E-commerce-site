@@ -160,6 +160,25 @@ class ShopController extends Controller
         return redirect()->route('shop.show', $shop->slug)->with('success', 'تم استلام طلبك بنجاح! شكراً لك.');
     }
 
+    public function checkSlug(Request $request)
+    {
+        $slug = $request->query('slug');
+        if (!$slug) {
+            return response()->json(['available' => true]);
+        }
+
+        $query = Shop::where('slug', $slug);
+        
+        // If updating, ignore current shop
+        if ($shopId = Auth::user()->shop?->id) {
+            $query->where('id', '!=', $shopId);
+        }
+
+        $exists = $query->exists();
+
+        return response()->json(['available' => !$exists]);
+    }
+
     public function update(Request $request)
     {
         $shop = Auth::user()->shop;
@@ -184,6 +203,19 @@ class ShopController extends Controller
                 Storage::disk('public')->delete($shop->logo_path);
             }
             $shop->logo_path = $request->file('logo')->store('shops/logos', 'public');
+        } elseif ($request->filled('cropped_logo')) {
+            if ($shop->logo_path) {
+                Storage::disk('public')->delete($shop->logo_path);
+            }
+            $imageParts = explode(";base64,", $request->cropped_logo);
+            if (count($imageParts) === 2) {
+                $imageTypeAux = explode("image/", $imageParts[0]);
+                $imageType = $imageTypeAux[1] ?? 'png';
+                $imageBase64 = base64_decode($imageParts[1]);
+                $filename = 'shops/logos/' . uniqid() . '.' . $imageType;
+                Storage::disk('public')->put($filename, $imageBase64);
+                $shop->logo_path = $filename;
+            }
         }
 
         if ($request->hasFile('hero_image')) {

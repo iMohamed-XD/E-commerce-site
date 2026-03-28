@@ -16,17 +16,9 @@ Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-// Public Storefront Routes with Rate Limiting
-Route::get('/shop/{slug}', [\App\Http\Controllers\ShopController::class, 'show'])->name('shop.show');
-Route::post('/shop/{slug}/checkout', [\App\Http\Controllers\ShopController::class, 'checkout'])
-    ->middleware('throttle:5,1')
-    ->name('shop.checkout');
-Route::post('/shop/{slug}/apply-promo', [\App\Http\Controllers\ShopController::class, 'applyPromo'])
-    ->middleware('throttle:10,1')
-    ->name('shop.apply_promo');
-
+// Seller Dashboard & Shop Management (Check slug MUST be before public {slug} route)
 Route::middleware(['auth', 'seller'])->group(function () {
-    // Seller Dashboard & Shop Management
+    Route::get('/shop/check-slug', [\App\Http\Controllers\ShopController::class, 'checkSlug'])->name('shop.checkSlug');
     Route::post('/shop', [\App\Http\Controllers\ShopController::class, 'store'])->name('shop.store');
     Route::patch('/shop', [\App\Http\Controllers\ShopController::class, 'update'])->name('shop.update');
     
@@ -46,6 +38,15 @@ Route::middleware(['auth', 'seller'])->group(function () {
     // Category Management
     Route::resource('categories', \App\Http\Controllers\CategoryController::class)->only(['index', 'store', 'destroy']);
 });
+
+// Public Storefront Routes with Rate Limiting (MUST be after check-slug)
+Route::get('/shop/{slug}', [\App\Http\Controllers\ShopController::class, 'show'])->name('shop.show');
+Route::post('/shop/{slug}/checkout', [\App\Http\Controllers\ShopController::class, 'checkout'])
+    ->middleware('throttle:5,1')
+    ->name('shop.checkout');
+Route::post('/shop/{slug}/apply-promo', [\App\Http\Controllers\ShopController::class, 'applyPromo'])
+    ->middleware('throttle:10,1')
+    ->name('shop.apply_promo');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

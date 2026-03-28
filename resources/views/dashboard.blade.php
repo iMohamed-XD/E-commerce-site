@@ -8,7 +8,7 @@
     <!-- Adding Cropper.js CSS -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css" rel="stylesheet">
 
-    <div class="py-12">
+    <div class="py-12" x-data="logoCropper('{{ auth()->user()->shop->slug ?? '' }}')">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             
             @if(session('success'))
@@ -20,7 +20,7 @@
             @if(auth()->user()->isSeller())
                 @if(!auth()->user()->shop)
                     <!-- Shop Setup Wizard with Cropper -->
-                    <div class="bg-gray-800 border-gray-700 overflow-hidden shadow-sm sm:rounded-lg" x-data="logoCropper()">
+                    <div class="bg-gray-800 border-gray-700 overflow-hidden shadow-sm sm:rounded-lg">
                         <div class="p-8 text-gray-100">
                             <h3 class="text-2xl font-bold mb-2 text-indigo-700">أهلاً بك في محلي!</h3>
                             <p class="mb-6 text-gray-400">لبدء البيع، يرجى إعداد تفاصيل متجرك الإلكتروني أدناه.</p>
@@ -36,7 +36,18 @@
                                     <div>
                                         <x-input-label for="slug" :value="__('رابط المتجر (اسم بالانكليزية للرابط)')" />
                                         <x-text-input id="slug" class="block mt-1 w-full font-mono text-sm" type="text" name="slug" required x-model="slug" @input="manualSlug = true" />
-                                        <p class="mt-2 text-xs text-gray-400">رابط متجرك سيكون: <span class="text-indigo-400 font-bold" dir="ltr">{{ url('/shop') }}/<span x-text="slug"></span></span></p>
+                                        <div class="mt-2 flex items-center gap-2">
+                                            <p class="text-xs text-gray-400">رابط متجرك سيكون: <span class="text-indigo-400 font-bold" dir="ltr">{{ url('/shop') }}/<span x-text="slug"></span></span></p>
+                                            <template x-if="isCheckingSlug">
+                                                <span class="text-[10px] text-gray-500 animate-pulse">جاري التحقق...</span>
+                                            </template>
+                                            <template x-if="!isCheckingSlug && slug && !slugAvailable">
+                                                <span class="text-[10px] text-red-500 font-bold">هذا الرابط مستخدم بالفعل</span>
+                                            </template>
+                                            <template x-if="!isCheckingSlug && slug && slugAvailable">
+                                                <span class="text-[10px] text-green-500 font-bold">هذا الرابط متاح</span>
+                                            </template>
+                                        </div>
                                         <x-input-error :messages="$errors->get('slug')" class="mt-2" />
                                     </div>
                                 </div>
@@ -70,34 +81,12 @@
                                 </div>
 
                                 <div class="flex items-center justify-start gap-4 pt-6">
-                                    <x-primary-button class="bg-[#d4af37] text-black font-black hover:bg-[#c5a02e]">
+                                    <x-primary-button class="bg-[#d4af37] text-black font-black hover:bg-[#c5a02e]" x-bind:disabled="!slugAvailable || isCheckingSlug">
                                         {{ __('إنشاء المتجر وحفظ البيانات') }}
                                     </x-primary-button>
                                 </div>
                             </form>
 
-                            <!-- Cropper Modal -->
-                            <div x-show="showCropper" class="fixed inset-0 z-50 overflow-y-auto" x-cloak aria-labelledby="modal-title" role="dialog" aria-modal="true">
-                                <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-                                    <div x-show="showCropper" class="fixed inset-0 bg-gray-9000 bg-opacity-75 transition-opacity" @click="showCropper = false"></div>
-                                    <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-                                    
-                                    <div x-show="showCropper" 
-                                        class="inline-block align-bottom bg-gray-800 border-gray-700 rounded-lg text-right overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-xl sm:w-full">
-                                        <div class="bg-gray-800 border-gray-700 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                                            <h3 class="text-lg leading-6 font-bold text-gray-100 mb-4">اقتطاع وتعديل الشعار</h3>
-                                            <p class="text-sm text-gray-400 mb-4">قم بتغيير حجم الشعار وتحريكه ليناسب الدائرة.</p>
-                                            <div class="w-full max-h-96 overflow-hidden bg-gray-800 flex justify-center items-center rounded text-center">
-                                                <img id="cropperImage" src="" alt="Source Image" class="max-w-full max-h-96">
-                                            </div>
-                                        </div>
-                                        <div class="bg-gray-900 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse border-t">
-                                            <button type="button" @click="saveCrop" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 sm:ml-3 sm:w-auto sm:text-sm">تطبيق الشعار</button>
-                                            <button type="button" @click="showCropper = false; document.getElementById('logo').value = ''" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-600 shadow-sm px-4 py-2 bg-gray-800 border-gray-700 text-base font-medium text-gray-300 hover:bg-gray-900 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">إلغاء</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
                         </div>
                     </div>
                 @else
@@ -156,13 +145,24 @@
 
                                         <div>
                                             <x-input-label for="edit_name" :value="__('اسم المتجر')" class="text-gray-400" />
-                                            <x-text-input id="edit_name" class="block mt-1 w-full bg-gray-900 border-gray-700 text-white focus:ring-indigo-500" type="text" name="name" :value="old('name', $shop->name)" required />
+                                            <x-text-input id="edit_name" class="block mt-1 w-full bg-gray-900 border-gray-700 text-white focus:ring-indigo-500" type="text" name="name" :value="old('name', $shop->name)" required x-model="name" />
                                             <x-input-error :messages="$errors->get('name')" class="mt-2" />
                                         </div>
                                         <div>
                                             <x-input-label for="edit_slug" :value="__('رابط المتجر (English Slug)')" class="text-gray-400" />
-                                            <x-text-input id="edit_slug" class="block mt-1 w-full bg-gray-900 border-gray-700 text-white focus:ring-indigo-500 font-mono text-sm" type="text" name="slug" :value="old('slug', $shop->slug)" required />
-                                            <p class="mt-1 text-[10px] text-gray-500">الرابط المباشر: {{ url('/shop/' . $shop->slug) }}</p>
+                                            <x-text-input id="edit_slug" class="block mt-1 w-full bg-gray-900 border-gray-700 text-white focus:ring-indigo-500 font-mono text-sm" type="text" name="slug" :value="old('slug', $shop->slug)" required x-model="slug" @input="manualSlug = true" />
+                                            <div class="mt-1 flex items-center gap-2">
+                                                <p class="text-[10px] text-gray-500">الرابط المباشر: {{ url('/shop') }}/<span x-text="slug"></span></p>
+                                                <template x-if="isCheckingSlug">
+                                                    <span class="text-[9px] text-gray-500 animate-pulse">جاري التحقق...</span>
+                                                </template>
+                                                <template x-if="!isCheckingSlug && slug && !slugAvailable">
+                                                    <span class="text-[9px] text-red-500 font-bold">هذا الرابط مستخدم بالفعل</span>
+                                                </template>
+                                                <template x-if="!isCheckingSlug && slug && slugAvailable && slug !== '{{ $shop->slug }}'">
+                                                    <span class="text-[9px] text-green-500 font-bold">هذا الرابط متاح</span>
+                                                </template>
+                                            </div>
                                             <x-input-error :messages="$errors->get('slug')" class="mt-2" />
                                         </div>
                                     </div>
@@ -170,8 +170,16 @@
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <div>
                                             <x-input-label for="edit_logo" :value="__('تحديث الشعار')" class="text-gray-400" />
-                                            <input id="edit_logo" type="file" name="logo" class="block mt-1 w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-indigo-600 file:text-white hover:file:bg-indigo-500 cursor-pointer" accept="image/*" />
+                                            <input id="edit_logo" type="file" name="logo" class="block mt-1 w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-indigo-600 file:text-white hover:file:bg-indigo-500 cursor-pointer" accept="image/*" @change="loadFile" />
                                             <x-input-error :messages="$errors->get('logo')" class="mt-2" />
+                                            <input type="hidden" name="cropped_logo" :value="croppedData">
+                                            
+                                            <!-- Cropped Preview for Edit -->
+                                            <div x-show="croppedData" class="mt-4" x-cloak>
+                                                <label class="block text-sm font-medium text-gray-300 mb-2">معاينة الشعار الجديد</label>
+                                                <img :src="croppedData" class="w-32 h-32 rounded-full object-cover border-2 border-[#d4af37] shadow-sm" alt="Preview">
+                                                <button type="button" @click="croppedData = ''; document.getElementById('edit_logo').value = ''" class="mt-2 text-sm text-red-600 hover:text-red-800">إزالة</button>
+                                            </div>
                                         </div>
 
                                     <div>
@@ -187,7 +195,7 @@
                                     </div>
 
                                     <div class="flex items-center gap-4">
-                                        <x-primary-button class="bg-indigo-600 hover:bg-indigo-500 shadow-lg shadow-indigo-600/20">حفظ التغييرات</x-primary-button>
+                                        <x-primary-button class="bg-indigo-600 hover:bg-indigo-500 shadow-lg shadow-indigo-600/20" x-bind:disabled="!slugAvailable || isCheckingSlug">حفظ التغييرات</x-primary-button>
                                     </div>
                                 </form>
                             </div>
@@ -205,19 +213,87 @@
             @endif
 
         </div>
+
+        <!-- Cropper Modal -->
+        <div x-show="showCropper" class="fixed inset-0 z-50 overflow-y-auto" x-cloak aria-labelledby="modal-title" role="dialog" aria-modal="true">
+            <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                <div x-show="showCropper" class="fixed inset-0 bg-gray-900 bg-opacity-75 transition-opacity" @click="showCropper = false"></div>
+                <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+                
+                <div x-show="showCropper" 
+                    class="inline-block align-bottom bg-gray-800 border-gray-700 rounded-lg text-right overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-xl sm:w-full">
+                    <div class="bg-gray-800 border-gray-700 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                        <h3 class="text-lg leading-6 font-bold text-gray-100 mb-4">اقتطاع وتعديل الشعار</h3>
+                        <p class="text-sm text-gray-400 mb-4">قم بتغيير حجم الشعار وتحريكه ليناسب الدائرة.</p>
+                        <div class="w-full max-h-96 overflow-hidden bg-gray-800 flex justify-center items-center rounded text-center">
+                            <img id="cropperImage" src="" alt="Source Image" class="max-w-full max-h-96">
+                        </div>
+                    </div>
+                    <div class="bg-gray-900 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse border-t">
+                        <button type="button" @click="saveCrop" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 sm:ml-3 sm:w-auto sm:text-sm">تطبيق الشعار</button>
+                        <button type="button" @click="showCropper = false; document.getElementById('logo_wizard') ? document.getElementById('logo_wizard').value = '' : null; document.getElementById('edit_logo') ? document.getElementById('edit_logo').value = '' : null" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-700 shadow-sm px-4 py-2 bg-gray-800 text-base font-medium text-gray-300 hover:bg-gray-900 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">إلغاء</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Adding Cropper.js Script -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
     <script>
         document.addEventListener('alpine:init', () => {
-            Alpine.data('logoCropper', () => ({
+            Alpine.data('logoCropper', (initialSlug = '') => ({
                 showCropper: false,
                 cropper: null,
                 croppedData: '',
-                name: '',
-                slug: '',
+                name: {!! json_encode(auth()->user()->shop->name ?? '') !!},
+                slug: initialSlug,
                 manualSlug: false,
+                initialSlug: initialSlug,
+                slugAvailable: true,
+                isCheckingSlug: false,
+                slugTimeout: null,
+
+                init() {
+                    this.$watch('slug', (value) => {
+                        this.updateSlug();
+                        this.checkSlugAvailability();
+                    });
+                },
+
+                async checkSlugAvailability() {
+                    const currentSlug = this.slug.trim();
+                    if (!currentSlug) {
+                        this.slugAvailable = true;
+                        this.isCheckingSlug = false;
+                        return;
+                    }
+
+                    if (currentSlug === this.initialSlug) {
+                        this.slugAvailable = true;
+                        this.isCheckingSlug = false;
+                        return;
+                    }
+                    
+                    this.isCheckingSlug = true;
+                    if (this.slugTimeout) clearTimeout(this.slugTimeout);
+                    
+                    this.slugTimeout = setTimeout(async () => {
+                        try {
+                            const response = await fetch(`{{ route('shop.checkSlug') }}?slug=${encodeURIComponent(currentSlug)}`, {
+                                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                            });
+                            if (!response.ok) throw new Error('Network error');
+                            const data = await response.json();
+                            this.slugAvailable = data.available;
+                        } catch (e) {
+                            console.error('Slug check failed:', e);
+                            this.slugAvailable = true; // Be optimistic on network errors
+                        } finally {
+                            this.isCheckingSlug = false;
+                        }
+                    }, 400);
+                },
 
                 updateSlug() {
                     if (!this.manualSlug) {
