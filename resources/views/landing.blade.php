@@ -124,6 +124,13 @@
         <main class="relative z-10 flex-grow pt-24 pb-12 px-6">
             <div class="max-w-5xl mx-auto text-center">
 
+                {{-- Logo --}}
+                <div class="flex justify-center mb-10">
+                    <a href="{{ route('dashboard') }}" class="group">
+                        <x-application-logo class="h-24 md:h-32 w-auto mx-auto hover:scale-105 hover:brightness-110 transition-all duration-500" />
+                    </a>
+                </div>
+
                 <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-900/40 border border-indigo-500/30 text-indigo-300 text-xs font-bold mb-8 animate-pulse">
                     <span class="w-2 h-2 rounded-full bg-indigo-400"></span>
                     اكتشف الجيل القادم من المتاجر الإلكترونية
@@ -533,7 +540,7 @@
             </div>
         </section>
 
-        
+
     </section>
 
     <!-- PRICING -->
@@ -715,8 +722,20 @@
             <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start gap-12">
                 <div class="max-w-sm">
                     <div class="flex items-center gap-2 mb-6">
-                        <span class="text-4xl font-black text-[#d4af37] tracking-tighter">محلي</span>
-                    </div>
+                        <div class="flex items-center gap-3">
+                            <div class="shrink-0 flex items-center">
+                                <a href="{{ route('dashboard') }}" class="flex items-center group">
+                                    <div class="relative bg-gray-800/40 backdrop-blur-xl p-2.5 rounded-xl border border-white/5 shadow-2xl group-hover:border-blue-500/20 transition-all duration-500 overflow-hidden">
+                                        <!-- Subtle Gleam on Hover -->
+                                        <div class="absolute inset-0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/5 to-transparent"></div>
+                                        <x-application-logo class="block h-12 w-auto hover:brightness-110 transition-all duration-300" />
+                                    </div>
+                                </a>
+                            </div>
+                            <span class="hidden sm:inline-block text-[10px] text-gray-500 uppercase tracking-[0.2em] border-r border-gray-700 pr-3 mr-1 mt-0.5">
+                    THE LUXURY OF LOCAL
+                </span>
+            </div>                    </div>
                     <p class="text-gray-500 leading-relaxed">المنصة الشريكة لكل بائع وبائعة يبحثون عن التميز والفرادة في عالم التجارة الرقمية.</p>
                 </div>
                 <div class="grid grid-cols-2 sm:grid-cols-3 gap-12 sm:gap-24">
