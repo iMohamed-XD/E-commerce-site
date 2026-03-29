@@ -38,6 +38,24 @@
         <!-- Hidden role - seller only -->
         <input type="hidden" name="role" value="seller">
 
+        <!-- 🔐 Policy Agreement -->
+        <div class="mt-6 flex items-start gap-3 text-right">
+            <input
+                id="terms"
+                type="checkbox"
+                name="terms"
+                required
+                class="mt-1 rounded border-gray-600 bg-gray-900 text-[#d4af37] focus:ring-[#d4af37]"
+            >
+
+            <label for="terms" class="text-sm text-gray-400 leading-relaxed">
+                أوافق على
+                <a href="/terms" target="_blank" class="text-[#d4af37] hover:underline">شروط الاستخدام</a>
+                و
+                <a href="/privacy" target="_blank" class="text-[#d4af37] hover:underline">سياسة الخصوصية</a>
+            </label>
+        </div>
+
         <div class="mt-6">
             <x-primary-button class="w-full justify-center">
                 {{ __('إنشاء حساب البائع') }}

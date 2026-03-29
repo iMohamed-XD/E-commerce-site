@@ -1,1 +1,1 @@
-<img src="{{ asset('Gemini_Generated_Image_vuzvdhvuzvdhvuzv-removebg-preview__2__cleanup-removebg-preview (1).png') }}" {{ $attributes->merge(['class' => 'drop-shadow-[0_0_10px_rgba(255,255,255,0.4)] transition-all duration-300']) }} alt="محلي">
+<img src="{{ asset('logo.png') }}" {{ $attributes->merge(['class' => 'drop-shadow-[0_0_10px_rgba(255,255,255,0.4)] transition-all duration-300']) }} alt="محلي">

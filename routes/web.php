@@ -12,6 +12,13 @@ Route::get('/', function () {
     return view('landing');
 })->name('landing');
 
+Route::view('/terms', 'legal.terms')->name('terms');
+Route::view('/privacy', 'legal.privacy')->name('privacy');
+
+Route::get('/attributions', function () {
+    return view('legal.attributions');
+})->name('attributions');
+
 Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
@@ -21,16 +28,16 @@ Route::middleware(['auth', 'seller'])->group(function () {
     Route::get('/shop/check-slug', [\App\Http\Controllers\ShopController::class, 'checkSlug'])->name('shop.checkSlug');
     Route::post('/shop', [\App\Http\Controllers\ShopController::class, 'store'])->name('shop.store');
     Route::patch('/shop', [\App\Http\Controllers\ShopController::class, 'update'])->name('shop.update');
-    
+
     // Product Management
     Route::post('/products/bulk-action', [\App\Http\Controllers\ProductController::class, 'bulkAction'])->name('products.bulk_action');
     Route::patch('/products/{product}/toggle-discount', [\App\Http\Controllers\ProductController::class, 'toggleDiscount'])->name('products.toggle_discount');
     Route::resource('products', \App\Http\Controllers\ProductController::class);
-    
+
     // Order Management
     Route::get('/orders', [\App\Http\Controllers\OrderController::class, 'index'])->name('orders.index');
     Route::patch('/orders/{order}/status', [\App\Http\Controllers\OrderController::class, 'updateStatus'])->name('orders.updateStatus');
-    
+
     // Promo Code Management
     Route::resource('promo-codes', \App\Http\Controllers\PromoCodeController::class)->only(['index', 'store', 'destroy']);
     Route::patch('/promo-codes/{promoCode}/toggle', [\App\Http\Controllers\PromoCodeController::class, 'toggle'])->name('promo-codes.toggle');

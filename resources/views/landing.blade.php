@@ -626,9 +626,48 @@
                     <a href="{{ route('register') }}" class="block text-center py-3.5 rounded-2xl border border-indigo-500/40 text-indigo-300 font-bold hover:bg-indigo-600/10 hover:border-indigo-400 transition">تواصل معنا</a>
                 </div>
             </div>
+            <!-- 🔐 Policy Agreement Line -->
+            <div class="text-center mt-10">
+                <p class="text-s text-gray-600 opacity-70 hover:opacity-100 transition">
+                    باستخدامك منصة محلي، فإنك توافق على
+                    <a href="/terms" target="_blank" class="text-[#d4af37] hover:underline">شروط الاستخدام</a>
+                    و
+                    <a href="/privacy" target="_blank" class="text-[#d4af37] hover:underline">سياسة الخصوصية</a>.
+                </p>
+            </div>
         </div>
+
     </section>
 
+
+    <x-faq-section id="faq" :items="[
+    [
+        'question' => 'هل يمكنني استخدام محلي مجاناً؟',
+        'answer' => 'نعم، يمكنك البدء بالخطة المجانية بالكامل بدون أي بطاقة ائتمانية.',
+        'color' => 'gold'
+    ],
+    [
+        'question' => 'هل أحتاج خبرة تقنية؟',
+        'answer' => 'لا، يمكنك إنشاء متجرك خلال دقائق بدون أي خبرة.',
+        'color' => 'indigo'
+    ],
+    [
+        'question' => 'هل يمكنني التحكم بالكوبونات؟',
+        'answer' => 'نعم، يمكنك إدارة الخصومات والكوبونات بسهولة من لوحة التحكم.',
+        'color' => 'purple'
+    ],
+    [
+        'question' => 'هل البيانات آمنة؟',
+        'answer' => 'نستخدم أنظمة حماية متقدمة لضمان أمان بياناتك بالكامل.',
+        'color' => 'red'
+    ],
+    [
+        'question' => 'هل يمكنني ترقية خطتي؟',
+        'answer' => 'نعم، يمكنك الترقية في أي وقت بسهولة.',
+        'color' => 'gold'
+    ]
+]" />
+    <x-support-section id="support" />
         <!-- TESTIMONIALS -->
     <section id="testimonials" class="relative z-10 py-32 px-6 border-t border-gray-800/50">
         <div class="max-w-7xl mx-auto">
@@ -750,9 +789,15 @@
                     <div>
                         <h4 class="text-white font-bold mb-6">الدعم</h4>
                         <ul class="space-y-4 text-gray-500 text-sm">
-                            <li><a href="#" class="hover:text-[#d4af37] transition">الأسئلة الشائعة</a></li>
-                            <li><a href="#" class="hover:text-[#d4af37] transition">الدعم الفني</a></li>
-                            <li><a href="#" class="hover:text-[#d4af37] transition">سياسة الاستخدام</a></li>
+                            <li><a href="#faq" class="hover:text-[#d4af37] transition">الأسئلة الشائعة</a></li>
+                            <li><a href="#support" class="hover:text-[#d4af37] transition">الدعم الفني</a></li>
+                            <li>سياسة <a href="{{ route('terms') }}"><span class="text-[#d4af37]">الاستخدام</span></a> و <a href="{{ route('privacy') }}"><span class="text-[#d4af37]">الخصوصية</span></a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="text-white font-bold mb-6">المصادر</h4>
+                        <ul class="space-y-4 text-gray-500 text-sm">
+                            <li><a href="{{ route('attributions') }}" class="hover:text-[#d4af37] transition">حقوق النشر</a></li>
                         </ul>
                     </div>
                 </div>
