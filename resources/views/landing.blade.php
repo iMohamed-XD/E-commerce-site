@@ -533,14 +533,7 @@
             </div>
         </section>
 
-        <!-- CTA after steps -->
-            <div class="mt-24 text-center">
-                <a href="{{ route('register') }}" class="inline-flex items-center gap-3 px-10 py-5 bg-[#d4af37] text-black font-black text-xl rounded-2xl hover:bg-[#c5a02e] transition shadow-2xl shadow-[#d4af37]/20">
-                    ابدأ الآن مجاناً
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
-                </a>
-            </div>
-        </div>
+        
     </section>
 
     <!-- PRICING -->
