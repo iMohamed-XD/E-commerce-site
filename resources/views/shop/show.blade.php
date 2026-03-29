@@ -244,11 +244,10 @@
         <!-- Footer -->
         <footer class="bg-gray-900 border-t border-gray-800 py-12 mt-20">
             <div class="max-w-7xl mx-auto px-4 text-center">
-                <div class="flex items-center justify-center gap-3 mb-6">
-                    <div class="bg-gray-800 p-2 rounded-lg text-white">
-                        <x-application-logo class="h-6 w-auto fill-current" />
+                <div class="flex items-center justify-center mb-6">
+                    <div class="bg-gray-800/40 backdrop-blur-xl p-3 rounded-xl border border-white/5 shadow-lg">
+                        <x-application-logo class="h-8 w-auto hover:scale-105 transition-transform duration-300" />
                     </div>
-                    <span class="text-lg font-black text-white">محلي</span>
                 </div>
                 <p class="text-gray-500 text-sm">جميع الحقوق محفوظة &copy; {{ date('Y') }} {{ $shop->name }}</p>
                 <p class="text-[10px] text-gray-700 mt-2 uppercase tracking-[0.2em]">بواسطة محلي للتجارة الإلكترونية</p>

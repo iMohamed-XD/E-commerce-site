@@ -5,11 +5,13 @@
             <div class="flex items-center">
                 <!-- Logo -->
                 <div class="shrink-0 flex items-center">
-                    <a href="{{ route('dashboard') }}" class="flex items-center gap-3 group">
-                        <div class="bg-gradient-to-br from-indigo-500 to-purple-600 p-2 rounded-xl shadow-lg group-hover:shadow-indigo-500/20 transition-all duration-300">
-                            <x-application-logo class="block h-8 w-auto fill-current text-white" />
+                    <a href="{{ route('dashboard') }}" class="flex items-center group">
+                        <div class="relative bg-gray-800/40 backdrop-blur-xl p-2.5 rounded-xl border border-white/5 shadow-2xl group-hover:border-blue-500/20 transition-all duration-500 overflow-hidden">
+                            <!-- Subtle Gleam on Hover -->
+                            <div class="absolute inset-0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/5 to-transparent"></div>
+                            
+                            <x-application-logo class="block h-9 w-auto hover:brightness-110 transition-all duration-300" />
                         </div>
-                        <span class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400 tracking-tight">محلي</span>
                     </a>
                 </div>
 
