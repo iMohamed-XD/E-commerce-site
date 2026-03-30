@@ -6,7 +6,7 @@
             {{ $title }}
         </h1>
         <p class="text-gray-500 text-sm max-w-xl mx-auto">
-            يرجى قراءة هذه الشروط بعناية قبل استخدام منصة محلي.
+            شكراً لاستخدامك منصة محلي. يرجى الاطلاع على مصادر الأيقونات المستخدمة في المنصة:
         </p>
     </div>
 
@@ -15,11 +15,11 @@
         @foreach ($sections as $section)
             <div class="group p-6 rounded-2xl bg-gray-900/60 border border-gray-800 hover:border-[#d4af37]/40 transition-all duration-500">
                 <h2 class="text-lg font-bold text-[#d4af37] mb-3">
-                    {!! $section['title'] !!}
+                    {{ $section['title'] }}
                 </h2>
-                <p class="text-gray-400 leading-relaxed text-sm">
-                    {!! $section['content'] !!}
-                </p>
+                <a href="{{ $section['link'] }}" target="_blank" class="text-gray-400 leading-relaxed text-sm">
+                    {{ $section['content'] }}
+                </a>
             </div>
         @endforeach
     </div>
