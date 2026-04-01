@@ -1,3 +1,4 @@
+{{-- legal/terms --}}
 <x-guest-layout>
     <x-legal-page
         title='اتفاقية شروط الاستخدام لمنصة "محلي"'

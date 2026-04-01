@@ -1,10 +1,10 @@
 <section>
     <header>
-        <h2 class="text-xl font-bold text-white uppercase tracking-tight">
+        <h2 class="text-xl font-black text-[#0d1b4b] uppercase tracking-tight">
             {{ __('معلومات الحساب') }}
         </h2>
 
-        <p class="mt-2 text-sm text-gray-400">
+        <p class="mt-2 text-sm text-[#0d1b4b]/50">
             {{ __("قم بتحديث معلومات ملفك الشخصي وعنوان بريدك الإلكتروني.") }}
         </p>
     </header>
@@ -30,16 +30,16 @@
 
             @if ($user instanceof \Illuminate\Contracts\Auth\MustVerifyEmail && ! $user->hasVerifiedEmail())
                 <div>
-                    <p class="text-sm mt-2 text-gray-800">
+                    <p class="text-sm mt-2 text-[#0d1b4b]/70">
                         {{ __('Your email address is unverified.') }}
 
-                        <button form="send-verification" class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        <button form="send-verification" class="underline text-sm text-[#d4af37] hover:text-[#b8922a] rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#d4af37]/40">
                             {{ __('Click here to re-send the verification email.') }}
                         </button>
                     </p>
 
                     @if (session('status') === 'verification-link-sent')
-                        <p class="mt-2 font-medium text-sm text-green-600">
+                        <p class="mt-2 font-medium text-sm text-green-700">
                             {{ __('A new verification link has been sent to your email address.') }}
                         </p>
                     @endif
@@ -56,7 +56,7 @@
                     x-show="show"
                     x-transition
                     x-init="setTimeout(() => show = false, 2000)"
-                    class="text-sm text-gray-400"
+                    class="text-sm text-[#0d1b4b]/50"
                 >{{ __('تم الحفظ.') }}</p>
             @endif
         </div>

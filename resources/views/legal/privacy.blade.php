@@ -1,3 +1,4 @@
+{{-- legal/privacy --}}
 <x-guest-layout>
     <x-legal-page
         title="سياسة الخصوصية لمنصة محلي"

@@ -1,3 +1,4 @@
+{{-- legal/attributions --}}
 <x-guest-layout>
     <x-attributions-page
         title='Icon Attributions'

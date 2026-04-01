@@ -1,10 +1,10 @@
 <section>
     <header>
-        <h2 class="text-xl font-bold text-white uppercase tracking-tight">
+        <h2 class="text-xl font-black text-[#0d1b4b] uppercase tracking-tight">
             {{ __('تغيير كلمة المرور') }}
         </h2>
 
-        <p class="mt-2 text-sm text-gray-400">
+        <p class="mt-2 text-sm text-[#0d1b4b]/50">
             {{ __('تأكد من استخدام كلمة مرور طويلة وعشوائية للحفاظ على أمان حسابك.') }}
         </p>
     </header>
@@ -42,7 +42,7 @@
                     x-show="show"
                     x-transition
                     x-init="setTimeout(() => show = false, 2000)"
-                    class="text-sm text-gray-400"
+                    class="text-sm text-[#0d1b4b]/50"
                 >{{ __('تم الحفظ.') }}</p>
             @endif
         </div>

@@ -20,7 +20,7 @@
             @csrf
             {{-- google --}}
             <a href="{{ route('auth.google') }}"
-                class="flex items-center justify-center gap-3 w-full px-5 py-3 bg-white border border-gray-200 rounded-lg text-sm font-medium text-[#0d1b4b] hover:border-yellow-600 hover:bg-yellow-50 transition-colors duration-200">
+                class="flex items-center justify-center gap-3 w-full px-5 py-3 bg-white border border-[#0d1b4b]/12 rounded-lg text-sm font-medium text-[#0d1b4b] hover:border-[#d4af37]/45 hover:bg-[#fdfbf4] transition-colors duration-200">
 
                     <svg viewBox="0 0 18 18" width="18" height="18" class="shrink-0">
                         <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 01-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/>

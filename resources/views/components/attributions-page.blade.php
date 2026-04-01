@@ -2,10 +2,10 @@
 
     <!-- Header -->
     <div class="text-center mb-12">
-        <h1 class="text-4xl font-black text-white mb-4">
+        <h1 class="text-4xl font-black text-[#0d1b4b] mb-4">
             {{ $title }}
         </h1>
-        <p class="text-gray-500 text-sm max-w-xl mx-auto">
+        <p class="text-[#0d1b4b]/50 text-sm max-w-xl mx-auto">
             شكراً لاستخدامك منصة محلي. يرجى الاطلاع على مصادر الأيقونات المستخدمة في المنصة:
         </p>
     </div>
@@ -13,11 +13,11 @@
     <!-- Sections -->
     <div class="space-y-8 text-right">
         @foreach ($sections as $section)
-            <div class="group p-6 rounded-2xl bg-gray-900/60 border border-gray-800 hover:border-[#d4af37]/40 transition-all duration-500">
+            <div class="group p-6 rounded-2xl bg-white/70 backdrop-blur-xl border border-[#0d1b4b]/10 hover:border-[#d4af37]/40 transition-all duration-500">
                 <h2 class="text-lg font-bold text-[#d4af37] mb-3">
                     {{ $section['title'] }}
                 </h2>
-                <a href="{{ $section['link'] }}" target="_blank" class="text-gray-400 leading-relaxed text-sm">
+                <a href="{{ $section['link'] }}" target="_blank" class="text-[#0d1b4b]/65 leading-relaxed text-sm hover:text-[#a07c1e] transition-colors">
                     {{ $section['content'] }}
                 </a>
             </div>
@@ -26,9 +26,9 @@
 
     <!-- CTA -->
     @if($ctaText && $ctaLink)
-        <div class="mt-12 text-center pt-8 border-t border-gray-800">
+        <div class="mt-12 text-center pt-8 border-t border-[#0d1b4b]/10">
             <a href="{{ $ctaLink }}"
-               class="inline-block px-8 py-3 bg-[#d4af37] text-black font-black rounded-xl hover:bg-[#c5a02e] transition">
+               class="inline-block px-8 py-3 bg-[#d4af37] text-[#0d1b4b] font-black rounded-xl hover:bg-[#c5a02e] transition">
                 {{ $ctaText }}
             </a>
         </div>

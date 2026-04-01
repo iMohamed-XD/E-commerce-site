@@ -1,10 +1,10 @@
 <section class="space-y-6">
     <header>
-        <h2 class="text-xl font-bold text-white uppercase tracking-tight">
+        <h2 class="text-xl font-black text-[#0d1b4b] uppercase tracking-tight">
             {{ __('حذف الحساب') }}
         </h2>
 
-        <p class="mt-2 text-sm text-gray-400">
+        <p class="mt-2 text-sm text-[#0d1b4b]/50">
             {{ __('بمجرد حذف حسابك، سيتم حذف جميع موارده وبياناته بشكل دائم. قبل حذف حسابك، يرجى تنزيل أي بيانات أو معلومات ترغب في الاحتفاظ بها.') }}
         </p>
     </header>
@@ -15,15 +15,15 @@
     >{{ __('Delete Account') }}</x-danger-button>
 
     <x-modal name="confirm-user-deletion" :show="$errors->userDeletion->isNotEmpty()" focusable>
-        <form method="post" action="{{ route('profile.destroy') }}" class="p-6">
+        <form method="post" action="{{ route('profile.destroy') }}" class="p-6 text-[#0d1b4b]">
             @csrf
             @method('delete')
 
-            <h2 class="text-xl font-bold text-white">
+            <h2 class="text-xl font-black text-[#0d1b4b]">
                 {{ __('هل أنت متأكد من رغبتك في حذف حسابك؟') }}
             </h2>
 
-            <p class="mt-2 text-sm text-gray-400">
+            <p class="mt-2 text-sm text-[#0d1b4b]/50">
                 {{ __('بمجرد حذف حسابك، سيتم حذف جميع موارده وبياناته بشكل دائم. يرجى إدخال كلمة المرور الخاصة بك لتأكيد رغبتك في حذف حسابك نهائياً.') }}
             </p>
 
