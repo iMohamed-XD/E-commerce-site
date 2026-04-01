@@ -1,41 +1,58 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="rtl" class="dark bg-gray-900 text-gray-100">
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="csrf-token" content="{{ csrf_token() }}">
-        <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
-        <title>{{ config('app.name', 'Laravel') }}</title>
-        
-        <link rel="icon" href="{{ asset('favicon.png') }}" type="image/png">
-        <!-- Fonts -->
-        <link rel="preconnect" href="https://fonts.googleapis.com">
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
-        <style>
-            body { font-family: 'Tajawal', sans-serif !important; }
-        </style>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="rtl">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
+    <title>{{ config('app.name', 'Laravel') }}</title>
 
-        <!-- Scripts -->
-        @vite(['resources/css/app.css', 'resources/js/app.js'])
-    </head>
-    <body class="font-sans text-gray-100 antialiased bg-gray-900">
-        <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gray-900 my-12">
-            <div class="relative group">
-                <!-- Premium Glow Effect -->
-                <div class="absolute -inset-4 bg-gradient-to-r from-blue-600/20 via-yellow-500/10 to-blue-600/20 rounded-full blur-2xl group-hover:blur-3xl transition-all duration-500 opacity-50"></div>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
 
-                <a href="/" class="relative block">
-                    <div class="bg-gray-800/40 backdrop-blur-xl border border-white/5 p-8 rounded-[2.5rem] shadow-2xl transition-transform duration-500 hover:scale-105">
-                        <div class="absolute inset-0 rounded-[2.5rem] border border-yellow-500/10 pointer-events-none"></div>
-                        <x-application-logo class="h-32 w-auto drop-shadow-[0_0_25px_rgba(255,255,255,0.2)] hover:scale-110 transition-transform duration-700" />
-                    </div>
-                </a>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+    <style>
+        body { font-family: 'Tajawal', sans-serif !important; }
+        .hero-dotgrid {
+            background-image: radial-gradient(circle, #0d1b4b12 1px, transparent 1px);
+            background-size: 28px 28px;
+        }
+    </style>
+</head>
+<body class="antialiased text-[#0d1b4b] min-h-screen">
+
+    {{-- Fixed layered background matching the landing page --}}
+    <div class="fixed inset-0 z-0 pointer-events-none">
+        <div class="absolute inset-0 bg-gradient-to-b from-[#eef2ff] via-white to-[#fdfbf4]"></div>
+        <div class="absolute inset-0 hero-dotgrid opacity-60"></div>
+        <div class="absolute top-0 right-0 w-[600px] h-[400px] bg-[#d4af37]/8 rounded-full blur-[120px]"></div>
+        <div class="absolute bottom-0 left-0 w-[500px] h-[400px] bg-[#0d1b4b]/5 rounded-full blur-[100px]"></div>
+    </div>
+
+    {{-- Minimal top bar --}}
+    <nav class="relative z-50 w-full px-6 lg:px-12 py-5 flex items-center justify-between backdrop-blur-md bg-white/80 border-b border-[#0d1b4b]/8 shadow-sm">
+        <a href="/" class="flex items-center group">
+            <div class="relative bg-white/80 backdrop-blur-xl p-2 rounded-xl border border-[#0d1b4b]/10 shadow-md group-hover:border-[#d4af37]/40 group-hover:shadow-[0_4px_20px_rgba(212,175,55,0.15)] transition-all duration-500 overflow-hidden">
+                <div class="absolute inset-0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 bg-gradient-to-r from-transparent via-[#d4af37]/10 to-transparent"></div>
+                <x-application-logo class="block h-8 w-auto" />
             </div>
+            <span class="hidden sm:inline-block text-[10px] text-[#0d1b4b]/40 uppercase tracking-[0.2em] border-r border-[#0d1b4b]/15 pr-3 mr-3 mt-0.5">
+                THE LUXURY OF LOCAL
+            </span>
+        </a>
+        <a href="{{ route('login') }}" class="text-sm font-bold text-[#0d1b4b]/50 hover:text-[#0d1b4b] transition-colors duration-200">
+            تسجيل الدخول
+        </a>
+    </nav>
 
-            <div class="w-full sm:max-w-md mt-6 px-6 py-4 bg-gray-800 border border-gray-700 shadow-xl overflow-hidden sm:rounded-lg">
-                {{ $slot }}
-            </div>
+    {{-- Main content --}}
+    <main class="relative z-10 min-h-[calc(100vh-69px)] flex items-center justify-center py-16 px-4">
+        <div class="w-full max-w-md">
+            {{ $slot }}
         </div>
-    </body>
+    </main>
+
+</body>
 </html>

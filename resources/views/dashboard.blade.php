@@ -1,244 +1,418 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-200 leading-tight">
+        <h2 class="font-black text-lg text-[#0d1b4b] tracking-tight">
             {{ __('لوحة التحكم') }}
         </h2>
+        <style>
+            [x-cloak] {
+                display: none !important;
+            }
+        </style>
     </x-slot>
 
-    <!-- Adding Cropper.js CSS -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css" rel="stylesheet">
 
-    <div class="py-12" x-data="logoCropper('{{ auth()->user()->shop->slug ?? '' }}')">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            
+    <div class="py-10 px-4 sm:px-6 lg:px-8" x-data="logoCropper('{{ auth()->user()->shop->slug ?? '' }}')">
+        <div class="max-w-7xl mx-auto space-y-6">
+
+            {{-- ── Success Alert ───────────────────────────────────────── --}}
             @if(session('success'))
-                <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
-                    <span class="block sm:inline">{{ session('success') }}</span>
+                <div class="flex items-center gap-3 px-5 py-4 rounded-2xl bg-green-50 border border-green-200 text-green-800 text-sm font-semibold shadow-sm">
+                    <svg class="w-5 h-5 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                    </svg>
+                    {{ session('success') }}
                 </div>
             @endif
 
             @if(auth()->user()->isSeller())
                 @if(!auth()->user()->shop)
-                    <!-- Shop Setup Wizard with Cropper -->
-                    <div class="bg-gray-800 border-gray-700 overflow-hidden shadow-sm sm:rounded-lg">
-                        <div class="p-8 text-gray-100">
-                            <h3 class="text-2xl font-bold mb-2 text-indigo-700">أهلاً بك في محلي!</h3>
-                            <p class="mb-6 text-gray-400">لبدء البيع، يرجى إعداد تفاصيل متجرك الإلكتروني أدناه.</p>
-                            
+
+                    {{-- ════════════════════════════════════════════════════ --}}
+                    {{--  SHOP SETUP WIZARD                                  --}}
+                    {{-- ════════════════════════════════════════════════════ --}}
+                    <div class="bg-white/70 backdrop-blur-xl border border-[#0d1b4b]/10 rounded-3xl shadow-xl shadow-[#0d1b4b]/6 overflow-hidden">
+
+                        {{-- Card header band --}}
+                        <div class="px-8 pt-8 pb-6 border-b border-[#0d1b4b]/8">
+                            <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#d4af37]/10 border border-[#d4af37]/25 text-[#a07c1e] text-[11px] font-bold tracking-widest uppercase mb-4">
+                                <span class="w-1.5 h-1.5 rounded-full bg-[#d4af37]"></span>
+                                خطوتك الأولى
+                            </div>
+                            <h3 class="text-2xl font-black text-[#0d1b4b]">أهلاً بك في <span class="text-transparent bg-clip-text bg-gradient-to-l from-[#d4af37] to-[#b8922a]">محلي!</span></h3>
+                            <p class="mt-1.5 text-[#0d1b4b]/50 text-sm">لبدء البيع، يرجى إعداد تفاصيل متجرك الإلكتروني أدناه.</p>
+                        </div>
+
+                        <div class="p-8">
                             <form method="POST" action="{{ route('shop.store') }}" enctype="multipart/form-data" class="space-y-6">
                                 @csrf
+
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
                                         <x-input-label for="name" :value="__('اسم المتجر')" />
-                                        <x-text-input id="name" class="block mt-1 w-full" type="text" name="name" required autofocus x-model="name" @input="updateSlug" />
-                                        <x-input-error :messages="$errors->get('name')" class="mt-2" />
+                                        <x-text-input id="name" class="block mt-1.5 w-full" type="text" name="name"
+                                            placeholder="مثال: متجر العطور الأصيلة"
+                                            required autofocus x-model="name" @input="updateSlug" />
+                                        <x-input-error :messages="$errors->get('name')" class="mt-1.5" />
                                     </div>
                                     <div>
-                                        <x-input-label for="slug" :value="__('رابط المتجر (اسم بالانكليزية للرابط)')" />
-                                        <x-text-input id="slug" class="block mt-1 w-full font-mono text-sm" type="text" name="slug" required x-model="slug" @input="manualSlug = true" />
-                                        <div class="mt-2 flex items-center gap-2">
-                                            <p class="text-xs text-gray-400">رابط متجرك سيكون: <span class="text-indigo-400 font-bold" dir="ltr">{{ url('/shop') }}/<span x-text="slug"></span></span></p>
+                                        <x-input-label for="slug" :value="__('رابط المتجر (بالإنجليزية)')" />
+                                        <x-text-input id="slug" class="block mt-1.5 w-full font-mono text-sm" type="text" name="slug"
+                                            placeholder="my-shop-name"
+                                            required x-model="slug" @input="manualSlug = true" />
+                                        <div class="mt-2 flex flex-wrap items-center gap-2">
+                                            <p class="text-[11px] text-[#0d1b4b]/40" dir="ltr">{{ url('/shop') }}/<span x-text="slug" class="text-[#0d1b4b]/70 font-semibold"></span></p>
                                             <template x-if="isCheckingSlug">
-                                                <span class="text-[10px] text-gray-500 animate-pulse">جاري التحقق...</span>
+                                                <span class="text-[10px] text-[#0d1b4b]/40 animate-pulse font-medium">جاري التحقق...</span>
                                             </template>
                                             <template x-if="!isCheckingSlug && slug && !slugAvailable">
-                                                <span class="text-[10px] text-red-500 font-bold">هذا الرابط مستخدم بالفعل</span>
+                                                <span class="inline-flex items-center gap-1 text-[10px] text-red-500 font-bold">
+                                                    <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></svg>
+                                                    مستخدم بالفعل
+                                                </span>
                                             </template>
                                             <template x-if="!isCheckingSlug && slug && slugAvailable">
-                                                <span class="text-[10px] text-green-500 font-bold">هذا الرابط متاح</span>
+                                                <span class="inline-flex items-center gap-1 text-[10px] text-green-600 font-bold">
+                                                    <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                                                    متاح
+                                                </span>
                                             </template>
                                         </div>
-                                        <x-input-error :messages="$errors->get('slug')" class="mt-2" />
+                                        <x-input-error :messages="$errors->get('slug')" class="mt-1.5" />
+                                    </div>
+                                </div>
+
+                                {{-- Hero Image --}}
+                                <div>
+                                    <x-input-label for="hero_image" :value="__('صورة الغلاف')" />
+                                    <div class="mt-1.5">
+                                        <label for="hero_image" class="flex items-center gap-3 px-4 py-3 rounded-xl border border-[#0d1b4b]/15 bg-white cursor-pointer hover:border-[#d4af37]/50 hover:bg-[#fdfbf4] transition-all duration-200">
+                                            <div class="w-8 h-8 rounded-lg bg-[#0d1b4b]/6 flex items-center justify-center flex-shrink-0">
+                                                <svg class="w-4 h-4 text-[#0d1b4b]/50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                            </div>
+                                            <span class="text-sm text-[#0d1b4b]/45">اختر صورة الغلاف...</span>
+                                            <input id="hero_image" type="file" name="hero_image" accept="image/*" class="hidden" />
+                                        </label>
+                                    </div>
+                                    <x-input-error :messages="$errors->get('hero_image')" class="mt-1.5" />
+                                </div>
+
+                                {{-- Description --}}
+                                <div>
+                                    <x-input-label for="description" :value="__('وصف المتجر (اختياري)')" />
+                                    <textarea id="description" name="description" rows="3"
+                                        placeholder="اكتب وصفاً موجزاً لمتجرك..."
+                                        class="block mt-1.5 w-full bg-white border border-[#0d1b4b]/15 text-[#0d1b4b] placeholder-[#0d1b4b]/30
+                                               focus:border-[#d4af37] focus:ring-2 focus:ring-[#d4af37]/20 rounded-xl shadow-sm py-2.5 px-4
+                                               outline-none transition-all duration-200 resize-none"></textarea>
+                                    <x-input-error :messages="$errors->get('description')" class="mt-1.5" />
+                                </div>
+
+                                {{-- Logo with Cropper --}}
+                                <div>
+                                    <x-input-label for="logo_wizard" :value="__('شعار المتجر (اختياري)')" />
+                                    <div class="mt-1.5">
+                                        <label for="logo_wizard" class="flex items-center gap-3 px-4 py-3 rounded-xl border border-[#0d1b4b]/15 bg-white cursor-pointer hover:border-[#d4af37]/50 hover:bg-[#fdfbf4] transition-all duration-200">
+                                            <div class="w-8 h-8 rounded-lg bg-[#d4af37]/10 flex items-center justify-center flex-shrink-0">
+                                                <svg class="w-4 h-4 text-[#a07c1e]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>
+                                            </div>
+                                            <span class="text-sm text-[#0d1b4b]/45">اختر شعار المتجر...</span>
+                                            <input id="logo_wizard" type="file" name="logo" accept="image/*" class="hidden" @change="loadFile" />
+                                        </label>
+                                    </div>
+                                    <input type="hidden" name="cropped_logo" :value="croppedData">
+                                    <x-input-error :messages="$errors->get('logo')" class="mt-1.5" />
+
+                                    {{-- Logo preview --}}
+                                    <div x-show="croppedData" class="mt-4 flex items-center gap-4" x-cloak>
+                                        <img :src="croppedData" class="w-20 h-20 rounded-2xl object-cover border-2 border-[#d4af37]/40 shadow-md" alt="معاينة الشعار">
+                                        <div>
+                                            <p class="text-sm font-bold text-[#0d1b4b]">معاينة الشعار</p>
+                                            <button type="button" @click="croppedData = ''; document.getElementById('logo_wizard').value = ''"
+                                                class="mt-1 text-xs text-red-500 hover:text-red-700 font-semibold transition-colors">
+                                                إزالة الشعار
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="pt-2">
+                                    <button type="submit"
+                                        x-bind:disabled="!slugAvailable || isCheckingSlug"
+                                        class="group relative px-8 py-3.5 bg-[#d4af37] text-[#0d1b4b] font-black rounded-2xl
+                                               hover:bg-[#c5a02e] active:scale-[0.98] transition-all duration-200
+                                               shadow-lg shadow-[#d4af37]/25 overflow-hidden
+                                               disabled:opacity-40 disabled:cursor-not-allowed disabled:active:scale-100">
+                                        <span class="relative z-10">إنشاء المتجر وحفظ البيانات</span>
+                                        <div class="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 rounded-2xl"></div>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                @else
+                    {{-- ════════════════════════════════════════════════════ --}}
+                    {{--  SELLER DASHBOARD                                   --}}
+                    {{-- ════════════════════════════════════════════════════ --}}
+                    @php
+                        $shop = auth()->user()->shop;
+                        $totalProducts = $shop->products()->count();
+                        $totalOrders   = $shop->orders()->count();
+                        $totalRevenue  = $shop->orders()->where('status', 'completed')->sum('total_amount');
+                    @endphp
+
+                    {{-- Shop header --}}
+                    <div class="bg-white/70 backdrop-blur-xl border border-[#0d1b4b]/10 rounded-3xl shadow-xl shadow-[#0d1b4b]/6 p-8">
+
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+                            <div>
+                                <p class="text-[11px] text-[#0d1b4b]/40 uppercase tracking-widest font-bold mb-1">متجرك النشط</p>
+                                <h3 class="text-2xl font-black text-[#0d1b4b]">{{ $shop->name }}</h3>
+                                <a href="{{ url('/shop/' . $shop->slug) }}" target="_blank"
+                                   class="inline-flex items-center gap-1.5 mt-1.5 text-sm text-[#d4af37] hover:text-[#b8922a] font-semibold transition-colors" dir="ltr">
+                                    {{ url('/shop/' . $shop->slug) }}
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                                </a>
+                            </div>
+                            <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-50 border border-green-200">
+                                <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                                <span class="text-xs text-green-700 font-bold">متجر نشط</span>
+                            </div>
+                        </div>
+
+                        {{-- Stats --}}
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div class="p-6 rounded-2xl bg-[#0d1b4b]/4 border border-[#0d1b4b]/8 text-center hover:bg-[#0d1b4b]/6 transition-colors">
+                                <div class="w-10 h-10 rounded-xl bg-[#0d1b4b]/8 flex items-center justify-center mx-auto mb-3">
+                                    <svg class="w-5 h-5 text-[#0d1b4b]/60" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+                                </div>
+                                <p class="text-3xl font-black text-[#0d1b4b]">{{ $totalProducts }}</p>
+                                <p class="text-xs text-[#0d1b4b]/45 font-medium mt-1">إجمالي المنتجات</p>
+                            </div>
+                            <div class="p-6 rounded-2xl bg-green-50 border border-green-100 text-center hover:bg-green-100/60 transition-colors">
+                                <div class="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center mx-auto mb-3">
+                                    <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                                </div>
+                                <p class="text-3xl font-black text-green-800">{{ $totalOrders }}</p>
+                                <p class="text-xs text-green-700/60 font-medium mt-1">إجمالي الطلبات</p>
+                            </div>
+                            <div class="p-6 rounded-2xl bg-[#d4af37]/8 border border-[#d4af37]/20 text-center hover:bg-[#d4af37]/12 transition-colors">
+                                <div class="w-10 h-10 rounded-xl bg-[#d4af37]/15 flex items-center justify-center mx-auto mb-3">
+                                    <svg class="w-5 h-5 text-[#a07c1e]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                </div>
+                                <p class="text-3xl font-black text-[#a07c1e]">{{ number_format($totalRevenue, 0) }}</p>
+                                <p class="text-xs text-[#a07c1e]/60 font-medium mt-1">الأرباح المكتملة (ل.س)</p>
+                            </div>
+                        </div>
+
+                        {{-- Action buttons --}}
+                        <div class="mt-8 pt-6 border-t border-[#0d1b4b]/8 flex flex-wrap gap-3">
+                            <a href="{{ route('products.index') }}"
+                               class="inline-flex items-center gap-2 px-5 py-2.5 bg-[#0d1b4b] text-white text-sm font-bold rounded-xl hover:bg-[#1a2d6b] transition-all shadow-md shadow-[#0d1b4b]/20 active:scale-95">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+                                المنتجات
+                            </a>
+                            <a href="{{ route('orders.index') }}"
+                               class="inline-flex items-center gap-2 px-5 py-2.5 bg-green-600 text-white text-sm font-bold rounded-xl hover:bg-green-700 transition-all shadow-md shadow-green-600/20 active:scale-95">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                                الطلبات
+                            </a>
+                            <a href="{{ route('promo-codes.index') }}"
+                               class="inline-flex items-center gap-2 px-5 py-2.5 bg-[#d4af37]/10 border border-[#d4af37]/30 text-[#a07c1e] text-sm font-bold rounded-xl hover:bg-[#d4af37]/20 hover:border-[#d4af37]/50 transition-all active:scale-95">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>
+                                الكوبونات
+                            </a>
+                            <a href="{{ route('categories.index') }}"
+                               class="inline-flex items-center gap-2 px-5 py-2.5 bg-[#0d1b4b]/5 border border-[#0d1b4b]/12 text-[#0d1b4b]/70 text-sm font-bold rounded-xl hover:bg-[#0d1b4b]/8 hover:border-[#0d1b4b]/20 transition-all active:scale-95">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+                                التصنيفات
+                            </a>
+                        </div>
+                    </div>
+
+                    {{-- ── Edit Shop Settings ──────────────────────────────── --}}
+                    <div class="bg-white/70 backdrop-blur-xl border border-[#0d1b4b]/10 rounded-3xl shadow-xl shadow-[#0d1b4b]/6 overflow-hidden">
+
+                        <div class="px-8 pt-8 pb-6 border-b border-[#0d1b4b]/8 flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-[#0d1b4b]/6 flex items-center justify-center flex-shrink-0">
+                                <svg class="w-5 h-5 text-[#0d1b4b]/50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37a1.724 1.724 0 002.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                            </div>
+                            <div>
+                                <h4 class="text-lg font-black text-[#0d1b4b]">إعدادات المتجر</h4>
+                                <p class="text-xs text-[#0d1b4b]/40 mt-0.5">تحديث بيانات متجرك وهويته البصرية</p>
+                            </div>
+                        </div>
+
+                        <div class="p-8">
+                            <form method="POST" action="{{ route('shop.update') }}" enctype="multipart/form-data" class="space-y-6 max-w-4xl">
+                                @csrf
+                                @method('PATCH')
+
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div>
+                                        <x-input-label for="edit_name" :value="__('اسم المتجر')" />
+                                        <x-text-input id="edit_name" class="block mt-1.5 w-full" type="text" name="name"
+                                            :value="old('name', $shop->name)" required x-model="name" />
+                                        <x-input-error :messages="$errors->get('name')" class="mt-1.5" />
+                                    </div>
+                                    <div>
+                                        <x-input-label for="edit_slug" :value="__('رابط المتجر (بالإنجليزية)')" />
+                                        <x-text-input id="edit_slug" class="block mt-1.5 w-full font-mono text-sm" type="text" name="slug"
+                                            :value="old('slug', $shop->slug)" required x-model="slug" @input="manualSlug = true" />
+                                        <div class="mt-2 flex flex-wrap items-center gap-2">
+                                            <p class="text-[11px] text-[#0d1b4b]/40" dir="ltr">{{ url('/shop') }}/<span x-text="slug" class="text-[#0d1b4b]/70 font-semibold"></span></p>
+                                            <template x-if="isCheckingSlug">
+                                                <span class="text-[10px] text-[#0d1b4b]/40 animate-pulse font-medium">جاري التحقق...</span>
+                                            </template>
+                                            <template x-if="!isCheckingSlug && slug && !slugAvailable">
+                                                <span class="inline-flex items-center gap-1 text-[10px] text-red-500 font-bold">
+                                                    <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></svg>
+                                                    مستخدم بالفعل
+                                                </span>
+                                            </template>
+                                            <template x-if="!isCheckingSlug && slug && slugAvailable && slug !== '{{ $shop->slug }}'">
+                                                <span class="inline-flex items-center gap-1 text-[10px] text-green-600 font-bold">
+                                                    <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                                                    متاح
+                                                </span>
+                                            </template>
+                                        </div>
+                                        <x-input-error :messages="$errors->get('slug')" class="mt-1.5" />
                                     </div>
                                 </div>
 
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div class="md:col-span-2">
-                                        <x-input-label for="hero_image" :value="__('صورة الغلاف (Hero Image)')" />
-                                        <input id="hero_image" class="block mt-1 w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-900 file:text-indigo-200 hover:file:bg-indigo-800" type="file" name="hero_image" accept="image/*" />
-                                        <x-input-error :messages="$errors->get('hero_image')" class="mt-2" />
+                                    {{-- Logo upload --}}
+                                    <div>
+                                        <x-input-label for="edit_logo" :value="__('تحديث الشعار')" />
+                                        <div class="mt-1.5">
+                                            <label for="edit_logo" class="flex items-center gap-3 px-4 py-3 rounded-xl border border-[#0d1b4b]/15 bg-white cursor-pointer hover:border-[#d4af37]/50 hover:bg-[#fdfbf4] transition-all duration-200">
+                                                <div class="w-8 h-8 rounded-lg bg-[#d4af37]/10 flex items-center justify-center flex-shrink-0">
+                                                    <svg class="w-4 h-4 text-[#a07c1e]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>
+                                                </div>
+                                                <span class="text-sm text-[#0d1b4b]/45">اختر شعاراً جديداً...</span>
+                                                <input id="edit_logo" type="file" name="logo" accept="image/*" class="hidden" @change="loadFile" />
+                                            </label>
+                                        </div>
+                                        <input type="hidden" name="cropped_logo" :value="croppedData">
+                                        <x-input-error :messages="$errors->get('logo')" class="mt-1.5" />
+
+                                        <div x-show="croppedData" class="mt-4 flex items-center gap-4" x-cloak>
+                                            <img :src="croppedData" class="w-16 h-16 rounded-xl object-cover border-2 border-[#d4af37]/40 shadow-sm" alt="معاينة">
+                                            <button type="button"
+                                                @click="croppedData = ''; document.getElementById('edit_logo').value = ''"
+                                                class="text-xs text-red-500 hover:text-red-700 font-semibold transition-colors">
+                                                إزالة
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    {{-- Hero image upload --}}
+                                    <div>
+                                        <x-input-label for="edit_hero" :value="__('تحديث صورة الغلاف')" />
+                                        <div class="mt-1.5">
+                                            <label for="edit_hero" class="flex items-center gap-3 px-4 py-3 rounded-xl border border-[#0d1b4b]/15 bg-white cursor-pointer hover:border-[#d4af37]/50 hover:bg-[#fdfbf4] transition-all duration-200">
+                                                <div class="w-8 h-8 rounded-lg bg-[#0d1b4b]/6 flex items-center justify-center flex-shrink-0">
+                                                    <svg class="w-4 h-4 text-[#0d1b4b]/50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                                </div>
+                                                <span class="text-sm text-[#0d1b4b]/45">اختر صورة الغلاف...</span>
+                                                <input id="edit_hero" type="file" name="hero_image" accept="image/*" class="hidden" />
+                                            </label>
+                                        </div>
+                                        <x-input-error :messages="$errors->get('hero_image')" class="mt-1.5" />
                                     </div>
                                 </div>
 
-                                <div class="mt-4">
-                                    <x-input-label for="description" :value="__('وصف المتجر (اختياري)')" />
-                                    <textarea id="description" name="description" rows="3" class="block mt-1 w-full bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-400 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"></textarea>
-                                    <x-input-error :messages="$errors->get('description')" class="mt-2" />
+                                {{-- Description --}}
+                                <div>
+                                    <x-input-label for="edit_description" :value="__('وصف المتجر')" />
+                                    <textarea id="edit_description" name="description" rows="3"
+                                        class="block mt-1.5 w-full bg-white border border-[#0d1b4b]/15 text-[#0d1b4b] placeholder-[#0d1b4b]/30
+                                               focus:border-[#d4af37] focus:ring-2 focus:ring-[#d4af37]/20 rounded-xl shadow-sm py-2.5 px-4
+                                               outline-none transition-all duration-200 resize-none">{{ old('description', $shop->description) }}</textarea>
+                                    <x-input-error :messages="$errors->get('description')" class="mt-1.5" />
                                 </div>
 
-                                <div class="mt-4">
-                                    <x-input-label for="logo_wizard" :value="__('شعار المتجر (اختياري)')" />
-                                    <input id="logo_wizard" class="block mt-1 w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-gray-700 file:text-indigo-200 hover:file:bg-indigo-800" type="file" name="logo" accept="image/*" @change="loadFile" />
-                                    <x-input-error :messages="$errors->get('logo')" class="mt-2" />
-                                    <input type="hidden" name="cropped_logo" :value="croppedData">
-                                </div>
-
-                                <!-- Cropped Preview -->
-                                <div x-show="croppedData" class="mt-4" x-cloak>
-                                    <label class="block text-sm font-medium text-gray-300 mb-2">معاينة الشعار المقتطع</label>
-                                    <img :src="croppedData" class="w-32 h-32 rounded-full object-cover border-2 border-[#d4af37] shadow-sm" alt="Preview">
-                                    <button type="button" @click="croppedData = ''; document.getElementById('logo_wizard').value = ''" class="mt-2 text-sm text-red-600 hover:text-red-800">إزالة</button>
-                                </div>
-
-                                <div class="flex items-center justify-start gap-4 pt-6">
-                                    <x-primary-button class="bg-[#d4af37] text-black font-black hover:bg-[#c5a02e]" x-bind:disabled="!slugAvailable || isCheckingSlug">
-                                        {{ __('إنشاء المتجر وحفظ البيانات') }}
-                                    </x-primary-button>
+                                <div>
+                                    <button type="submit"
+                                        x-bind:disabled="!slugAvailable || isCheckingSlug"
+                                        class="group relative px-8 py-3.5 bg-[#0d1b4b] text-white font-black rounded-2xl
+                                               hover:bg-[#1a2d6b] active:scale-[0.98] transition-all duration-200
+                                               shadow-lg shadow-[#0d1b4b]/20 overflow-hidden
+                                               disabled:opacity-40 disabled:cursor-not-allowed disabled:active:scale-100">
+                                        <span class="relative z-10">حفظ التغييرات</span>
+                                        <div class="absolute inset-0 bg-white/5 translate-y-full group-hover:translate-y-0 transition-transform duration-300 rounded-2xl"></div>
+                                    </button>
                                 </div>
                             </form>
-
                         </div>
                     </div>
-                @else
-                    <!-- Seller Dashboard Analytics -->
-                    @php
-                        $shop = auth()->user()->shop;
-                        $totalProducts = $shop->products()->count();
-                        $totalOrders = $shop->orders()->count();
-                        $totalRevenue = $shop->orders()->where('status', 'completed')->sum('total_amount');
-                    @endphp
-                    <div class="bg-gray-800 border-gray-700 overflow-hidden shadow-sm sm:rounded-lg mb-6">
-                        <div class="p-6 text-gray-100">
-                            <h3 class="text-2xl font-bold mb-4">متجرك: {{ $shop->name }}</h3>
-                            <p class="mb-4 text-gray-300">رابط متجرك: <a href="{{ url('/shop/' . $shop->slug) }}" class="text-indigo-600 underline font-semibold" target="_blank" dir="ltr">{{ url('/shop/' . $shop->slug) }}</a></p>
-                            
-                            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mt-6">
-                                <div class="bg-indigo-50 rounded-lg p-6 border border-indigo-100 shadow-sm text-center">
-                                    <h4 class="text-indigo-800 font-semibold mb-2">إجمالي المنتجات</h4>
-                                    <p class="text-3xl font-bold text-indigo-900">{{ $totalProducts }}</p>
-                                </div>
-                                <div class="bg-green-50 rounded-lg p-6 border border-green-100 shadow-sm text-center">
-                                    <h4 class="text-green-800 font-semibold mb-2">إجمالي الطلبات</h4>
-                                    <p class="text-3xl font-bold text-green-900">{{ $totalOrders }}</p>
-                                </div>
-                                <div class="bg-yellow-50 rounded-lg p-6 border border-yellow-100 shadow-sm text-center lg:col-span-2">
-                                    <h4 class="text-yellow-800 font-semibold mb-2">إجمالي الأرباح (المكتملة)</h4>
-                                    <p class="text-3xl font-bold text-yellow-900">{{ number_format($totalRevenue, 2) }} <span class="text-lg">ل.س</span></p>
-                                </div>
-                            </div>
 
-                            <div class="mt-8 flex flex-wrap gap-4">
-                                <a href="{{ route('products.index') }}" class="inline-flex items-center px-6 py-3 bg-indigo-600 border border-transparent rounded-md font-bold text-sm text-white uppercase tracking-widest hover:bg-indigo-700 shadow-md transition">
-                                    إدارة المنتجات
-                                </a>
-                                <a href="{{ route('promo-codes.index') }}" class="inline-flex items-center px-6 py-3 bg-gray-700 border border-gray-600 text-indigo-400 rounded-md font-bold text-sm uppercase tracking-widest hover:bg-gray-600 shadow-md transition">
-                                    كوبونات الخصم
-                                </a>
-                                <a href="{{ route('orders.index') }}" class="inline-flex items-center px-6 py-3 bg-gray-700 border border-transparent rounded-md font-bold text-sm text-white uppercase tracking-widest hover:bg-gray-600 shadow-md transition">
-                                    سجل الطلبات
-                                </a>
-                                <a href="{{ route('categories.index') }}" class="inline-flex items-center px-6 py-3 bg-gray-700 border border-gray-600 text-green-400 rounded-md font-bold text-sm uppercase tracking-widest hover:bg-gray-600 shadow-md transition">
-                                    إدارة التصنيفات
-                                </a>
-                            </div>
-
-                            <!-- Edit Shop Section -->
-                            <div class="mt-12 pt-8 border-t border-gray-700">
-                                <h4 class="text-xl font-bold mb-6 text-white flex items-center gap-2">
-                                    <svg class="w-6 h-6 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37a1.724 1.724 0 002.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                                    إعدادات المتجر
-                                </h4>
-                                
-                                <form method="POST" action="{{ route('shop.update') }}" enctype="multipart/form-data" class="space-y-6 max-w-4xl">
-                                    @csrf
-                                    @method('PATCH')
-
-                                        <div>
-                                            <x-input-label for="edit_name" :value="__('اسم المتجر')" class="text-gray-400" />
-                                            <x-text-input id="edit_name" class="block mt-1 w-full bg-gray-900 border-gray-700 text-white focus:ring-indigo-500" type="text" name="name" :value="old('name', $shop->name)" required x-model="name" />
-                                            <x-input-error :messages="$errors->get('name')" class="mt-2" />
-                                        </div>
-                                        <div>
-                                            <x-input-label for="edit_slug" :value="__('رابط المتجر (English Slug)')" class="text-gray-400" />
-                                            <x-text-input id="edit_slug" class="block mt-1 w-full bg-gray-900 border-gray-700 text-white focus:ring-indigo-500 font-mono text-sm" type="text" name="slug" :value="old('slug', $shop->slug)" required x-model="slug" @input="manualSlug = true" />
-                                            <div class="mt-1 flex items-center gap-2">
-                                                <p class="text-[10px] text-gray-500">الرابط المباشر: {{ url('/shop') }}/<span x-text="slug"></span></p>
-                                                <template x-if="isCheckingSlug">
-                                                    <span class="text-[9px] text-gray-500 animate-pulse">جاري التحقق...</span>
-                                                </template>
-                                                <template x-if="!isCheckingSlug && slug && !slugAvailable">
-                                                    <span class="text-[9px] text-red-500 font-bold">هذا الرابط مستخدم بالفعل</span>
-                                                </template>
-                                                <template x-if="!isCheckingSlug && slug && slugAvailable && slug !== '{{ $shop->slug }}'">
-                                                    <span class="text-[9px] text-green-500 font-bold">هذا الرابط متاح</span>
-                                                </template>
-                                            </div>
-                                            <x-input-error :messages="$errors->get('slug')" class="mt-2" />
-                                        </div>
-                                    </div>
-
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        <div>
-                                            <x-input-label for="edit_logo" :value="__('تحديث الشعار')" class="text-gray-400" />
-                                            <input id="edit_logo" type="file" name="logo" class="block mt-1 w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-indigo-600 file:text-white hover:file:bg-indigo-500 cursor-pointer" accept="image/*" @change="loadFile" />
-                                            <x-input-error :messages="$errors->get('logo')" class="mt-2" />
-                                            <input type="hidden" name="cropped_logo" :value="croppedData">
-                                            
-                                            <!-- Cropped Preview for Edit -->
-                                            <div x-show="croppedData" class="mt-4" x-cloak>
-                                                <label class="block text-sm font-medium text-gray-300 mb-2">معاينة الشعار الجديد</label>
-                                                <img :src="croppedData" class="w-32 h-32 rounded-full object-cover border-2 border-[#d4af37] shadow-sm" alt="Preview">
-                                                <button type="button" @click="croppedData = ''; document.getElementById('edit_logo').value = ''" class="mt-2 text-sm text-red-600 hover:text-red-800">إزالة</button>
-                                            </div>
-                                        </div>
-
-                                    <div>
-                                        <x-input-label for="edit_hero" :value="__('تحديث صورة الغلاف (Hero Image)')" class="text-gray-400" />
-                                        <input id="edit_hero" type="file" name="hero_image" class="block mt-1 w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-gray-700 file:text-white hover:file:bg-gray-600 cursor-pointer" accept="image/*" />
-                                        <x-input-error :messages="$errors->get('hero_image')" class="mt-2" />
-                                    </div>
-
-                                    <div>
-                                        <x-input-label for="edit_description" :value="__('وصف المتجر')" class="text-gray-400" />
-                                        <textarea id="edit_description" name="description" rows="3" class="block mt-1 w-full bg-gray-900 border-gray-700 text-gray-100 rounded-2xl focus:ring-indigo-500">{{ old('description', $shop->description) }}</textarea>
-                                        <x-input-error :messages="$errors->get('description')" class="mt-2" />
-                                    </div>
-
-                                    <div class="flex items-center gap-4">
-                                        <x-primary-button class="bg-indigo-600 hover:bg-indigo-500 shadow-lg shadow-indigo-600/20" x-bind:disabled="!slugAvailable || isCheckingSlug">حفظ التغييرات</x-primary-button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
                 @endif
+
             @else
-                <!-- Buyer Dashboard -->
-                <div class="bg-gray-800 border-gray-700 overflow-hidden shadow-sm sm:rounded-lg">
-                    <div class="p-6 text-gray-100">
-                        <h3 class="text-xl font-bold mb-4">أهلاً بك يا {{ auth()->user()->name }}!</h3>
-                        <p>تصفح المتاجر واكتشف منتجات جديدة على منصة محلي.</p>
+                {{-- ════════════════════════════════════════════════════ --}}
+                {{--  BUYER DASHBOARD                                    --}}
+                {{-- ════════════════════════════════════════════════════ --}}
+                <div class="bg-white/70 backdrop-blur-xl border border-[#0d1b4b]/10 rounded-3xl shadow-xl shadow-[#0d1b4b]/6 p-10 text-center">
+                    <div class="w-16 h-16 rounded-2xl bg-[#d4af37]/10 border border-[#d4af37]/20 flex items-center justify-center mx-auto mb-6">
+                        <svg class="w-8 h-8 text-[#a07c1e]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
                     </div>
+                    <h3 class="text-2xl font-black text-[#0d1b4b] mb-2">أهلاً بك يا {{ auth()->user()->name }}!</h3>
+                    <p class="text-[#0d1b4b]/50 max-w-sm mx-auto">تصفح المتاجر واكتشف منتجات جديدة على منصة محلي.</p>
                 </div>
             @endif
 
         </div>
+    </div>
 
-        <!-- Cropper Modal -->
-        <div x-show="showCropper" class="fixed inset-0 z-50 overflow-y-auto" x-cloak aria-labelledby="modal-title" role="dialog" aria-modal="true">
-            <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-                <div x-show="showCropper" class="fixed inset-0 bg-gray-900 bg-opacity-75 transition-opacity" @click="showCropper = false"></div>
-                <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-                
-                <div x-show="showCropper" 
-                    class="inline-block align-bottom bg-gray-800 border-gray-700 rounded-lg text-right overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-xl sm:w-full">
-                    <div class="bg-gray-800 border-gray-700 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                        <h3 class="text-lg leading-6 font-bold text-gray-100 mb-4">اقتطاع وتعديل الشعار</h3>
-                        <p class="text-sm text-gray-400 mb-4">قم بتغيير حجم الشعار وتحريكه ليناسب الدائرة.</p>
-                        <div class="w-full max-h-96 overflow-hidden bg-gray-800 flex justify-center items-center rounded text-center">
-                            <img id="cropperImage" src="" alt="Source Image" class="max-w-full max-h-96">
-                        </div>
-                    </div>
-                    <div class="bg-gray-900 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse border-t">
-                        <button type="button" @click="saveCrop" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 sm:ml-3 sm:w-auto sm:text-sm">تطبيق الشعار</button>
-                        <button type="button" @click="showCropper = false; document.getElementById('logo_wizard') ? document.getElementById('logo_wizard').value = '' : null; document.getElementById('edit_logo') ? document.getElementById('edit_logo').value = '' : null" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-700 shadow-sm px-4 py-2 bg-gray-800 text-base font-medium text-gray-300 hover:bg-gray-900 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">إلغاء</button>
-                    </div>
+    {{-- ── Cropper Modal ─────────────────────────────────────────────── --}}
+    <div x-show="showCropper" class="fixed inset-0 z-50 flex items-center justify-center p-4" x-cloak>
+        {{-- Backdrop --}}
+        <div x-show="showCropper"
+             x-transition:enter="transition duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+             x-transition:leave="transition duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+             class="absolute inset-0 bg-[#0d1b4b]/50 backdrop-blur-sm"
+             @click="showCropper = false"></div>
+
+        {{-- Modal panel --}}
+        <div x-show="showCropper"
+             x-transition:enter="transition duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+             x-transition:leave="transition duration-150" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
+             class="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl shadow-[#0d1b4b]/20 border border-[#0d1b4b]/10 overflow-hidden">
+
+            <div class="px-6 py-5 border-b border-[#0d1b4b]/8 flex items-center justify-between">
+                <div>
+                    <h3 class="text-base font-black text-[#0d1b4b]">اقتطاع الشعار</h3>
+                    <p class="text-xs text-[#0d1b4b]/40 mt-0.5">حرك وكبّر الشعار ليناسب الإطار الدائري</p>
                 </div>
+                <button @click="showCropper = false"
+                    class="w-8 h-8 rounded-xl bg-[#0d1b4b]/6 flex items-center justify-center hover:bg-[#0d1b4b]/10 transition-colors">
+                    <svg class="w-4 h-4 text-[#0d1b4b]/60" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+
+            <div class="p-6">
+                <div class="w-full max-h-80 overflow-hidden bg-[#0d1b4b]/3 rounded-2xl flex justify-center items-center">
+                    <img id="cropperImage" src="" alt="Source Image" class="max-w-full max-h-80">
+                </div>
+            </div>
+
+            <div class="px-6 pb-6 flex gap-3 justify-end">
+                <button type="button"
+                    @click="showCropper = false; document.getElementById('logo_wizard') ? document.getElementById('logo_wizard').value = '' : null; document.getElementById('edit_logo') ? document.getElementById('edit_logo').value = '' : null"
+                    class="px-5 py-2.5 rounded-xl border border-[#0d1b4b]/15 text-[#0d1b4b]/60 text-sm font-bold hover:border-[#0d1b4b]/25 hover:text-[#0d1b4b] transition-all">
+                    إلغاء
+                </button>
+                <button type="button" @click="saveCrop"
+                    class="px-5 py-2.5 rounded-xl bg-[#d4af37] text-[#0d1b4b] text-sm font-black hover:bg-[#c5a02e] transition-all shadow-md shadow-[#d4af37]/25">
+                    تطبيق الشعار
+                </button>
             </div>
         </div>
     </div>
 
-    <!-- Adding Cropper.js Script -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
     <script>
         document.addEventListener('alpine:init', () => {
@@ -255,29 +429,19 @@
                 slugTimeout: null,
 
                 init() {
-                    this.$watch('slug', (value) => {
-                        this.updateSlug();
+                    this.$watch('slug', () => {
                         this.checkSlugAvailability();
                     });
                 },
 
                 async checkSlugAvailability() {
                     const currentSlug = this.slug.trim();
-                    if (!currentSlug) {
-                        this.slugAvailable = true;
-                        this.isCheckingSlug = false;
-                        return;
-                    }
+                    if (!currentSlug) { this.slugAvailable = true; this.isCheckingSlug = false; return; }
+                    if (currentSlug === this.initialSlug) { this.slugAvailable = true; this.isCheckingSlug = false; return; }
 
-                    if (currentSlug === this.initialSlug) {
-                        this.slugAvailable = true;
-                        this.isCheckingSlug = false;
-                        return;
-                    }
-                    
                     this.isCheckingSlug = true;
                     if (this.slugTimeout) clearTimeout(this.slugTimeout);
-                    
+
                     this.slugTimeout = setTimeout(async () => {
                         try {
                             const response = await fetch(`{{ route('shop.checkSlug') }}?slug=${encodeURIComponent(currentSlug)}`, {
@@ -287,8 +451,7 @@
                             const data = await response.json();
                             this.slugAvailable = data.available;
                         } catch (e) {
-                            console.error('Slug check failed:', e);
-                            this.slugAvailable = true; // Be optimistic on network errors
+                            this.slugAvailable = true;
                         } finally {
                             this.isCheckingSlug = false;
                         }
@@ -304,7 +467,7 @@
                             .replace(/^-+|-+$/g, '');
                     }
                 },
-                
+
                 loadFile(e) {
                     const file = e.target.files[0];
                     if (file) {
@@ -312,7 +475,7 @@
                         reader.onload = (event) => {
                             this.showCropper = true;
                             this.$nextTick(() => {
-                                if (this.cropper) { this.cropper.destroy(); }
+                                if (this.cropper) this.cropper.destroy();
                                 const image = document.getElementById('cropperImage');
                                 image.src = event.target.result;
                                 this.cropper = new Cropper(image, {
@@ -326,15 +489,10 @@
                         reader.readAsDataURL(file);
                     }
                 },
-                
+
                 saveCrop() {
                     if (this.cropper) {
-                        const canvas = this.cropper.getCroppedCanvas({
-                            width: 300,
-                            height: 300,
-                            imageSmoothingEnabled: true,
-                            imageSmoothingQuality: 'high',
-                        });
+                        const canvas = this.cropper.getCroppedCanvas({ width: 300, height: 300, imageSmoothingEnabled: true, imageSmoothingQuality: 'high' });
                         this.croppedData = canvas.toDataURL('image/png');
                         this.showCropper = false;
                     }
