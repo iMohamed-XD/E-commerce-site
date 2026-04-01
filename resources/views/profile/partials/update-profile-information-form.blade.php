@@ -25,10 +25,24 @@
 
         <div>
             <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" name="email" type="email" class="mt-1 block w-full" :value="old('email', $user->email)" required autocomplete="username" />
-            <x-input-error class="mt-2" :messages="$errors->get('email')" />
+            @if ($user->google_id)
+                <x-text-input
+                    id="email"
+                    type="email"
+                    class="mt-1 block w-full opacity-80 cursor-not-allowed"
+                    :value="$user->email"
+                    readonly
+                    disabled
+                />
+                <p class="mt-2 text-xs text-[#0d1b4b]/50">
+                    {{ __('الحساب المرتبط بـ Google لا يمكنه تغيير البريد الإلكتروني.') }}
+                </p>
+            @else
+                <x-text-input id="email" name="email" type="email" class="mt-1 block w-full" :value="old('email', $user->email)" required autocomplete="username" />
+                <x-input-error class="mt-2" :messages="$errors->get('email')" />
+            @endif
 
-            @if ($user instanceof \Illuminate\Contracts\Auth\MustVerifyEmail && ! $user->hasVerifiedEmail())
+            @if (!$user->google_id && $user instanceof \Illuminate\Contracts\Auth\MustVerifyEmail && ! $user->hasVerifiedEmail())
                 <div>
                     <p class="text-sm mt-2 text-[#0d1b4b]/70">
                         {{ __('Your email address is unverified.') }}

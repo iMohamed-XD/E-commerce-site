@@ -9,6 +9,7 @@ use App\Models\OrderItem;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 
 class ShopController extends Controller
 {
@@ -20,6 +21,7 @@ class ShopController extends Controller
             'description' => 'nullable|string',
             'logo' => 'nullable|image|max:2048',
             'hero_image' => 'nullable|image|max:4096',
+            'theme' => ['required', 'string', Rule::in(Shop::themeKeys())],
         ]);
 
         $logoPath = null;
@@ -49,6 +51,7 @@ class ShopController extends Controller
             'description' => $request->description,
             'logo_path' => $logoPath,
             'hero_image_path' => $heroImagePath,
+            'theme' => $request->input('theme', Shop::DEFAULT_THEME),
         ]);
 
         return redirect()->route('dashboard')->with('success', 'تم إنشاء متجرك بنجاح!');
@@ -65,7 +68,9 @@ class ShopController extends Controller
                 $query->where('is_active', true);
             })->get();
 
-        return view('shop.show', compact('shop', 'categories'));
+        $theme = Shop::resolveTheme($shop->theme);
+
+        return view('shop.show', compact('shop', 'categories', 'theme'));
     }
 
     public function applyPromo(Request $request, $slug)
@@ -192,11 +197,13 @@ class ShopController extends Controller
             'description' => 'nullable|string',
             'logo' => 'nullable|image|max:2048',
             'hero_image' => 'nullable|image|max:4096',
+            'theme' => ['required', 'string', Rule::in(Shop::themeKeys())],
         ]);
 
         $shop->name = $request->name;
         $shop->slug = $request->slug;
         $shop->description = $request->description;
+        $shop->theme = $request->input('theme', Shop::DEFAULT_THEME);
 
         if ($request->hasFile('logo')) {
             if ($shop->logo_path) {

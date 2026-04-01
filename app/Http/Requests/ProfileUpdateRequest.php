@@ -16,6 +16,20 @@ class ProfileUpdateRequest extends FormRequest
      */
     public function rules(): array
     {
+        if ($this->user()?->google_id) {
+            return [
+                'name' => ['required', 'string', 'max:255'],
+                'email' => [
+                    'nullable',
+                    'string',
+                    'lowercase',
+                    'email',
+                    'max:255',
+                    Rule::in([$this->user()->email]),
+                ],
+            ];
+        }
+
         return [
             'name' => ['required', 'string', 'max:255'],
             'email' => [

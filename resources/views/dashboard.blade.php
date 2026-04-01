@@ -108,6 +108,11 @@
                                     <x-input-error :messages="$errors->get('description')" class="mt-1.5" />
                                 </div>
 
+                                <x-shop-theme-picker
+                                    name="theme"
+                                    :selected="old('theme', \App\Models\Shop::DEFAULT_THEME)"
+                                />
+
                                 {{-- Logo with Cropper --}}
                                 <div>
                                     <x-input-label for="logo_wizard" :value="__('شعار المتجر (اختياري)')" />
@@ -333,6 +338,11 @@
                                                outline-none transition-all duration-200 resize-none">{{ old('description', $shop->description) }}</textarea>
                                     <x-input-error :messages="$errors->get('description')" class="mt-1.5" />
                                 </div>
+
+                                <x-shop-theme-picker
+                                    name="theme"
+                                    :selected="old('theme', $shop->theme ?? \App\Models\Shop::DEFAULT_THEME)"
+                                />
 
                                 <div>
                                     <button type="submit"

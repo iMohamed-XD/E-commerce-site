@@ -1,3 +1,6 @@
+@php
+    $theme = $theme ?? \App\Models\Shop::resolveTheme($shop->theme ?? null);
+@endphp
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="rtl">
     <head>
@@ -14,17 +17,32 @@
         <style>
             body { font-family: 'Tajawal', sans-serif !important; }
             [x-cloak] { display: none !important; }
-            
-            .text-gold { color: #d4af37; }
-            .bg-gold { background-color: #d4af37; }
-            .border-gold { border-color: #d4af37; }
-            .hover-bg-gold:hover { background-color: #c5a017; }
+
+            :root {
+                --shop-primary: {{ $theme['primary'] }};
+                --shop-primary-hover: {{ $theme['primary_hover'] }};
+                --shop-accent: {{ $theme['accent'] }};
+                --shop-accent-soft: {{ $theme['accent_soft'] }};
+            }
+
+            .theme-primary-bg { background-color: var(--shop-primary) !important; }
+            .theme-primary-bg-hover:hover { background-color: var(--shop-primary-hover) !important; }
+            .theme-primary-text { color: var(--shop-primary) !important; }
+            .theme-accent-text { color: var(--shop-accent) !important; }
+            .theme-accent-soft-bg { background-color: var(--shop-accent-soft) !important; }
+            .theme-accent-border { border-color: color-mix(in srgb, var(--shop-accent) 45%, transparent) !important; }
+            .theme-hero-overlay {
+                background: linear-gradient(to bottom, color-mix(in srgb, var(--shop-primary) 40%, transparent), color-mix(in srgb, var(--shop-primary) 20%, transparent), white);
+            }
+            .theme-hero-ambient {
+                background: linear-gradient(to bottom right, color-mix(in srgb, var(--shop-accent) 20%, transparent), white, color-mix(in srgb, var(--shop-primary) 12%, transparent));
+            }
 
             .hero-glass {
                 background: rgba(255, 255, 255, 0.78);
                 backdrop-filter: blur(12px);
                 -webkit-backdrop-filter: blur(12px);
-                border: 1px solid rgba(13, 27, 75, 0.10);
+                border: 1px solid color-mix(in srgb, var(--shop-primary) 14%, transparent);
             }
 
             .logo-watermark {
@@ -56,7 +74,7 @@
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
-    <body class="text-[#0d1b4b] antialiased" x-data="shoppingCart('{{ $shop->slug }}')">
+    <body class="theme-primary-text antialiased" x-data="shoppingCart('{{ $shop->slug }}')">
         
         <!-- Toast Notification -->
         <div x-show="showToast" 
@@ -66,7 +84,7 @@
              x-transition:leave="transition ease-in duration-300"
              x-transition:leave-start="opacity-100"
              x-transition:leave-end="opacity-0"
-             class="fixed bottom-10 left-10 z-[100] bg-[#0d1b4b] text-white px-6 py-4 rounded-2xl shadow-2xl shadow-[#0d1b4b]/25 flex items-center gap-3 font-bold"
+             class="fixed bottom-10 left-10 z-[100] theme-primary-bg text-white px-6 py-4 rounded-2xl shadow-2xl shadow-[#0d1b4b]/25 flex items-center gap-3 font-bold"
              x-cloak>
             <svg class="w-6 h-6 border-2 border-white rounded-full p-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
             <span x-text="toastMessage"></span>
@@ -79,16 +97,16 @@
                     <div class="flex items-center">
                         <div class="relative">
                             @if($shop->logo_path)
-                                <img src="{{ asset('storage/' . $shop->logo_path) }}" alt="{{ $shop->name }}" class="h-12 w-12 rounded-2xl object-cover border-2 border-[#d4af37]/40 shadow-lg shadow-[#d4af37]/15">
+                                <img src="{{ asset('storage/' . $shop->logo_path) }}" alt="{{ $shop->name }}" class="h-12 w-12 rounded-2xl object-cover border-2 theme-accent-border shadow-lg shadow-[#d4af37]/15">
                             @else
-                                <div class="h-12 w-12 rounded-2xl bg-[#0d1b4b] flex items-center justify-center text-white font-black text-xl shadow-lg">
+                                <div class="h-12 w-12 rounded-2xl theme-primary-bg flex items-center justify-center text-white font-black text-xl shadow-lg">
                                     {{ mb_substr($shop->name, 0, 1) }}
                                 </div>
                             @endif
                         </div>
                         <div class="mx-4">
                             <h1 class="text-xl font-black text-[#0d1b4b] tracking-tight">{{ $shop->name }}</h1>
-                            <span class="text-[10px] text-[#a07c1e] font-bold tracking-widest uppercase">محلي ستور</span>
+                            <span class="text-[10px] theme-accent-text font-bold tracking-widest uppercase">محلي ستور</span>
                         </div>
                     </div>
                     <div class="flex items-center gap-4">
@@ -109,9 +127,9 @@
         <div class="relative overflow-hidden bg-gradient-to-b from-[#eef2ff] via-white to-[#fdfbf4] h-[400px] flex items-center justify-center">
             @if($shop->hero_image_path)
                 <img src="{{ asset('storage/' . $shop->hero_image_path) }}" class="absolute inset-0 w-full h-full object-cover">
-                <div class="absolute inset-0 bg-gradient-to-b from-[#0d1b4b]/40 via-[#0d1b4b]/20 to-white"></div>
+                <div class="absolute inset-0 theme-hero-overlay"></div>
             @else
-                <div class="absolute inset-0 bg-gradient-to-br from-[#d4af37]/20 via-white to-[#0d1b4b]/12 opacity-100"></div>
+                <div class="absolute inset-0 theme-hero-ambient opacity-100"></div>
                 <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-20"></div>
             @endif
 
@@ -159,7 +177,7 @@
                 @if($categories->count() > 0)
                 <div class="flex flex-wrap gap-2" x-data="{ activeCategory: 'all' }">
                     <button @click="activeCategory = 'all'; $dispatch('filter-category', 'all')" 
-                            :class="activeCategory === 'all' ? 'bg-[#0d1b4b] text-white shadow-[#0d1b4b]/20' : 'bg-white text-[#0d1b4b]/60 border border-[#0d1b4b]/15 hover:bg-[#fdfbf4]'"
+                            :class="activeCategory === 'all' ? 'theme-primary-bg text-white shadow-[#0d1b4b]/20' : 'bg-white text-[#0d1b4b]/60 border border-[#0d1b4b]/15 hover:bg-[#fdfbf4]'"
                             class="px-5 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 shadow-sm border border-transparent">
                         الكل
                     </button>
@@ -214,9 +232,9 @@
 
                             <div class="p-8 flex flex-col flex-grow relative">
                                 @if($product->category)
-                                    <span class="text-[#a07c1e] text-[10px] font-black uppercase tracking-widest mb-2 block">{{ $product->category->name }}</span>
+                                    <span class="theme-accent-text text-[10px] font-black uppercase tracking-widest mb-2 block">{{ $product->category->name }}</span>
                                 @endif
-                                <h3 class="text-xl font-extrabold text-[#0d1b4b] mb-3 group-hover:text-[#a07c1e] transition-colors duration-300 leading-tight">{{ $product->name }}</h3>
+                                <h3 class="text-xl font-extrabold text-[#0d1b4b] mb-3 transition-colors duration-300 leading-tight">{{ $product->name }}</h3>
                                 
                                 <div class="mb-6">
                                     @if($isDiscounted)
@@ -230,7 +248,7 @@
                                 </div>
 
                                 <button @click="addToCart({{ $product->id }}, '{{ addslashes($product->name) }}', {{ $currentPrice }}, '{{ $product->image_path ? asset('storage/' . $product->image_path) : '' }}')" 
-                                        class="mt-auto w-full group/btn relative overflow-hidden bg-[#0d1b4b] text-white font-black py-4 px-6 rounded-2xl hover:bg-[#1a2d6b] transition-all duration-300 flex items-center justify-center gap-3 shadow-xl">
+                                        class="mt-auto w-full group/btn relative overflow-hidden theme-primary-bg theme-primary-bg-hover text-white font-black py-4 px-6 rounded-2xl transition-all duration-300 flex items-center justify-center gap-3 shadow-xl">
                                     <svg class="w-5 h-5 transition-transform group-hover/btn:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
                                     <span>أضف للسلة</span>
                                 </button>
@@ -315,13 +333,13 @@
                             <div class="px-6 py-8 bg-[#f4f7ff] border-t border-[#0d1b4b]/10">
                                 <div class="space-y-4 mb-8" x-show="cart.length > 0">
                                     <div x-data="{ openPromo: false }">
-                                        <button @click="openPromo = !openPromo" class="flex items-center gap-2 text-[#a07c1e] text-xs font-black uppercase tracking-widest hover:text-[#8b6a17] transition mb-3">
+                                        <button @click="openPromo = !openPromo" class="flex items-center gap-2 theme-accent-text text-xs font-black uppercase tracking-widest transition mb-3">
                                             <span>أضف كود خصم</span>
                                             <svg class="w-4 h-4 transition-transform" :class="openPromo ? 'rotate-90' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
                                         </button>
                                         <div x-show="openPromo" x-transition class="flex gap-2">
                                             <input type="text" x-model="promoInput" x-bind:disabled="promoApplied" class="flex-1 bg-white border border-[#0d1b4b]/15 rounded-xl px-4 py-3 text-sm font-bold text-[#0d1b4b] uppercase placeholder-[#0d1b4b]/30 focus:ring-2 focus:ring-[#d4af37]/25 transition" placeholder="PROMO20">
-                                            <button @click="applyPromo" x-show="!promoApplied" class="bg-[#0d1b4b] px-6 py-3 rounded-xl text-sm font-black text-white hover:bg-[#1a2d6b] transition">تطبيق</button>
+                                            <button @click="applyPromo" x-show="!promoApplied" class="theme-primary-bg theme-primary-bg-hover px-6 py-3 rounded-xl text-sm font-black text-white transition">تطبيق</button>
                                             <button @click="removePromo" x-show="promoApplied" class="bg-red-600 px-6 py-3 rounded-xl text-sm font-black text-white hover:bg-red-500 transition">إلغاء</button>
                                         </div>
                                         <p x-show="promoMessage" x-text="promoMessage" :class="promoApplied ? 'text-green-700' : 'text-red-400'" class="text-[10px] mt-2 font-black uppercase tracking-widest"></p>
@@ -336,7 +354,7 @@
                                     </div>
                                 </div>
                                 
-                                <button @click="isCheckoutOpen = true; isCartOpen = false" x-bind:disabled="cart.length === 0" class="w-full bg-[#0d1b4b] disabled:bg-[#0d1b4b]/25 text-white font-black py-5 rounded-2xl shadow-xl shadow-[#0d1b4b]/20 hover:bg-[#1a2d6b] transition-all duration-300 transform active:scale-[0.98]">
+                                <button @click="isCheckoutOpen = true; isCartOpen = false" x-bind:disabled="cart.length === 0" class="w-full theme-primary-bg disabled:bg-[#0d1b4b]/25 text-white font-black py-5 rounded-2xl shadow-xl shadow-[#0d1b4b]/20 theme-primary-bg-hover transition-all duration-300 transform active:scale-[0.98]">
                                     المتابعة لإنهاء الطلب
                                 </button>
                             </div>
@@ -369,21 +387,21 @@
 
                         <div class="space-y-6">
                             <div class="space-y-2">
-                                <label class="text-[10px] font-black text-[#a07c1e] uppercase tracking-[0.2em] px-1">الاسم الكامل</label>
+                                <label class="text-[10px] font-black theme-accent-text uppercase tracking-[0.2em] px-1">الاسم الكامل</label>
                                 <input type="text" name="buyer_name" required class="w-full bg-white border border-[#0d1b4b]/15 rounded-2xl px-5 py-4 text-[#0d1b4b] font-bold placeholder-[#0d1b4b]/30 focus:ring-2 focus:ring-[#d4af37]/25 transition" placeholder="محمد السوري">
                             </div>
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div class="space-y-2">
-                                    <label class="text-[10px] font-black text-[#a07c1e] uppercase tracking-[0.2em] px-1">رقم الهاتف</label>
+                                    <label class="text-[10px] font-black theme-accent-text uppercase tracking-[0.2em] px-1">رقم الهاتف</label>
                                     <input type="tel" name="buyer_phone" required dir="ltr" class="w-full bg-white border border-[#0d1b4b]/15 rounded-2xl px-5 py-4 text-[#0d1b4b] font-bold text-left placeholder-[#0d1b4b]/30 focus:ring-2 focus:ring-[#d4af37]/25 transition" placeholder="+963 --- ---">
                                 </div>
                                 <div class="space-y-2">
-                                    <label class="text-[10px] font-black text-[#a07c1e] uppercase tracking-[0.2em] px-1">البريد (اختياري)</label>
+                                    <label class="text-[10px] font-black theme-accent-text uppercase tracking-[0.2em] px-1">البريد (اختياري)</label>
                                     <input type="email" name="buyer_email" dir="ltr" class="w-full bg-white border border-[#0d1b4b]/15 rounded-2xl px-5 py-4 text-[#0d1b4b] font-bold text-left placeholder-[#0d1b4b]/30 focus:ring-2 focus:ring-[#d4af37]/25 transition" placeholder="mail@example.com">
                                 </div>
                             </div>
                             <div class="space-y-2">
-                                <label class="text-[10px] font-black text-[#a07c1e] uppercase tracking-[0.2em] px-1">عنوان التوصيل</label>
+                                <label class="text-[10px] font-black theme-accent-text uppercase tracking-[0.2em] px-1">عنوان التوصيل</label>
                                 <textarea name="buyer_address" required rows="3" class="w-full bg-white border border-[#0d1b4b]/15 rounded-2xl px-5 py-4 text-[#0d1b4b] font-bold placeholder-[#0d1b4b]/30 focus:ring-2 focus:ring-[#d4af37]/25 transition resize-none" placeholder="المحافظة، المنطقة، أقرب نقطة دالة..."></textarea>
                             </div>
                         </div>
@@ -395,12 +413,12 @@
                             </div>
                             <div class="flex justify-between items-center border-t border-[#0d1b4b]/10 pt-4">
                                 <span class="text-lg font-black text-[#0d1b4b]">المجموع</span>
-                                <span class="text-3xl font-black text-[#a07c1e]" x-text="number_format(finalTotal, 2) + ' ل.س'"></span>
+                                <span class="text-3xl font-black theme-accent-text" x-text="number_format(finalTotal, 2) + ' ل.س'"></span>
                             </div>
                         </div>
 
                         <div class="mt-8 flex flex-col gap-3">
-                            <button type="submit" class="w-full bg-[#0d1b4b] text-white font-black py-5 rounded-2xl shadow-2xl shadow-[#0d1b4b]/20 hover:bg-[#1a2d6b] transition-all transform active:scale-95">
+                            <button type="submit" class="w-full theme-primary-bg theme-primary-bg-hover text-white font-black py-5 rounded-2xl shadow-2xl shadow-[#0d1b4b]/20 transition-all transform active:scale-95">
                                 ✅ إرسال الطلب الآن
                             </button>
                             <button type="button" @click="isCheckoutOpen = false; isCartOpen = true" class="w-full text-[#0d1b4b]/45 font-bold py-3 hover:text-[#0d1b4b] transition">
