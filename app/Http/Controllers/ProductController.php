@@ -46,7 +46,7 @@ class ProductController extends Controller
 
         $imagePath = null;
         if ($request->hasFile('image')) {
-            $imagePath = $request->file('image')->store('products', 'public');
+            $imagePath = $request->file('image')->store('products');
         }
 
         $shop->products()->create([
@@ -85,9 +85,9 @@ class ProductController extends Controller
 
         if ($request->hasFile('image')) {
             if ($product->image_path) {
-                Storage::disk('public')->delete($product->image_path);
+                Storage::delete($product->image_path);
             }
-            $product->image_path = $request->file('image')->store('products', 'public');
+            $product->image_path = $request->file('image')->store('products');
         }
 
         $product->update([
@@ -107,7 +107,7 @@ class ProductController extends Controller
         Gate::authorize('manage', $product);
 
         if ($product->image_path) {
-            Storage::disk('public')->delete($product->image_path);
+            Storage::delete($product->image_path);
         }
 
         $product->delete();
@@ -136,7 +136,7 @@ class ProductController extends Controller
             $products = $productsQuery->get();
             foreach($products as $product) {
                 if ($product->image_path) {
-                    Storage::disk('public')->delete($product->image_path);
+                    Storage::delete($product->image_path);
                 }
                 $product->delete();
             }

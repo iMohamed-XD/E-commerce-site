@@ -97,7 +97,7 @@
                     <div class="flex items-center">
                         <div class="relative">
                             @if($shop->logo_path)
-                                <img src="{{ asset('storage/' . $shop->logo_path) }}" alt="{{ $shop->name }}" class="h-12 w-12 rounded-2xl object-cover border-2 theme-accent-border shadow-lg shadow-[#d4af37]/15">
+                                <img src="{{ Storage::url($shop->logo_path) }}" alt="{{ $shop->name }}" class="h-12 w-12 rounded-2xl object-cover border-2 theme-accent-border shadow-lg shadow-[#d4af37]/15">
                             @else
                                 <div class="h-12 w-12 rounded-2xl theme-primary-bg flex items-center justify-center text-white font-black text-xl shadow-lg">
                                     {{ mb_substr($shop->name, 0, 1) }}
@@ -126,7 +126,7 @@
         <!-- Hero Section -->
         <div class="relative overflow-hidden bg-gradient-to-b from-[#eef2ff] via-white to-[#fdfbf4] h-[400px] flex items-center justify-center">
             @if($shop->hero_image_path)
-                <img src="{{ asset('storage/' . $shop->hero_image_path) }}" class="absolute inset-0 w-full h-full object-cover">
+                <img src="{{ Storage::url($shop->hero_image_path) }}" class="absolute inset-0 w-full h-full object-cover">
                 <div class="absolute inset-0 theme-hero-overlay"></div>
             @else
                 <div class="absolute inset-0 theme-hero-ambient opacity-100"></div>
@@ -134,13 +134,13 @@
             @endif
 
             @if($shop->logo_path)
-                <img src="{{ asset('storage/' . $shop->logo_path) }}" class="logo-watermark">
+                <img src="{{ Storage::url($shop->logo_path) }}" class="logo-watermark">
             @endif
 
             <div class="relative z-10 max-w-4xl mx-auto text-center px-6">
                 <div class="mb-6 inline-block">
                     @if($shop->logo_path)
-                        <img src="{{ asset('storage/' . $shop->logo_path) }}" class="h-24 w-24 mx-auto rounded-3xl object-cover border-4 border-[#0d1b4b]/10 shadow-2xl backdrop-blur-sm">
+                        <img src="{{ Storage::url($shop->logo_path) }}" class="h-24 w-24 mx-auto rounded-3xl object-cover border-4 border-[#0d1b4b]/10 shadow-2xl backdrop-blur-sm">
                     @endif
                 </div>
                 <h2 class="text-4xl md:text-6xl font-black text-[#0d1b4b] mb-6 drop-shadow-sm">
@@ -220,7 +220,7 @@
 
                             <div class="relative w-full h-72 overflow-hidden bg-[#0d1b4b]/4">
                                 @if($product->image_path)
-                                    <img src="{{ asset('storage/' . $product->image_path) }}" alt="{{ $product->name }}" class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-[1.5s] ease-out">
+                                    <img src="{{ Storage::url($product->image_path) }}" alt="{{ $product->name }}" class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-[1.5s] ease-out">
                                 @else
                                     <div class="w-full h-full flex items-center justify-center text-[#0d1b4b]/35 bg-[#0d1b4b]/4">
                                         <svg class="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
@@ -247,7 +247,7 @@
                                     @endif
                                 </div>
 
-                                <button @click="addToCart({{ $product->id }}, '{{ addslashes($product->name) }}', {{ $currentPrice }}, '{{ $product->image_path ? asset('storage/' . $product->image_path) : '' }}')" 
+                                <button @click="addToCart({{ $product->id }}, '{{ addslashes($product->name) }}', {{ $currentPrice }}, '{{ $product->image_path ? Storage::url($product->image_path) : '' }}')" 
                                         class="mt-auto w-full group/btn relative overflow-hidden theme-primary-bg theme-primary-bg-hover text-white font-black py-4 px-6 rounded-2xl transition-all duration-300 flex items-center justify-center gap-3 shadow-xl">
                                     <svg class="w-5 h-5 transition-transform group-hover/btn:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
                                     <span>أضف للسلة</span>

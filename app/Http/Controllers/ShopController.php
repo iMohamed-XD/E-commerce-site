@@ -26,7 +26,7 @@ class ShopController extends Controller
 
         $logoPath = null;
         if ($request->hasFile('logo')) {
-            $logoPath = $request->file('logo')->store('shops/logos', 'public');
+            $logoPath = $request->file('logo')->store('shops/logos');
         } elseif ($request->filled('cropped_logo')) {
             $imageParts = explode(";base64,", $request->cropped_logo);
             if (count($imageParts) === 2) {
@@ -34,14 +34,14 @@ class ShopController extends Controller
                 $imageType = $imageTypeAux[1] ?? 'png';
                 $imageBase64 = base64_decode($imageParts[1]);
                 $filename = 'shops/logos/' . uniqid() . '.' . $imageType;
-                Storage::disk('public')->put($filename, $imageBase64);
+                Storage::put($filename, $imageBase64);
                 $logoPath = $filename;
             }
         }
 
         $heroImagePath = null;
         if ($request->hasFile('hero_image')) {
-            $heroImagePath = $request->file('hero_image')->store('shops/heroes', 'public');
+            $heroImagePath = $request->file('hero_image')->store('shops/heroes');
         }
 
         $shop = Shop::create([
@@ -207,12 +207,12 @@ class ShopController extends Controller
 
         if ($request->hasFile('logo')) {
             if ($shop->logo_path) {
-                Storage::disk('public')->delete($shop->logo_path);
+                Storage::delete($shop->logo_path);
             }
-            $shop->logo_path = $request->file('logo')->store('shops/logos', 'public');
+            $shop->logo_path = $request->file('logo')->store('shops/logos');
         } elseif ($request->filled('cropped_logo')) {
             if ($shop->logo_path) {
-                Storage::disk('public')->delete($shop->logo_path);
+                Storage::delete($shop->logo_path);
             }
             $imageParts = explode(";base64,", $request->cropped_logo);
             if (count($imageParts) === 2) {
@@ -220,16 +220,16 @@ class ShopController extends Controller
                 $imageType = $imageTypeAux[1] ?? 'png';
                 $imageBase64 = base64_decode($imageParts[1]);
                 $filename = 'shops/logos/' . uniqid() . '.' . $imageType;
-                Storage::disk('public')->put($filename, $imageBase64);
+                Storage::put($filename, $imageBase64);
                 $shop->logo_path = $filename;
             }
         }
 
         if ($request->hasFile('hero_image')) {
             if ($shop->hero_image_path) {
-                Storage::disk('public')->delete($shop->hero_image_path);
+                Storage::delete($shop->hero_image_path);
             }
-            $shop->hero_image_path = $request->file('hero_image')->store('shops/heroes', 'public');
+            $shop->hero_image_path = $request->file('hero_image')->store('shops/heroes');
         }
 
         $shop->save();

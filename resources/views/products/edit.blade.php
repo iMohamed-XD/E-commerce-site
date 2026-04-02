@@ -57,7 +57,7 @@
                             <x-input-label for="image" :value="__('تحديث صورة المنتج (اختياري)')" />
                             @if($product->image_path)
                                 <div class="mb-2">
-                                    <img src="{{ asset('storage/' . $product->image_path) }}" alt="" class="h-20 w-20 object-cover rounded-xl shadow border border-[#0d1b4b]/15">
+                                    <img src="{{ Storage::url($product->image_path) }}" alt="" class="h-20 w-20 object-cover rounded-xl shadow border border-[#0d1b4b]/15">
                                 </div>
                             @endif
                             <input id="image" class="block mt-1 w-full text-sm text-[#0d1b4b]/50 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border file:border-[#0d1b4b]/15 file:text-sm file:font-bold file:bg-white file:text-[#0d1b4b] hover:file:bg-[#fdfbf4]" type="file" name="image" accept="image/*" />
