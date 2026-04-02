@@ -8,6 +8,7 @@ RUN apt-get update && apt-get install -y \
     libxml2-dev \
     libzip-dev \
     libpq-dev \
+    libsqlite3-dev \
     zip \
     unzip \
     nodejs \
