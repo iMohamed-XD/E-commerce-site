@@ -21,6 +21,9 @@
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" class="text-sm font-medium transition-colors hover:text-[#0d1b4b] focus:text-[#0d1b4b] focus:outline-none focus:ring-2 focus:ring-[#d4af37]/40 rounded-md">
                         {{ __('لوحة التحكم') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('categories.index')" :active="request()->routeIs('categories.*')" class="text-sm font-medium transition-colors hover:text-[#0d1b4b] focus:text-[#0d1b4b] focus:outline-none focus:ring-2 focus:ring-[#d4af37]/40 rounded-md">
+                        {{ __('التصنيفات') }}
+                    </x-nav-link>
                     <x-nav-link :href="route('products.index')" :active="request()->routeIs('products.*')" class="text-sm font-medium transition-colors hover:text-[#0d1b4b] focus:text-[#0d1b4b] focus:outline-none focus:ring-2 focus:ring-[#d4af37]/40 rounded-md">
                         {{ __('المنتجات') }}
                     </x-nav-link>
@@ -103,6 +106,9 @@
         <div class="pt-2 pb-3 space-y-1">
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" class="text-right">
                 {{ __('لوحة التحكم') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('categories.index')" :active="request()->routeIs('categories.*')" class="text-right">
+                {{ __('التصنيفات') }}
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('products.index')" :active="request()->routeIs('products.*')" class="text-right">
                 {{ __('المنتجات') }}

@@ -162,9 +162,13 @@
                     {{-- ════════════════════════════════════════════════════ --}}
                     @php
                         $shop = auth()->user()->shop;
+                        $totalCategories = $shop->categories()->count();
                         $totalProducts = $shop->products()->count();
                         $totalOrders   = $shop->orders()->count();
                         $totalRevenue  = $shop->orders()->where('status', 'completed')->sum('total_amount');
+                        $needsCategoryOnboarding = $totalCategories === 0;
+                        $needsProductOnboarding = $totalProducts === 0;
+                        $showSellerOnboarding = $needsCategoryOnboarding || $needsProductOnboarding;
                     @endphp
 
                     {{-- Shop header --}}
@@ -185,6 +189,34 @@
                                 <span class="text-xs text-green-700 font-bold">متجر نشط</span>
                             </div>
                         </div>
+
+                        @if($showSellerOnboarding)
+                            <div class="mb-8 rounded-2xl border border-[#d4af37]/35 bg-[#fff9e8] p-5">
+                                <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                                    <div>
+                                        <p class="text-xs font-black uppercase tracking-widest text-[#a07c1e]">Seller Setup Guide</p>
+                                        <h4 class="mt-1 text-lg font-black text-[#0d1b4b]">Start here: Categories, then Products</h4>
+                                        <p class="mt-1 text-sm text-[#0d1b4b]/65">Create your categories first so products can be organized and easier for buyers to browse.</p>
+                                    </div>
+                                    <div class="flex flex-wrap gap-2">
+                                        <a href="{{ route('categories.index') }}" class="inline-flex items-center gap-2 rounded-xl bg-[#0d1b4b] px-4 py-2 text-sm font-bold text-white hover:bg-[#1a2d6b] transition-all">
+                                            {{ $needsCategoryOnboarding ? 'Create Categories' : 'Manage Categories' }}
+                                        </a>
+                                        <a href="{{ route('products.create') }}" class="inline-flex items-center gap-2 rounded-xl border border-[#0d1b4b]/20 bg-white px-4 py-2 text-sm font-bold text-[#0d1b4b] hover:bg-[#f8faff] transition-all">
+                                            {{ $needsProductOnboarding ? 'Add First Product' : 'Add Product' }}
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
+                                    <div class="rounded-xl border px-3 py-2 text-sm {{ $needsCategoryOnboarding ? 'border-amber-300 bg-amber-50 text-amber-900' : 'border-green-200 bg-green-50 text-green-800' }}">
+                                        {{ $needsCategoryOnboarding ? 'Step 1 pending: create at least one category.' : 'Step 1 complete: categories added.' }}
+                                    </div>
+                                    <div class="rounded-xl border px-3 py-2 text-sm {{ $needsProductOnboarding ? 'border-amber-300 bg-amber-50 text-amber-900' : 'border-green-200 bg-green-50 text-green-800' }}">
+                                        {{ $needsProductOnboarding ? 'Step 2 pending: add your first product.' : 'Step 2 complete: products added.' }}
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
 
                         {{-- Stats --}}
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
