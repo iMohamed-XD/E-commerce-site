@@ -23,6 +23,6 @@ class FAQSection extends Component
      */
     public function render(): View|Closure|string
     {
-        return view('components.f-a-q-section');
+        return view('components.faq-section');
     }
 }
