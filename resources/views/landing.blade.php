@@ -155,19 +155,18 @@
                 </div>
 
                 <h1 class="text-5xl md:text-8xl font-black text-[#0d1b4b] mb-8 leading-[1.1] tracking-tight">
-                    من الصفر إلى
-                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#d4af37] via-[#e8c84a] to-[#b8922a]">الاحترافية</span>
+                    أنشئ متجرك الإلكتروني
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#d4af37] via-[#e8c84a] to-[#b8922a]">وابدأ البيع خلال دقائق</span>
                 </h1>
 
                 <p class="text-xl md:text-2xl text-[#0d1b4b]/60 mb-12 max-w-3xl mx-auto leading-relaxed font-light">
-                    صممنا <span class="text-[#0d1b4b] font-bold">محلي</span> لنمنح مشروعك الهوية التي يستحقها.
-                    ابدأ الآن بإنشاء متجرك الخاص واستقبل طلباتك بواجهات فاخرة وأدوات ذكية.
+                    لا تحتاج خبرة تقنية، ولا فريق إدارة، مع <span class="text-[#0d1b4b] font-bold">محلي</span> كلشيء جاهز لك لتبدأ وتربح من اليوم الأول
                 </p>
 
                 <div class="flex flex-col sm:flex-row items-center justify-center gap-6">
                     <a href="{{ route('register') }}"
                        class="group relative w-full sm:w-auto px-10 py-5 bg-[#d4af37] text-[#0d1b4b] text-xl font-black rounded-2xl hover:bg-[#c5a02e] transition-all duration-300 shadow-2xl shadow-[#d4af37]/30 overflow-hidden">
-                        <span class="relative z-10">افتح متجرك الآن</span>
+                        <span class="relative z-10">أنشئ متجرك الآن</span>
                         <div class="absolute inset-0 bg-white/20 translate-y-12 group-hover:translate-y-0 transition-transform duration-300"></div>
                     </a>
 
