@@ -194,25 +194,25 @@
                             <div class="mb-8 rounded-2xl border border-[#d4af37]/35 bg-[#fff9e8] p-5">
                                 <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                                     <div>
-                                        <p class="text-xs font-black uppercase tracking-widest text-[#a07c1e]">Seller Setup Guide</p>
-                                        <h4 class="mt-1 text-lg font-black text-[#0d1b4b]">Start here: Categories, then Products</h4>
-                                        <p class="mt-1 text-sm text-[#0d1b4b]/65">Create your categories first so products can be organized and easier for buyers to browse.</p>
+                                        <p class="text-xs font-black uppercase tracking-widest text-[#a07c1e]">دليل إعداد المتجر</p>
+                                        <h4 class="mt-1 text-lg font-black text-[#0d1b4b]">ابدأ من هنا: التصنيفات ثم المنتجات</h4>
+                                        <p class="mt-1 text-sm text-[#0d1b4b]/65">أنشئ التصنيفات أولاً حتى تظهر منتجاتك بشكل منظم وأسهل للتصفح.</p>
                                     </div>
                                     <div class="flex flex-wrap gap-2">
                                         <a href="{{ route('categories.index') }}" class="inline-flex items-center gap-2 rounded-xl bg-[#0d1b4b] px-4 py-2 text-sm font-bold text-white hover:bg-[#1a2d6b] transition-all">
-                                            {{ $needsCategoryOnboarding ? 'Create Categories' : 'Manage Categories' }}
+                                            {{ $needsCategoryOnboarding ? 'إنشاء التصنيفات' : 'إدارة التصنيفات' }}
                                         </a>
                                         <a href="{{ route('products.create') }}" class="inline-flex items-center gap-2 rounded-xl border border-[#0d1b4b]/20 bg-white px-4 py-2 text-sm font-bold text-[#0d1b4b] hover:bg-[#f8faff] transition-all">
-                                            {{ $needsProductOnboarding ? 'Add First Product' : 'Add Product' }}
+                                            {{ $needsProductOnboarding ? 'إضافة أول منتج' : 'إضافة منتج' }}
                                         </a>
                                     </div>
                                 </div>
                                 <div class="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
                                     <div class="rounded-xl border px-3 py-2 text-sm {{ $needsCategoryOnboarding ? 'border-amber-300 bg-amber-50 text-amber-900' : 'border-green-200 bg-green-50 text-green-800' }}">
-                                        {{ $needsCategoryOnboarding ? 'Step 1 pending: create at least one category.' : 'Step 1 complete: categories added.' }}
+                                        {{ $needsCategoryOnboarding ? 'الخطوة 1: أنشئ تصنيفًا واحدًا على الأقل.' : 'الخطوة 1 مكتملة: تم إضافة التصنيفات.' }}
                                     </div>
                                     <div class="rounded-xl border px-3 py-2 text-sm {{ $needsProductOnboarding ? 'border-amber-300 bg-amber-50 text-amber-900' : 'border-green-200 bg-green-50 text-green-800' }}">
-                                        {{ $needsProductOnboarding ? 'Step 2 pending: add your first product.' : 'Step 2 complete: products added.' }}
+                                        {{ $needsProductOnboarding ? 'الخطوة 2: أضف أول منتج في متجرك.' : 'الخطوة 2 مكتملة: تم إضافة المنتجات.' }}
                                     </div>
                                 </div>
                             </div>
