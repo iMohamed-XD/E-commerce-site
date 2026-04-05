@@ -58,7 +58,7 @@
                 <h3 class="text-xl font-bold text-[#0d1b4b] mb-3">الدردشة المباشرة</h3>
                 <p class="text-[#0d1b4b]/50 text-sm mb-6">احصل على مساعدة فورية من فريقنا.</p>
 
-                <a href="https://wa.me/message/JDYLWDNU6PXQA1"><button class="px-6 py-2.5 rounded-xl bg-[#d4af37] text-[#0d1b4b] font-black hover:bg-[#c5a02e] transition shadow-md shadow-[#d4af37]/20">
+                <a href="https://wa.me/message/JDYLWDNU6PXQA1" target="_blank"><button class="px-6 py-2.5 rounded-xl bg-[#d4af37] text-[#0d1b4b] font-black hover:bg-[#c5a02e] transition shadow-md shadow-[#d4af37]/20">
                     ابدأ المحادثة
                 </button></a>
             </div>
