@@ -301,7 +301,7 @@
                                             <div class="w-3 h-3 rounded-full bg-green-400/60"></div>
                                         </div>
                                         <div class="flex-1 mx-3 px-3 py-1 rounded-md bg-white border border-[#0d1b4b]/8 flex items-center">
-                                            <span class="text-[#0d1b4b]/40 text-xs font-mono">mahly.com/register</span>
+                                            <span class="text-[#0d1b4b]/40 text-xs font-mono">mahly.org/register</span>
                                         </div>
                                     </div>
                                     <img src="{{ asset('images/register_form.png') }}"
@@ -451,7 +451,7 @@
                                             <div class="w-3 h-3 rounded-full bg-green-400/60"></div>
                                         </div>
                                         <div class="flex-1 mx-3 px-3 py-1 rounded-md bg-white border border-[#0d1b4b]/8 flex items-center">
-                                            <span class="text-[#0d1b4b]/40 text-xs font-mono">mahly.com/products/create</span>
+                                            <span class="text-[#0d1b4b]/40 text-xs font-mono">mahly.org/products/create</span>
                                         </div>
                                     </div>
                                     <img src="{{ asset('images/product_adding_form.png') }}"

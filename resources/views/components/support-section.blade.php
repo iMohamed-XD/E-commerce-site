@@ -41,7 +41,7 @@
 
                 <a href="mailto:support@mahly.com"
                    class="inline-block px-6 py-2.5 rounded-xl bg-[#0d1b4b] text-white font-bold hover:bg-[#1a2d6b] transition shadow-md shadow-[#0d1b4b]/15">
-                    support@mahly.com
+                    support@mahly.org
                 </a>
             </div>
 
