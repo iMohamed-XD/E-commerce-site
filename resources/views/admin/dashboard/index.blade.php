@@ -18,7 +18,7 @@
                     </div>
                     <div>
                         <p class="text-sm font-bold text-[#0d1b4b]/50">إجمالي المتاجر</p>
-                        <h3 class="text-3xl font-black text-[#0d1b4b] mt-1">{{ number_format($stats['total_shops'] ?? 0) }}</h3>
+                        <h3 class="text-3xl font-black text-[#0d1b4b] mt-1">{{ number_format($shopsCount ?? 0) }}</h3>
                     </div>
                 </div>
 
@@ -29,7 +29,7 @@
                     </div>
                     <div>
                         <p class="text-sm font-bold text-[#0d1b4b]/50">إجمالي البائعين</p>
-                        <h3 class="text-3xl font-black text-[#0d1b4b] mt-1">{{ number_format($stats['total_users'] ?? 0) }}</h3>
+                        <h3 class="text-3xl font-black text-[#0d1b4b] mt-1">{{ number_format($sellersCount ?? 0) }}</h3>
                     </div>
                 </div>
 
@@ -40,7 +40,7 @@
                     </div>
                     <div>
                         <p class="text-sm font-bold text-[#0d1b4b]/50">متوسط التقييم</p>
-                        <h3 class="text-3xl font-black text-[#0d1b4b] mt-1">{{ number_format($stats['avg_feedback'] ?? 0, 1) }} <span class="text-sm font-medium text-[#0d1b4b]/40">/ 5.0</span></h3>
+                        <h3 class="text-3xl font-black text-[#0d1b4b] mt-1">{{ number_format($averageRating ?? 0, 1) }} <span class="text-sm font-medium text-[#0d1b4b]/40">/ 5.0</span></h3>
                     </div>
                 </div>
             </div>
@@ -97,7 +97,7 @@
                                         </div>
                                         <span class="text-xs text-[#0d1b4b]/40">{{ $feedback->created_at->diffForHumans() }}</span>
                                     </div>
-                                    <p class="text-sm font-bold text-[#0d1b4b]">{{ $feedback->user->name }} - {{ $feedback->shop->name ?? 'البائع' }}</p>
+                                    <p class="text-sm font-bold text-[#0d1b4b]">{{ $feedback->user->name ?? 'مجهول' }} - {{ $feedback->user->shop->name ?? 'البائع' }}</p>
                                     @if($feedback->comments)
                                         <p class="text-sm text-[#0d1b4b]/60 mt-1 line-clamp-2">{{ $feedback->comments }}</p>
                                     @endif
