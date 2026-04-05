@@ -1,247 +1,301 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="rtl">
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="csrf-token" content="{{ csrf_token() }}">
-        <title>{{ $product->name }} | {{ $shop->name }}</title>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>{{ $product->name }} | {{ $shop->name }}</title>
 
-        <!-- Fonts -->
-        <link rel="preconnect" href="https://fonts.googleapis.com">
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
-        
-        <style>
-            body { font-family: 'Tajawal', sans-serif !important; }
-            [x-cloak] { display: none !important; }
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
 
-            :root {
-                --shop-primary: {{ $shop->color_hex }};
-                --shop-primary-hover: color-mix(in srgb, {{ $shop->color_hex }} 85%, black);
-                --shop-accent: #d4af37;
-                --shop-accent-soft: #fdfbf4;
-            }
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 
-            .theme-primary-bg { background-color: var(--shop-primary) !important; }
-            .theme-primary-bg-hover:hover { background-color: var(--shop-primary-hover) !important; }
-            .theme-primary-text { color: var(--shop-primary) !important; }
-            .theme-accent-text { color: var(--shop-accent) !important; }
-            .theme-accent-soft-bg { background-color: var(--shop-accent-soft) !important; }
-            .theme-accent-border { border-color: color-mix(in srgb, var(--shop-accent) 45%, transparent) !important; }
+    <style>
+        body { font-family: 'Tajawal', sans-serif !important; }
 
-            .thumbnail-active {
-                ring: 2px;
-                ring-color: var(--shop-accent);
-                border-color: transparent !important;
-                box-shadow: 0 0 0 2px var(--shop-accent);
-            }
-            .thumbnail-inactive {
-                border-color: rgba(13,27,75,0.1);
-            }
-            .thumbnail-inactive:hover {
-                border-color: rgba(212,175,55,0.5);
-            }
+        :root {
+            --shop-primary: {{ $shop->color_hex }};
+            --shop-primary-hover: color-mix(in srgb, {{ $shop->color_hex }} 85%, black);
+            --shop-accent: #d4af37;
+        }
 
-            @keyframes cart-pulse {
-                0%   { transform: scale(1); }
-                50%  { transform: scale(1.06); }
-                100% { transform: scale(1); }
-            }
-            .animate-cart-pulse { animation: cart-pulse 0.4s ease-in-out; }
+        .theme-primary-bg  { background-color: var(--shop-primary) !important; }
+        .theme-accent-text { color: var(--shop-accent) !important; }
+        .theme-accent-border { border-color: color-mix(in srgb, var(--shop-accent) 45%, transparent) !important; }
 
-            @keyframes slide-up {
-                from { opacity: 0; transform: translateY(8px); }
-                to   { opacity: 1; transform: translateY(0); }
-            }
-            .animate-slide-up { animation: slide-up 0.35s ease-out forwards; }
-        </style>
+        /* ---- Slider ---- */
+        #main-image {
+            transition: opacity 0.25s ease, transform 0.25s ease;
+        }
+        #main-image.is-switching {
+            opacity: 0;
+            transform: scale(0.97);
+        }
 
-        @vite(['resources/css/app.css', 'resources/js/app.js'])
-    </head>
-    <body class="theme-primary-text antialiased bg-[#fdfbf4]">
-        
-        <!-- ===== Toast ===== -->
-        <div id="cart-toast"
-             class="fixed bottom-8 left-8 z-[100] theme-primary-bg text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 font-bold opacity-0 pointer-events-none transition-opacity duration-300">
-            <svg class="w-6 h-6 border-2 border-white rounded-full p-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
-            </svg>
-            <span>تمت الإضافة للسلة! جاري التحويل…</span>
+        .thumb-btn {
+            border: 2px solid rgba(13,27,75,0.12);
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .thumb-btn:hover {
+            border-color: rgba(212,175,55,0.55);
+        }
+        .thumb-btn.active {
+            border-color: transparent;
+            box-shadow: 0 0 0 2.5px var(--shop-accent);
+        }
+
+        /* ---- Toast ---- */
+        #cart-toast {
+            position: fixed;
+            bottom: 2rem;
+            left: 2rem;
+            z-index: 999;
+            background: var(--shop-primary);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 1rem;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            box-shadow: 0 20px 40px rgba(13,27,75,0.25);
+            transform: translateY(120%);
+            opacity: 0;
+            transition: transform 0.35s cubic-bezier(.22,.68,0,1.2), opacity 0.3s ease;
+            pointer-events: none;
+        }
+        #cart-toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    </style>
+</head>
+<body class="antialiased bg-[#fdfbf4]" style="color: var(--shop-primary);">
+
+    <!-- Toast -->
+    <div id="cart-toast">
+        <svg style="width:1.4rem;height:1.4rem;border:2px solid white;border-radius:50%;padding:2px;flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+        </svg>
+        <span>تمت الإضافة! جاري التوجيه للمتجر…</span>
+    </div>
+
+    <!-- Navbar -->
+    <nav style="background:rgba(255,255,255,0.88);backdrop-filter:blur(12px);" class="border-b border-[#0d1b4b]/10 sticky top-0 z-40 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center h-20">
+                <a href="{{ route('shop.show', $shop->slug) }}" class="flex items-center gap-3 group">
+                    <div class="p-2 rounded-xl bg-gray-50 border border-[#0d1b4b]/10 group-hover:border-[#0d1b4b]/25 transition">
+                        <svg class="w-5 h-5 text-[#0d1b4b]/55 group-hover:text-[#0d1b4b]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                        </svg>
+                    </div>
+                    @if($shop->logo_path)
+                        <img src="{{ Storage::url($shop->logo_path) }}" alt="{{ $shop->name }}"
+                             class="h-11 w-11 rounded-2xl object-cover border-2 shadow-md"
+                             style="border-color: color-mix(in srgb, var(--shop-accent) 45%, transparent);">
+                    @else
+                        <div class="h-11 w-11 rounded-2xl theme-primary-bg flex items-center justify-center text-white font-black text-xl shadow-md">
+                            {{ mb_substr($shop->name, 0, 1) }}
+                        </div>
+                    @endif
+                    <div>
+                        <p class="text-lg font-black text-[#0d1b4b]">{{ $shop->name }}</p>
+                        <span class="text-[10px] font-bold tracking-widest uppercase theme-accent-text">محلي ستور</span>
+                    </div>
+                </a>
+            </div>
         </div>
+    </nav>
 
-        <!-- ===== Navbar ===== -->
-        <nav class="bg-white/85 backdrop-blur-md border-b border-[#0d1b4b]/10 sticky top-0 z-40 transition-all duration-300 shadow-sm">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex justify-between h-20">
-                    <div class="flex items-center">
-                        <a href="{{ route('shop.show', $shop->slug) }}" class="flex items-center group">
-                            <div class="ml-4 p-2 rounded-xl bg-gray-50 border border-[#0d1b4b]/10 group-hover:border-[#0d1b4b]/20 transition">
-                                <!-- RTL: right arrow means "go back" -->
-                                <svg class="w-5 h-5 text-[#0d1b4b]/60 group-hover:text-[#0d1b4b]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-                                </svg>
+    <!-- Main -->
+    <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div class="bg-white rounded-[3rem] shadow-2xl shadow-[#0d1b4b]/5 p-8 lg:p-12 border border-[#0d1b4b]/5">
+            <div class="flex flex-col lg:flex-row gap-12">
+
+                <!-- ===== IMAGE PANEL ===== -->
+                @php
+                    $hasImages = count($images) > 0;
+                    $currentPrice = $product->hasActiveDiscount() ? $product->effectivePrice() : $product->price;
+                @endphp
+
+                <div class="w-full lg:w-1/2 flex flex-col gap-4">
+                    @if($hasImages)
+                        <!-- Main viewer -->
+                        <div class="w-full h-96 lg:h-[32rem] rounded-3xl overflow-hidden bg-[#0d1b4b]/5 border border-[#0d1b4b]/10 shadow-inner flex items-center justify-center p-4">
+                            <img id="main-image"
+                                 src="{{ $images[0] }}"
+                                 alt="{{ $product->name }}"
+                                 class="w-full h-full object-contain">
+                        </div>
+
+                        <!-- Thumbnails -->
+                        @if(count($images) > 1)
+                            <div class="flex gap-3 overflow-x-auto pb-2" style="scrollbar-width:none;">
+                                @foreach($images as $i => $img)
+                                    <button type="button"
+                                            class="thumb-btn {{ $i === 0 ? 'active' : '' }} w-20 h-20 rounded-2xl flex-shrink-0 overflow-hidden bg-[#0d1b4b]/5"
+                                            data-index="{{ $i }}"
+                                            data-src="{{ $img }}"
+                                            onclick="selectThumb(this)">
+                                        <img src="{{ $img }}" alt="صورة {{ $i + 1 }}" class="w-full h-full object-cover pointer-events-none">
+                                    </button>
+                                @endforeach
                             </div>
-                            <div class="relative">
-                                @if($shop->logo_path)
-                                    <img src="{{ Storage::url($shop->logo_path) }}" alt="{{ $shop->name }}" class="h-12 w-12 rounded-2xl object-cover border-2 theme-accent-border shadow-lg shadow-[#d4af37]/15">
-                                @else
-                                    <div class="h-12 w-12 rounded-2xl theme-primary-bg flex items-center justify-center text-white font-black text-xl shadow-lg">
-                                        {{ mb_substr($shop->name, 0, 1) }}
+                        @endif
+                    @else
+                        <div class="w-full h-96 lg:h-[32rem] rounded-3xl overflow-hidden bg-[#0d1b4b]/5 border border-[#0d1b4b]/10 shadow-inner flex items-center justify-center text-[#0d1b4b]/30">
+                            <svg class="w-24 h-24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                            </svg>
+                        </div>
+                    @endif
+                </div>
+
+                <!-- ===== DETAIL PANEL ===== -->
+                <div class="w-full lg:w-1/2 flex flex-col justify-between">
+                    <div>
+                        @if($product->category)
+                            <span class="theme-accent-text text-xs font-black uppercase tracking-widest mb-3 block">{{ $product->category->name }}</span>
+                        @endif
+
+                        <h1 class="text-3xl lg:text-5xl font-black text-[#0d1b4b] mb-6 leading-tight">{{ $product->name }}</h1>
+
+                        <!-- Price -->
+                        <div class="mb-8">
+                            @if($product->hasActiveDiscount())
+                                <div class="flex items-center gap-4">
+                                    <span class="text-4xl font-black text-[#0d1b4b]">
+                                        {{ number_format($product->effectivePrice(), 2) }}
+                                        <span class="text-base font-medium text-[#0d1b4b]/45">ل.س</span>
+                                    </span>
+                                    <div class="flex flex-col">
+                                        <span class="line-through text-[#0d1b4b]/35 text-lg">{{ number_format($product->price, 0) }}</span>
+                                        <span class="text-red-500 font-bold text-xs uppercase tracking-widest">وفر {{ number_format($product->discount_percent, 0) }}%</span>
                                     </div>
-                                @endif
-                            </div>
-                            <div class="mx-4">
-                                <h1 class="text-xl font-black text-[#0d1b4b] tracking-tight">{{ $shop->name }}</h1>
-                                <span class="text-[10px] theme-accent-text font-bold tracking-widest uppercase">محلي ستور</span>
-                            </div>
+                                </div>
+                            @else
+                                <span class="text-4xl font-black text-[#0d1b4b]">
+                                    {{ number_format($product->price, 2) }}
+                                    <span class="text-base font-medium text-[#0d1b4b]/45">ل.س</span>
+                                </span>
+                            @endif
+                        </div>
+
+                        <!-- Description -->
+                        <div class="text-[#0d1b4b]/70 font-medium text-lg leading-relaxed border-t border-b border-[#0d1b4b]/8 py-6 mb-8">
+                            {{ $product->description ?? 'لا يوجد وصف متاح لهذا المنتج حالياً.' }}
+                        </div>
+                    </div>
+
+                    <!-- CTA Buttons -->
+                    <div class="flex flex-col gap-3">
+                        <!-- Add to Cart -->
+                        <button id="add-to-cart-btn"
+                                type="button"
+                                onclick="addProductToCart()"
+                                class="w-full text-white font-black py-5 px-6 rounded-2xl shadow-2xl transition-all text-lg flex justify-center items-center gap-3"
+                                style="background-color:var(--shop-primary);">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+                            </svg>
+                            أضف للسلة
+                        </button>
+
+                        <!-- Go Back -->
+                        <a href="{{ route('shop.show', $shop->slug) }}"
+                           class="w-full bg-white border-2 border-[#0d1b4b]/10 hover:border-[#0d1b4b]/25 text-[#0d1b4b]/60 hover:text-[#0d1b4b] font-bold py-4 px-6 rounded-2xl transition-all text-lg flex justify-center items-center gap-3">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                            </svg>
+                            العودة للمتجر
                         </a>
                     </div>
                 </div>
-            </div>
-        </nav>
 
-        <!-- ===== Main ===== -->
-        <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-            <div class="bg-white rounded-[3rem] shadow-2xl shadow-[#0d1b4b]/5 p-8 lg:p-12 border border-[#0d1b4b]/5">
+            </div><!-- /flex row -->
+        </div>
+    </main>
 
-                {{-- Pass images as a JSON array so Alpine can compare by index cleanly --}}
-                @php
-                    $imagesJson = json_encode($images);
-                    $currentPrice = $product->hasActiveDiscount() ? $product->effectivePrice() : $product->price;
-                    $mainImageUrl = count($images) > 0 ? $images[0] : '';
-                @endphp
+    <!-- ===== PURE VANILLA JS ===== -->
+    <script>
+        /* ---------- Slider ---------- */
+        var mainImg = document.getElementById('main-image');
 
-                <div class="flex flex-col lg:flex-row gap-12"
-                     x-data="{
-                         images: {{ $imagesJson }},
-                         activeIndex: 0,
-                         get mainImage() { return this.images[this.activeIndex] ?? ''; },
-                         cartAdded: false,
-                         addToCart() {
-                             const shopSlug  = '{{ $shop->slug }}';
-                             const storageKey = 'mahly_cart_' + shopSlug;
-                             let cart = [];
-                             try { cart = JSON.parse(localStorage.getItem(storageKey)) || []; } catch(e) {}
+        function selectThumb(btn) {
+            // Deactivate all thumbs
+            document.querySelectorAll('.thumb-btn').forEach(function(b) {
+                b.classList.remove('active');
+            });
+            btn.classList.add('active');
 
-                             const id    = {{ $product->id }};
-                             const name  = @js($product->name);
-                             const price = {{ $currentPrice }};
-                             const image = '{{ $mainImageUrl }}';
+            var newSrc = btn.getAttribute('data-src');
+            if (!mainImg || !newSrc) return;
 
-                             const existing = cart.find(i => i.id === id);
-                             if (existing) {
-                                 existing.quantity += 1;
-                             } else {
-                                 cart.push({ id, name, price, image, quantity: 1 });
-                             }
-                             localStorage.setItem(storageKey, JSON.stringify(cart));
+            // Fade out → swap src → fade in
+            mainImg.style.opacity  = '0';
+            mainImg.style.transform = 'scale(0.97)';
 
-                             // Show toast then redirect
-                             const toast = document.getElementById('cart-toast');
-                             toast.classList.remove('opacity-0','pointer-events-none');
-                             toast.classList.add('opacity-100');
-                             setTimeout(() => {
-                                 window.location.href = '{{ route('shop.show', $shop->slug) }}';
-                             }, 1200);
-                         }
-                     }">
+            setTimeout(function() {
+                mainImg.src = newSrc;
+                mainImg.style.transition = 'none';   // instant set
+                mainImg.style.opacity   = '0';
+                mainImg.style.transform = 'scale(0.97)';
 
-                    <!-- ===== Image Panel ===== -->
-                    <div class="w-full lg:w-1/2 flex flex-col gap-4">
-                        @if(count($images) > 0)
-                            <!-- Main image -->
-                            <div class="w-full h-96 lg:h-[32rem] rounded-3xl overflow-hidden bg-[#0d1b4b]/5 border border-[#0d1b4b]/10 shadow-inner group">
-                                <template x-if="mainImage">
-                                    <img :src="mainImage"
-                                         :key="activeIndex"
-                                         alt="{{ $product->name }}"
-                                         class="w-full h-full object-contain p-4 transition-all duration-500 group-hover:scale-105 animate-slide-up">
-                                </template>
-                            </div>
+                // Force reflow then animate in
+                mainImg.getBoundingClientRect();
+                mainImg.style.transition = 'opacity 0.25s ease, transform 0.25s ease';
+                mainImg.style.opacity   = '1';
+                mainImg.style.transform = 'scale(1)';
+            }, 200);
+        }
 
-                            <!-- Thumbnails -->
-                            @if(count($images) > 1)
-                                <div class="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
-                                    @foreach($images as $i => $img)
-                                        <button type="button"
-                                                @click="activeIndex = {{ $i }}"
-                                                @mouseover="activeIndex = {{ $i }}"
-                                                :class="activeIndex === {{ $i }} ? 'thumbnail-active' : 'thumbnail-inactive'"
-                                                class="w-20 h-20 rounded-2xl border-2 flex-shrink-0 overflow-hidden transition-all bg-[#0d1b4b]/5">
-                                            <img src="{{ $img }}" alt="صورة {{ $i + 1 }}" class="w-full h-full object-cover">
-                                        </button>
-                                    @endforeach
-                                </div>
-                            @endif
-                        @else
-                            <div class="w-full h-96 lg:h-[32rem] rounded-3xl overflow-hidden bg-[#0d1b4b]/5 border border-[#0d1b4b]/10 shadow-inner flex items-center justify-center text-[#0d1b4b]/30">
-                                <svg class="w-24 h-24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                            </div>
-                        @endif
-                    </div>
+        /* ---------- Cart ---------- */
+        var SHOP_SLUG     = @json($shop->slug);
+        var STORAGE_KEY   = 'mahly_cart_' + SHOP_SLUG;
+        var SHOP_URL      = @json(route('shop.show', $shop->slug));
+        var PRODUCT_ID    = {{ $product->id }};
+        var PRODUCT_NAME  = @json($product->name);
+        var PRODUCT_PRICE = {{ $currentPrice }};
+        var PRODUCT_IMG   = @json($hasImages ? $images[0] : '');
 
-                    <!-- ===== Details Panel ===== -->
-                    <div class="w-full lg:w-1/2 flex flex-col justify-between">
-                        <div>
-                            @if($product->category)
-                                <span class="theme-accent-text text-xs font-black uppercase tracking-widest mb-3 block">{{ $product->category->name }}</span>
-                            @endif
-                            <h1 class="text-3xl lg:text-5xl font-black text-[#0d1b4b] mb-6 leading-tight">{{ $product->name }}</h1>
+        function addProductToCart() {
+            var btn = document.getElementById('add-to-cart-btn');
+            btn.disabled = true;
+            btn.style.opacity = '0.7';
 
-                            <!-- Price -->
-                            <div class="mb-8">
-                                @if($product->hasActiveDiscount())
-                                    <div class="flex items-center gap-4">
-                                        <span class="text-4xl font-black text-[#0d1b4b]">
-                                            {{ number_format($product->effectivePrice(), 2) }}
-                                            <span class="text-lg font-medium text-[#0d1b4b]/45">ل.س</span>
-                                        </span>
-                                        <div class="flex flex-col">
-                                            <span class="line-through text-[#0d1b4b]/35 text-lg">{{ number_format($product->price, 0) }}</span>
-                                            <span class="text-red-500 font-bold text-xs uppercase tracking-widest mt-0.5">وفر {{ number_format($product->discount_percent, 0) }}%</span>
-                                        </div>
-                                    </div>
-                                @else
-                                    <span class="text-4xl font-black text-[#0d1b4b]">
-                                        {{ number_format($product->price, 2) }}
-                                        <span class="text-lg font-medium text-[#0d1b4b]/45">ل.س</span>
-                                    </span>
-                                @endif
-                            </div>
+            // Read cart
+            var cart = [];
+            try { cart = JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch(e) {}
 
-                            <!-- Description -->
-                            <div class="prose prose-lg text-[#0d1b4b]/70 font-medium mb-10 leading-relaxed border-t border-b border-[#0d1b4b]/5 py-6">
-                                {{ $product->description ?? 'لا يوجد وصف متاح لهذا المنتج حالياً.' }}
-                            </div>
-                        </div>
+            // Add / increment
+            var existing = cart.find(function(i) { return i.id === PRODUCT_ID; });
+            if (existing) {
+                existing.quantity += 1;
+            } else {
+                cart.push({
+                    id:       PRODUCT_ID,
+                    name:     PRODUCT_NAME,
+                    price:    PRODUCT_PRICE,
+                    image:    PRODUCT_IMG,
+                    quantity: 1
+                });
+            }
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(cart));
 
-                        <!-- ===== CTA Buttons ===== -->
-                        <div class="flex flex-col gap-3 mt-4">
-                            <!-- Add to Cart -->
-                            <button type="button"
-                                    @click="addToCart()"
-                                    :disabled="cartAdded"
-                                    class="w-full theme-primary-bg theme-primary-bg-hover text-white font-black py-5 px-6 rounded-2xl shadow-2xl shadow-[#0d1b4b]/20 transition-all text-lg flex justify-center items-center gap-3 disabled:opacity-60">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
-                                </svg>
-                                أضف للسلة
-                            </button>
+            // Show toast
+            var toast = document.getElementById('cart-toast');
+            toast.classList.add('show');
 
-                            <!-- Go Back -->
-                            <a href="{{ route('shop.show', $shop->slug) }}"
-                               class="w-full bg-white border-2 border-[#0d1b4b]/12 hover:border-[#0d1b4b]/30 text-[#0d1b4b]/65 hover:text-[#0d1b4b] font-bold py-4 px-6 rounded-2xl transition-all text-lg flex justify-center items-center gap-3">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
-                                </svg>
-                                العودة للمتجر
-                            </a>
-                        </div>
-                    </div>
+            // Redirect after brief pause
+            setTimeout(function() {
+                window.location.href = SHOP_URL;
+            }, 1300);
+        }
+    </script>
 
-                </div><!-- /flex -->
-            </div>
-        </main>
-
-    </body>
+</body>
 </html>
