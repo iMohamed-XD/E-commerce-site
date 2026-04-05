@@ -734,11 +734,11 @@
 
             <!-- Trust bar -->
             <div class="mt-20 pt-10 border-t border-[#0d1b4b]/8 flex flex-col sm:flex-row items-center justify-center gap-10 text-center">
-                <div><p class="text-4xl font-black text-[#0d1b4b] mb-1">+1,200</p><p class="text-[#0d1b4b]/45 text-sm">بائع نشط</p></div>
+                <div><p class="text-4xl font-black text-[#0d1b4b] mb-1">+{{ number_format($sellersCount) }}</p><p class="text-[#0d1b4b]/45 text-sm">بائع نشط</p></div>
                 <div class="hidden sm:block w-px h-12 bg-[#0d1b4b]/10"></div>
-                <div><p class="text-4xl font-black text-[#0d1b4b] mb-1">+45,000</p><p class="text-[#0d1b4b]/45 text-sm">طلب مكتمل</p></div>
+                <div><p class="text-4xl font-black text-[#0d1b4b] mb-1">+{{ number_format($ordersCount) }}</p><p class="text-[#0d1b4b]/45 text-sm">طلب مكتمل</p></div>
                 <div class="hidden sm:block w-px h-12 bg-[#0d1b4b]/10"></div>
-                <div><p class="text-4xl font-black text-[#d4af37] mb-1">4.9 / 5</p><p class="text-[#0d1b4b]/45 text-sm">متوسط التقييم</p></div>
+                <div><p class="text-4xl font-black text-[#d4af37] mb-1">{{ number_format($avgRating, 1) }} / 5</p><p class="text-[#0d1b4b]/45 text-sm">متوسط التقييم</p></div>
             </div>
         </div>
     </section>
