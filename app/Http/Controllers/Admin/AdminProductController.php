@@ -19,9 +19,9 @@ class AdminProductController extends Controller
     public function destroy(Product $product)
     {
         if ($product->image_path) {
-            \Illuminate\Support\Facades\Storage::disk('media')->delete($product->image_path);
+            \Illuminate\Support\Facades\Storage::delete($product->image_path);
         }
-        \Illuminate\Support\Facades\Storage::disk('media')->deleteDirectory("products/{$product->id}");
+        \Illuminate\Support\Facades\Storage::deleteDirectory("products/{$product->id}");
 
         $product->delete();
 
