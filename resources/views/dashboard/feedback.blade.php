@@ -43,9 +43,9 @@
                         </div>
 
                         <div>
-                            <x-input-label for="comments" value="ملاحظاتك ومقترحاتك (اختياري)" />
-                            <textarea id="comments" name="comments" rows="5" class="mt-2 w-full border-[#0d1b4b]/20 focus:border-[#d4af37] focus:ring-[#d4af37] rounded-xl shadow-sm text-sm p-4">{{ old('comments', $feedback->comments ?? '') }}</textarea>
-                            <x-input-error :messages="$errors->get('comments')" class="mt-2" />
+                            <x-input-label for="content" value="ملاحظاتك ومقترحاتك (اختياري)" />
+                            <textarea id="content" name="content" rows="5" class="mt-2 w-full border-[#0d1b4b]/20 focus:border-[#d4af37] focus:ring-[#d4af37] rounded-xl shadow-sm text-sm p-4">{{ old('content', $feedback->content ?? '') }}</textarea>
+                            <x-input-error :messages="$errors->get('content')" class="mt-2" />
                         </div>
 
                         <div class="flex items-center justify-end">

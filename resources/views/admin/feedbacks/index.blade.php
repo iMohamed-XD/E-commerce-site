@@ -39,8 +39,8 @@
                                 @endfor
                             </div>
                         </div>
-                        @if($feedback->comments)
-                            <p class="mt-3 text-[#0d1b4b]/70 font-medium leading-relaxed">{{ $feedback->comments }}</p>
+                        @if($feedback->content)
+                            <p class="mt-3 text-[#0d1b4b]/70 font-medium leading-relaxed">{{ $feedback->content }}</p>
                         @endif
                     </div>
                 @empty

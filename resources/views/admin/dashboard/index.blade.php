@@ -98,8 +98,8 @@
                                         <span class="text-xs text-[#0d1b4b]/40">{{ $feedback->created_at->diffForHumans() }}</span>
                                     </div>
                                     <p class="text-sm font-bold text-[#0d1b4b]">{{ $feedback->user->name ?? 'مجهول' }} - {{ $feedback->user->shop->name ?? 'البائع' }}</p>
-                                    @if($feedback->comments)
-                                        <p class="text-sm text-[#0d1b4b]/60 mt-1 line-clamp-2">{{ $feedback->comments }}</p>
+                                    @if($feedback->content)
+                                        <p class="text-sm text-[#0d1b4b]/60 mt-1 line-clamp-2">{{ $feedback->content }}</p>
                                     @endif
                                 </div>
                             @endforeach

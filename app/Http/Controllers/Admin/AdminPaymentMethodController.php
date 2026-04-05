@@ -14,6 +14,11 @@ class AdminPaymentMethodController extends Controller
         $paymentMethods = PaymentMethod::orderBy('sort_order')->get();
         return view('admin.payment-methods.index', compact('paymentMethods'));
     }
+    
+    public function create()
+    {
+        return view('admin.payment-methods.create');
+    }
 
     public function store(Request $request)
     {
@@ -41,6 +46,11 @@ class AdminPaymentMethodController extends Controller
         PaymentMethod::create($data);
 
         return redirect()->route('admin.payment-methods.index')->with('success', 'تم إضافة طريقة الدفع بنجاح');
+    }
+
+    public function edit(PaymentMethod $pm)
+    {
+        return view('admin.payment-methods.edit', compact('pm'));
     }
 
     public function update(Request $request, PaymentMethod $pm)

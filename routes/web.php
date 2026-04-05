@@ -110,7 +110,9 @@ Route::prefix('admin')
 
     // Payment Methods
     Route::get('/payment-methods', [\App\Http\Controllers\Admin\AdminPaymentMethodController::class, 'index'])->name('payment-methods.index');
+    Route::get('/payment-methods/create', [\App\Http\Controllers\Admin\AdminPaymentMethodController::class, 'create'])->name('payment-methods.create');
     Route::post('/payment-methods', [\App\Http\Controllers\Admin\AdminPaymentMethodController::class, 'store'])->name('payment-methods.store');
+    Route::get('/payment-methods/{pm}/edit', [\App\Http\Controllers\Admin\AdminPaymentMethodController::class, 'edit'])->name('payment-methods.edit');
     Route::patch('/payment-methods/{pm}', [\App\Http\Controllers\Admin\AdminPaymentMethodController::class, 'update'])->name('payment-methods.update');
     Route::delete('/payment-methods/{pm}', [\App\Http\Controllers\Admin\AdminPaymentMethodController::class, 'destroy'])->name('payment-methods.destroy');
 });

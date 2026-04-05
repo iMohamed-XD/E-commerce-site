@@ -52,11 +52,14 @@
                                         @endif
                                     </td>
                                     <td class="py-4 px-4 text-center">
-                                        <form method="POST" action="{{ route('admin.payment-methods.destroy', $pm) }}" onsubmit="return confirm('هل أنت متأكد من حذف طريقة الدفع هذه؟');">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="text-red-500 hover:text-red-700 font-bold px-3 py-1 bg-red-50 hover:bg-red-100 rounded-lg transition">حذف</button>
-                                        </form>
+                                        <div class="flex items-center justify-center gap-3">
+                                            <a href="{{ route('admin.payment-methods.edit', $pm) }}" class="text-[#d4af37] hover:text-[#b8922a] font-bold px-3 py-1 bg-[#fdfbf4] border border-[#d4af37]/20 rounded-lg transition">تعديل</a>
+                                            <form method="POST" action="{{ route('admin.payment-methods.destroy', $pm) }}" onsubmit="return confirm('هل أنت متأكد من حذف طريقة الدفع هذه؟');">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="text-red-500 hover:text-red-700 font-bold px-3 py-1 bg-red-50 hover:bg-red-100 rounded-lg transition">حذف</button>
+                                            </form>
+                                        </div>
                                     </td>
                                 </tr>
                             @empty
