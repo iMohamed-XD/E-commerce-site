@@ -129,8 +129,8 @@ class ProductController extends Controller
                 $oldImg->delete();
             }
 
-            $sort = clone $product->productImages()->orderByDesc('sort_order')->first()?->sort_order ?? 0;
-            $sort = $sort > 0 ? $sort + 1 : 0;
+            $sort = $product->productImages()->orderByDesc('sort_order')->first()?->sort_order ?? 0;
+            $sort = $sort >= 0 && $product->productImages()->count() > 0 ? $sort + 1 : 0;
             
             foreach ($request->file('secondary_images') as $file) {
                 $path = $file->store("products/{$product->id}/secondary", 'media');
