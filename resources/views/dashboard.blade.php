@@ -109,8 +109,8 @@
                                 </div>
 
                                 <x-shop-theme-picker
-                                    name="theme"
-                                    :selected="old('theme', \App\Models\Shop::DEFAULT_THEME)"
+                                    name="color"
+                                    :selected="old('color', 'navy')"
                                 />
 
                                 {{-- Logo with Cropper --}}
@@ -372,8 +372,8 @@
                                 </div>
 
                                 <x-shop-theme-picker
-                                    name="theme"
-                                    :selected="old('theme', $shop->theme ?? \App\Models\Shop::DEFAULT_THEME)"
+                                    name="color"
+                                    :selected="old('color', $shop->color ?? 'navy')"
                                 />
 
                                 <div>

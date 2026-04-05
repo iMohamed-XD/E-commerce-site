@@ -1,6 +1,3 @@
-@php
-    $theme = $theme ?? \App\Models\Shop::resolveTheme($shop->theme ?? null);
-@endphp
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="rtl">
     <head>
@@ -19,10 +16,10 @@
             [x-cloak] { display: none !important; }
 
             :root {
-                --shop-primary: {{ $theme['primary'] }};
-                --shop-primary-hover: {{ $theme['primary_hover'] }};
-                --shop-accent: {{ $theme['accent'] }};
-                --shop-accent-soft: {{ $theme['accent_soft'] }};
+                --shop-primary: {{ $shop->color_hex }};
+                --shop-primary-hover: color-mix(in srgb, {{ $shop->color_hex }} 85%, black);
+                --shop-accent: #d4af37;
+                --shop-accent-soft: #fdfbf4;
             }
 
             .theme-primary-bg { background-color: var(--shop-primary) !important; }

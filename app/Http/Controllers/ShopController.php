@@ -21,7 +21,7 @@ class ShopController extends Controller
             'description' => 'nullable|string',
             'logo' => 'nullable|image|max:2048',
             'hero_image' => 'nullable|image|max:4096',
-            'theme' => ['required', 'string', Rule::in(Shop::themeKeys())],
+            'color' => ['required', 'string', Rule::in(array_keys(config('shop_colors', ['navy' => []])))],
         ]);
 
         $logoPath = null;
@@ -51,7 +51,7 @@ class ShopController extends Controller
             'description' => $request->description,
             'logo_path' => $logoPath,
             'hero_image_path' => $heroImagePath,
-            'theme' => $request->input('theme', Shop::DEFAULT_THEME),
+            'color' => $request->input('color', 'navy'),
         ]);
 
         return redirect()->route('dashboard')->with('success', 'تم إنشاء متجرك بنجاح!');
@@ -197,13 +197,13 @@ class ShopController extends Controller
             'description' => 'nullable|string',
             'logo' => 'nullable|image|max:2048',
             'hero_image' => 'nullable|image|max:4096',
-            'theme' => ['required', 'string', Rule::in(Shop::themeKeys())],
+            'color' => ['required', 'string', Rule::in(array_keys(config('shop_colors', ['navy' => []])))],
         ]);
 
         $shop->name = $request->name;
         $shop->slug = $request->slug;
         $shop->description = $request->description;
-        $shop->theme = $request->input('theme', Shop::DEFAULT_THEME);
+        $shop->color = $request->input('color', 'navy');
 
         if ($request->hasFile('logo')) {
             if ($shop->logo_path) {

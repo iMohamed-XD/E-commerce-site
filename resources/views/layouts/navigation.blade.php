@@ -18,21 +18,32 @@
 
                 <!-- Navigation Links -->
                 <div class="hidden space-x-8 space-x-reverse sm:-my-px sm:ms-10 sm:flex">
-                    <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" class="text-sm font-medium transition-colors hover:text-[#0d1b4b] focus:text-[#0d1b4b] focus:outline-none focus:ring-2 focus:ring-[#d4af37]/40 rounded-md">
-                        {{ __('لوحة التحكم') }}
-                    </x-nav-link>
-                    <x-nav-link :href="route('categories.index')" :active="request()->routeIs('categories.*')" class="text-sm font-medium transition-colors hover:text-[#0d1b4b] focus:text-[#0d1b4b] focus:outline-none focus:ring-2 focus:ring-[#d4af37]/40 rounded-md">
-                        {{ __('التصنيفات') }}
-                    </x-nav-link>
-                    <x-nav-link :href="route('products.index')" :active="request()->routeIs('products.*')" class="text-sm font-medium transition-colors hover:text-[#0d1b4b] focus:text-[#0d1b4b] focus:outline-none focus:ring-2 focus:ring-[#d4af37]/40 rounded-md">
-                        {{ __('المنتجات') }}
-                    </x-nav-link>
-                    <x-nav-link :href="route('orders.index')" :active="request()->routeIs('orders.*')" class="text-sm font-medium transition-colors hover:text-[#0d1b4b] focus:text-[#0d1b4b] focus:outline-none focus:ring-2 focus:ring-[#d4af37]/40 rounded-md">
-                        {{ __('الطلبات') }}
-                    </x-nav-link>
-                    <x-nav-link :href="route('promo-codes.index')" :active="request()->routeIs('promo-codes.*')" class="text-sm font-medium transition-colors hover:text-[#0d1b4b] focus:text-[#0d1b4b] focus:outline-none focus:ring-2 focus:ring-[#d4af37]/40 rounded-md">
-                        {{ __('أكواد الخصم') }}
-                    </x-nav-link>
+                    @if(Auth::user()->role === 'admin')
+                        <x-nav-link :href="route('admin.dashboard.index')" :active="request()->routeIs('admin.*')" class="text-sm font-black transition-colors hover:text-[#d4af37] focus:text-[#d4af37] focus:outline-none focus:ring-2 focus:ring-[#d4af37]/40 rounded-md">
+                            {{ __('إدارة المنصة') }}
+                        </x-nav-link>
+                    @endif
+
+                    @if(Auth::user()->role === 'seller')
+                        <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" class="text-sm font-medium transition-colors hover:text-[#0d1b4b] focus:text-[#0d1b4b] focus:outline-none focus:ring-2 focus:ring-[#d4af37]/40 rounded-md">
+                            {{ __('لوحة التحكم') }}
+                        </x-nav-link>
+                        <x-nav-link :href="route('categories.index')" :active="request()->routeIs('categories.*')" class="text-sm font-medium transition-colors hover:text-[#0d1b4b] focus:text-[#0d1b4b] focus:outline-none focus:ring-2 focus:ring-[#d4af37]/40 rounded-md">
+                            {{ __('التصنيفات') }}
+                        </x-nav-link>
+                        <x-nav-link :href="route('products.index')" :active="request()->routeIs('products.*')" class="text-sm font-medium transition-colors hover:text-[#0d1b4b] focus:text-[#0d1b4b] focus:outline-none focus:ring-2 focus:ring-[#d4af37]/40 rounded-md">
+                            {{ __('المنتجات') }}
+                        </x-nav-link>
+                        <x-nav-link :href="route('orders.index')" :active="request()->routeIs('orders.*')" class="text-sm font-medium transition-colors hover:text-[#0d1b4b] focus:text-[#0d1b4b] focus:outline-none focus:ring-2 focus:ring-[#d4af37]/40 rounded-md">
+                            {{ __('الطلبات') }}
+                        </x-nav-link>
+                        <x-nav-link :href="route('promo-codes.index')" :active="request()->routeIs('promo-codes.*')" class="text-sm font-medium transition-colors hover:text-[#0d1b4b] focus:text-[#0d1b4b] focus:outline-none focus:ring-2 focus:ring-[#d4af37]/40 rounded-md">
+                            {{ __('أكواد الخصم') }}
+                        </x-nav-link>
+                        <x-nav-link :href="route('dashboard.feedback')" :active="request()->routeIs('feedback.*')" class="text-sm font-medium transition-colors hover:text-[#0d1b4b] focus:text-[#0d1b4b] focus:outline-none focus:ring-2 focus:ring-[#d4af37]/40 rounded-md">
+                            {{ __('تقييم المنصة') }}
+                        </x-nav-link>
+                    @endif
                 </div>
             </div>
 
@@ -104,21 +115,32 @@
     <!-- Responsive Navigation Menu -->
     <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden bg-white/95 border-t border-[#0d1b4b]/10 backdrop-blur-md">
         <div class="pt-2 pb-3 space-y-1">
-            <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" class="text-right">
-                {{ __('لوحة التحكم') }}
-            </x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('categories.index')" :active="request()->routeIs('categories.*')" class="text-right">
-                {{ __('التصنيفات') }}
-            </x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('products.index')" :active="request()->routeIs('products.*')" class="text-right">
-                {{ __('المنتجات') }}
-            </x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('orders.index')" :active="request()->routeIs('orders.*')" class="text-right">
-                {{ __('الطلبات') }}
-            </x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('promo-codes.index')" :active="request()->routeIs('promo-codes.*')" class="text-right">
-                {{ __('أكواد الخصم') }}
-            </x-responsive-nav-link>
+            @if(Auth::user()->role === 'admin')
+                <x-responsive-nav-link :href="route('admin.dashboard.index')" :active="request()->routeIs('admin.*')" class="text-right font-black text-[#d4af37]">
+                    {{ __('إدارة المنصة') }}
+                </x-responsive-nav-link>
+            @endif
+
+            @if(Auth::user()->role === 'seller')
+                <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" class="text-right">
+                    {{ __('لوحة التحكم') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('categories.index')" :active="request()->routeIs('categories.*')" class="text-right">
+                    {{ __('التصنيفات') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('products.index')" :active="request()->routeIs('products.*')" class="text-right">
+                    {{ __('المنتجات') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('orders.index')" :active="request()->routeIs('orders.*')" class="text-right">
+                    {{ __('الطلبات') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('promo-codes.index')" :active="request()->routeIs('promo-codes.*')" class="text-right">
+                    {{ __('أكواد الخصم') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('dashboard.feedback')" :active="request()->routeIs('feedback.*')" class="text-right">
+                    {{ __('تقييم المنصة') }}
+                </x-responsive-nav-link>
+            @endif
         </div>
 
         <!-- Responsive Settings Options -->

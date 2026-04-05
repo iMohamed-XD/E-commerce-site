@@ -54,7 +54,7 @@
                         </div>
 
                         <div>
-                            <x-input-label for="image" :value="__('تحديث صورة المنتج (اختياري)')" />
+                            <x-input-label for="image" :value="__('تحديث الصورة الأساسية للمنتج (اختياري)')" />
                             @if($product->image_path)
                                 <div class="mb-2">
                                     <img src="{{ Storage::url($product->image_path) }}" alt="" class="h-20 w-20 object-cover rounded-xl shadow border border-[#0d1b4b]/15">
@@ -62,6 +62,29 @@
                             @endif
                             <input id="image" class="block mt-1 w-full text-sm text-[#0d1b4b]/50 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border file:border-[#0d1b4b]/15 file:text-sm file:font-bold file:bg-white file:text-[#0d1b4b] hover:file:bg-[#fdfbf4]" type="file" name="image" accept="image/*" />
                             <x-input-error :messages="$errors->get('image')" class="mt-2" />
+                        </div>
+
+                        <div>
+                            <x-input-label for="secondary_images" :value="__('صور إضافية للمنتج (حد أقصى 3 صور، حدد لاستبدال الصور الحالية)')" />
+                            @if($product->productImages->count() > 0)
+                                <div class="mb-2 flex gap-2">
+                                    @foreach($product->productImages as $pi)
+                                        <div class="relative">
+                                            <img src="{{ Storage::url($pi->path) }}" alt="" class="h-16 w-16 object-cover rounded-xl shadow border border-[#0d1b4b]/15">
+                                        </div>
+                                    @endforeach
+                                </div>
+                                <p class="text-xs text-amber-600 mb-2 font-bold">رفع صور جديدة هنا سيقوم بحذف الصور الإضافية السابقة واستبدالها.</p>
+                            @endif
+                            <input id="secondary_images" multiple class="block mt-1 w-full text-sm text-[#0d1b4b]/50 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border file:border-[#0d1b4b]/15 file:text-sm file:font-bold file:bg-white file:text-[#0d1b4b] hover:file:bg-[#fdfbf4]" type="file" name="secondary_images[]" accept="image/*" />
+                            <x-input-error :messages="$errors->get('secondary_images')" class="mt-2" />
+                            @if($errors->has('secondary_images.*'))
+                                @foreach($errors->get('secondary_images.*') as $errorMsg)
+                                    @foreach((array)$errorMsg as $err)
+                                        <p class="text-sm text-red-600 mt-2">{{ $err }}</p>
+                                    @endforeach
+                                @endforeach
+                            @endif
                         </div>
 
                         <!-- Discount Section -->

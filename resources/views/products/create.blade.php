@@ -53,9 +53,22 @@
                         </div>
 
                         <div>
-                            <x-input-label for="image" :value="__('صورة المنتج')" />
+                            <x-input-label for="image" :value="__('الصورة الأساسية للمنتج')" />
                             <input id="image" class="block mt-1 w-full text-sm text-[#0d1b4b]/50 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border file:border-[#0d1b4b]/15 file:text-sm file:font-bold file:bg-white file:text-[#0d1b4b] hover:file:bg-[#fdfbf4]" type="file" name="image" accept="image/*" />
                             <x-input-error :messages="$errors->get('image')" class="mt-2" />
+                        </div>
+
+                        <div>
+                            <x-input-label for="secondary_images" :value="__('صور إضافية للمنتج (حد أقصى 3 صور، حجم الصورة 2MB)')" />
+                            <input id="secondary_images" multiple class="block mt-1 w-full text-sm text-[#0d1b4b]/50 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border file:border-[#0d1b4b]/15 file:text-sm file:font-bold file:bg-white file:text-[#0d1b4b] hover:file:bg-[#fdfbf4]" type="file" name="secondary_images[]" accept="image/*" />
+                            <x-input-error :messages="$errors->get('secondary_images')" class="mt-2" />
+                            @if($errors->has('secondary_images.*'))
+                                @foreach($errors->get('secondary_images.*') as $errorMsg)
+                                    @foreach((array)$errorMsg as $err)
+                                        <p class="text-sm text-red-600 mt-2">{{ $err }}</p>
+                                    @endforeach
+                                @endforeach
+                            @endif
                         </div>
 
                         <!-- Discount Section -->

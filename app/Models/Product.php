@@ -49,4 +49,21 @@ class Product extends Model
     {
         return $this->belongsTo(Shop::class);
     }
+
+    public function productImages()
+    {
+        return $this->hasMany(ProductImage::class)->orderBy('sort_order');
+    }
+
+    public function allImages(): array
+    {
+        $paths = [];
+        if ($this->image_path) {
+            $paths[] = $this->image_path;
+        }
+        foreach ($this->productImages as $img) {
+            $paths[] = $img->path;
+        }
+        return array_slice($paths, 0, 4);
+    }
 }

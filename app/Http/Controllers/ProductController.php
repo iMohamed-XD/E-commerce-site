@@ -35,21 +35,23 @@ class ProductController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'category_id' => 'nullable|exists:categories,id', // Changed from 'category' to 'category_id'
+            'category_id' => 'nullable|exists:categories,id',
             'description' => 'nullable|string',
             'price' => 'required|numeric|min:0',
             'image' => 'nullable|image|max:2048',
             'discount_percent' => 'nullable|numeric|min:0|max:100',
+            'secondary_images' => 'nullable|array|max:3',
+            'secondary_images.*' => 'nullable|image|mimes:jpeg,png,webp|max:2048',
         ]);
 
         $shop = Auth::user()->shop;
 
         $imagePath = null;
         if ($request->hasFile('image')) {
-            $imagePath = $request->file('image')->store('products');
+            $imagePath = $request->file('image')->store('products', 'media');
         }
 
-        $shop->products()->create([
+        $product = $shop->products()->create([
             'name' => $request->name,
             'category_id' => $request->category_id,
             'description' => $request->description,
@@ -59,6 +61,17 @@ class ProductController extends Controller
             'discount_percent' => $request->discount_percent ?: null,
             'discount_active' => $request->filled('discount_percent'),
         ]);
+
+        if ($request->hasFile('secondary_images')) {
+            $sort = 0;
+            foreach($request->file('secondary_images') as $file) {
+                $path = $file->store("products/{$product->id}/secondary", 'media');
+                $product->productImages()->create([
+                    'path' => $path,
+                    'sort_order' => $sort++
+                ]);
+            }
+        }
 
         return redirect()->route('products.index')->with('success', 'تمت إضافة المنتج بنجاح!');
     }
@@ -76,18 +89,28 @@ class ProductController extends Controller
 
         $request->validate([
             'name' => 'required|string|max:255',
-            'category_id' => 'nullable|exists:categories,id', // Changed from 'category' to 'category_id'
+            'category_id' => 'nullable|exists:categories,id',
             'description' => 'nullable|string',
             'price' => 'required|numeric|min:0',
             'image' => 'nullable|image|max:2048',
             'discount_percent' => 'nullable|numeric|min:0|max:100',
+            'secondary_images' => 'nullable|array',
+            'secondary_images.*' => 'nullable|image|mimes:jpeg,png,webp|max:2048',
         ]);
+
+        $currentImagesCount = $product->productImages()->count();
+        if ($request->hasFile('secondary_images')) {
+            $newFilesCount = count($request->file('secondary_images'));
+            if (($currentImagesCount + $newFilesCount) > 3) {
+                return back()->withErrors(['secondary_images' => 'لا يمكنك رفع أكثر من 3 صور إضافية.']);
+            }
+        }
 
         if ($request->hasFile('image')) {
             if ($product->image_path) {
-                Storage::delete($product->image_path);
+                Storage::disk('media')->delete($product->image_path);
             }
-            $product->image_path = $request->file('image')->store('products');
+            $product->image_path = $request->file('image')->store('products', 'media');
         }
 
         $product->update([
@@ -99,6 +122,25 @@ class ProductController extends Controller
             'discount_percent' => $request->discount_percent ?: null,
         ]);
 
+        if ($request->hasFile('secondary_images')) {
+            // Delete old secondary images if replacing (as per the info text "رفع صور جديدة هنا سيقوم بحذف الصور الإضافية السابقة واستبدالها.")
+            foreach($product->productImages as $oldImg) {
+                Storage::disk('media')->delete($oldImg->path);
+                $oldImg->delete();
+            }
+
+            $sort = clone $product->productImages()->orderByDesc('sort_order')->first()?->sort_order ?? 0;
+            $sort = $sort > 0 ? $sort + 1 : 0;
+            
+            foreach ($request->file('secondary_images') as $file) {
+                $path = $file->store("products/{$product->id}/secondary", 'media');
+                $product->productImages()->create([
+                    'path' => $path,
+                    'sort_order' => $sort++
+                ]);
+            }
+        }
+
         return redirect()->route('products.index')->with('success', 'تم تعديل المنتج بنجاح!');
     }
 
@@ -107,12 +149,24 @@ class ProductController extends Controller
         Gate::authorize('manage', $product);
 
         if ($product->image_path) {
-            Storage::delete($product->image_path);
+            Storage::disk('media')->delete($product->image_path);
         }
+        Storage::disk('media')->deleteDirectory("products/{$product->id}");
 
         $product->delete();
 
         return redirect()->route('products.index')->with('success', 'تم حذف المنتج بنجاح!');
+    }
+
+    public function destroyImage(Product $product, \App\Models\ProductImage $image)
+    {
+        Gate::authorize('manage', $product);
+        if ($image->product_id !== $product->id) {
+            abort(404);
+        }
+        Storage::disk('media')->delete($image->path);
+        $image->delete();
+        return response()->json(['success' => true]);
     }
 
     public function bulkAction(Request $request)
@@ -136,8 +190,9 @@ class ProductController extends Controller
             $products = $productsQuery->get();
             foreach($products as $product) {
                 if ($product->image_path) {
-                    Storage::delete($product->image_path);
+                    Storage::disk('media')->delete($product->image_path);
                 }
+                Storage::disk('media')->deleteDirectory("products/{$product->id}");
                 $product->delete();
             }
             return redirect()->route('products.index')->with('success', 'تم حذف المنتجات المحددة بنجاح.');

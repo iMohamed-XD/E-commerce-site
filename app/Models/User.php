@@ -59,4 +59,9 @@ class User extends Authenticatable
     {
         return $this->role === 'seller';
     }
+
+    public function feedback()
+    {
+        return $this->hasOne(Feedback::class);
+    }
 }
