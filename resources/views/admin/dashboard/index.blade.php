@@ -69,7 +69,7 @@
                         <a href="{{ route('admin.payment-methods.index') }}" class="group block p-4 rounded-2xl bg-[#0d1b4b]/5 border border-[#0d1b4b]/10 hover:border-[#d4af37]/40 hover:shadow-lg transition">
                             <span class="block text-[#0d1b4b] font-bold group-hover:text-[#d4af37] transition">طرق الدفع للدعم</span>
                         </a>
-                        <a href="{{ route('admin.feedback.index') }}" class="group block p-4 rounded-2xl bg-[#0d1b4b]/5 border border-[#0d1b4b]/10 hover:border-[#d4af37]/40 hover:shadow-lg transition">
+                        <a href="{{ route('admin.feedbacks.index') }}" class="group block p-4 rounded-2xl bg-[#0d1b4b]/5 border border-[#0d1b4b]/10 hover:border-[#d4af37]/40 hover:shadow-lg transition">
                             <span class="block text-[#0d1b4b] font-bold group-hover:text-[#d4af37] transition">التقييمات</span>
                         </a>
                     </div>
@@ -82,7 +82,7 @@
                             <svg class="w-6 h-6 text-[#d4af37]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"></path></svg>
                             أحدث التقييمات
                         </h3>
-                        <a href="{{ route('admin.feedback.index') }}" class="text-sm font-bold text-[#d4af37] hover:text-[#b8922a]">عرض الكل</a>
+                        <a href="{{ route('admin.feedbacks.index') }}" class="text-sm font-bold text-[#d4af37] hover:text-[#b8922a]">عرض الكل</a>
                     </div>
                     
                     @if(isset($recentFeedbacks) && $recentFeedbacks->count() > 0)
