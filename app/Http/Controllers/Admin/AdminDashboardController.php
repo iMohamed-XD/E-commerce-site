@@ -25,7 +25,7 @@ class AdminDashboardController extends Controller
             ->take(10)
             ->get();
 
-        return view('admin.dashboard', compact(
+        return view('admin.dashboard.index', compact(
             'sellersCount', 'shopsCount', 'productsCount',
             'feedbacksCount', 'averageRating', 'recentFeedbacks'
         ));
