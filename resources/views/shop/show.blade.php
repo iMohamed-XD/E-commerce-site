@@ -269,7 +269,13 @@
                     </div>
                 </div>
                 <p class="text-[#0d1b4b]/45 text-sm">جميع الحقوق محفوظة &copy; {{ date('Y') }} {{ $shop->name }}</p>
-                <p class="text-[10px] text-[#0d1b4b]/35 mt-2 uppercase tracking-[0.2em]">بواسطة محلي للتجارة الإلكترونية</p>
+                <div class="mt-6">
+                    <a href="{{ route('support.index') }}" class="inline-flex items-center gap-2 px-6 py-3 bg-pink-500 hover:bg-pink-600 text-white font-black rounded-2xl transition-all shadow-lg shadow-pink-500/20 active:scale-95">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"/></svg>
+                        <span>ادعم منصة محلي</span>
+                    </a>
+                </div>
+                <p class="text-[10px] text-[#0d1b4b]/35 mt-4 uppercase tracking-[0.2em]">بواسطة محلي للتجارة الإلكترونية</p>
             </div>
         </footer>
 

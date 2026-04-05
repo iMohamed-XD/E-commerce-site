@@ -762,7 +762,11 @@
                             </span>
                         </div>
                     </div>
-                    <p class="text-white/40 leading-relaxed">المنصة الشريكة لكل بائع وبائعة يبحثون عن التميز والفرادة في عالم التجارة الرقمية.</p>
+                    <p class="text-white/40 leading-relaxed mb-8">المنصة الشريكة لكل بائع وبائعة يبحثون عن التميز والفرادة في عالم التجارة الرقمية.</p>
+                    <a href="{{ route('support.index') }}" class="inline-flex items-center gap-2 px-8 py-4 bg-pink-500 hover:bg-pink-600 text-white font-black rounded-2xl transition-all shadow-2xl shadow-pink-500/40 active:scale-95 text-lg">
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"/></svg>
+                        <span>ادعم استمرار مشروعنا</span>
+                    </a>
                 </div>
                 <div class="grid grid-cols-2 sm:grid-cols-3 gap-12 sm:gap-24">
                     <div>
