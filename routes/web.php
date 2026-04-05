@@ -62,7 +62,7 @@ Route::get('/support', [\App\Http\Controllers\SupportController::class, 'index']
 
 // Public Storefront Routes with Rate Limiting (MUST be after check-slug)
 Route::get('/shop/{slug}', [\App\Http\Controllers\ShopController::class, 'show'])->name('shop.show');
-Route::get('/shops/{shop}/products/{product}', [\App\Http\Controllers\BuyerProductController::class, 'show'])->name('buyer.product.show');
+Route::get('/shops/{shop:slug}/products/{product}', [\App\Http\Controllers\BuyerProductController::class, 'show'])->name('buyer.product.show');
 
 Route::post('/shop/{slug}/checkout', [\App\Http\Controllers\ShopController::class, 'checkout'])
     ->middleware('throttle:5,1')
