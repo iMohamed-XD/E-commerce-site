@@ -172,15 +172,15 @@
                 </div>
                 
                 @if($categories->count() > 0)
-                <div class="flex flex-wrap gap-2" x-data="{ activeCategory: 'all' }">
-                    <button @click="activeCategory = 'all'; $dispatch('filter-category', 'all')" 
-                            :class="activeCategory === 'all' ? 'theme-primary-bg text-white shadow-[#0d1b4b]/20' : 'bg-white text-[#0d1b4b]/60 border border-[#0d1b4b]/15 hover:bg-[#fdfbf4]'"
+                <div class="flex flex-wrap gap-2">
+                    <button @click="currentFilter = 'all'"
+                            :class="currentFilter === 'all' ? 'theme-primary-bg text-white shadow-[#0d1b4b]/20' : 'bg-white text-[#0d1b4b]/60 border border-[#0d1b4b]/15 hover:bg-[#fdfbf4]'"
                             class="px-5 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 shadow-sm border border-transparent">
                         الكل
                     </button>
                     @foreach($categories as $cat)
-                    <button @click="activeCategory = '{{ $cat->id }}'; $dispatch('filter-category', '{{ $cat->id }}')"
-                            :class="activeCategory === '{{ $cat->id }}' ? 'bg-[#0d1b4b] text-white shadow-[#0d1b4b]/20' : 'bg-white text-[#0d1b4b]/60 border border-[#0d1b4b]/15 hover:bg-[#fdfbf4]'"
+                    <button @click="currentFilter = '{{ $cat->id }}'"
+                            :class="currentFilter === '{{ $cat->id }}' ? 'bg-[#0d1b4b] text-white shadow-[#0d1b4b]/20' : 'bg-white text-[#0d1b4b]/60 border border-[#0d1b4b]/15 hover:bg-[#fdfbf4]'"
                             class="px-5 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 shadow-sm border border-transparent">
                         {{ $cat->name }}
                     </button>
@@ -197,7 +197,7 @@
                     <p class="text-[#0d1b4b]/45 text-xl font-bold">لا توجد منتجات حالياً.</p>
                 </div>
             @else
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8" x-data="{ currentFilter: 'all' }" @filter-category.window="currentFilter = $event.detail">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
                     @foreach($shop->products as $product)
                         @php
                             $isDiscounted = $product->hasActiveDiscount();
@@ -440,6 +440,7 @@
                 Alpine.data('shoppingCart', (shopSlug) => ({
                     isCartOpen: false,
                     isCheckoutOpen: false,
+                    currentFilter: 'all',
                     cart: [],
                     promoInput: '',
                     promoApplied: false,

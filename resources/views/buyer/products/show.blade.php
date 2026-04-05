@@ -28,26 +28,58 @@
             .theme-accent-text { color: var(--shop-accent) !important; }
             .theme-accent-soft-bg { background-color: var(--shop-accent-soft) !important; }
             .theme-accent-border { border-color: color-mix(in srgb, var(--shop-accent) 45%, transparent) !important; }
-            
-            .hero-glass {
-                background: rgba(255, 255, 255, 0.78);
-                backdrop-filter: blur(12px);
-                border: 1px solid color-mix(in srgb, var(--shop-primary) 14%, transparent);
+
+            .thumbnail-active {
+                ring: 2px;
+                ring-color: var(--shop-accent);
+                border-color: transparent !important;
+                box-shadow: 0 0 0 2px var(--shop-accent);
             }
+            .thumbnail-inactive {
+                border-color: rgba(13,27,75,0.1);
+            }
+            .thumbnail-inactive:hover {
+                border-color: rgba(212,175,55,0.5);
+            }
+
+            @keyframes cart-pulse {
+                0%   { transform: scale(1); }
+                50%  { transform: scale(1.06); }
+                100% { transform: scale(1); }
+            }
+            .animate-cart-pulse { animation: cart-pulse 0.4s ease-in-out; }
+
+            @keyframes slide-up {
+                from { opacity: 0; transform: translateY(8px); }
+                to   { opacity: 1; transform: translateY(0); }
+            }
+            .animate-slide-up { animation: slide-up 0.35s ease-out forwards; }
         </style>
 
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
     <body class="theme-primary-text antialiased bg-[#fdfbf4]">
         
-        <!-- Navbar -->
+        <!-- ===== Toast ===== -->
+        <div id="cart-toast"
+             class="fixed bottom-8 left-8 z-[100] theme-primary-bg text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 font-bold opacity-0 pointer-events-none transition-opacity duration-300">
+            <svg class="w-6 h-6 border-2 border-white rounded-full p-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+            </svg>
+            <span>تمت الإضافة للسلة! جاري التحويل…</span>
+        </div>
+
+        <!-- ===== Navbar ===== -->
         <nav class="bg-white/85 backdrop-blur-md border-b border-[#0d1b4b]/10 sticky top-0 z-40 transition-all duration-300 shadow-sm">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex justify-between h-20">
                     <div class="flex items-center">
                         <a href="{{ route('shop.show', $shop->slug) }}" class="flex items-center group">
                             <div class="ml-4 p-2 rounded-xl bg-gray-50 border border-[#0d1b4b]/10 group-hover:border-[#0d1b4b]/20 transition">
-                                <svg class="w-5 h-5 text-[#0d1b4b]/60 group-hover:text-[#0d1b4b]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                                <!-- RTL: right arrow means "go back" -->
+                                <svg class="w-5 h-5 text-[#0d1b4b]/60 group-hover:text-[#0d1b4b]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                </svg>
                             </div>
                             <div class="relative">
                                 @if($shop->logo_path)
@@ -68,69 +100,146 @@
             </div>
         </nav>
 
+        <!-- ===== Main ===== -->
         <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
             <div class="bg-white rounded-[3rem] shadow-2xl shadow-[#0d1b4b]/5 p-8 lg:p-12 border border-[#0d1b4b]/5">
-                <div class="flex flex-col lg:flex-row gap-12" x-data="{ mainImage: '{{ count($images) > 0 ? $images[0] : '' }}' }">
-                    
-                    <!-- Left: Images -->
+
+                {{-- Pass images as a JSON array so Alpine can compare by index cleanly --}}
+                @php
+                    $imagesJson = json_encode($images);
+                    $currentPrice = $product->hasActiveDiscount() ? $product->effectivePrice() : $product->price;
+                    $mainImageUrl = count($images) > 0 ? $images[0] : '';
+                @endphp
+
+                <div class="flex flex-col lg:flex-row gap-12"
+                     x-data="{
+                         images: {{ $imagesJson }},
+                         activeIndex: 0,
+                         get mainImage() { return this.images[this.activeIndex] ?? ''; },
+                         cartAdded: false,
+                         addToCart() {
+                             const shopSlug  = '{{ $shop->slug }}';
+                             const storageKey = 'mahly_cart_' + shopSlug;
+                             let cart = [];
+                             try { cart = JSON.parse(localStorage.getItem(storageKey)) || []; } catch(e) {}
+
+                             const id    = {{ $product->id }};
+                             const name  = @js($product->name);
+                             const price = {{ $currentPrice }};
+                             const image = '{{ $mainImageUrl }}';
+
+                             const existing = cart.find(i => i.id === id);
+                             if (existing) {
+                                 existing.quantity += 1;
+                             } else {
+                                 cart.push({ id, name, price, image, quantity: 1 });
+                             }
+                             localStorage.setItem(storageKey, JSON.stringify(cart));
+
+                             // Show toast then redirect
+                             const toast = document.getElementById('cart-toast');
+                             toast.classList.remove('opacity-0','pointer-events-none');
+                             toast.classList.add('opacity-100');
+                             setTimeout(() => {
+                                 window.location.href = '{{ route('shop.show', $shop->slug) }}';
+                             }, 1200);
+                         }
+                     }">
+
+                    <!-- ===== Image Panel ===== -->
                     <div class="w-full lg:w-1/2 flex flex-col gap-4">
                         @if(count($images) > 0)
+                            <!-- Main image -->
                             <div class="w-full h-96 lg:h-[32rem] rounded-3xl overflow-hidden bg-[#0d1b4b]/5 border border-[#0d1b4b]/10 shadow-inner group">
-                                <img :src="mainImage" alt="{{ $product->name }}" class="w-full h-full object-contain p-4 transition-transform duration-500 group-hover:scale-105">
+                                <template x-if="mainImage">
+                                    <img :src="mainImage"
+                                         :key="activeIndex"
+                                         alt="{{ $product->name }}"
+                                         class="w-full h-full object-contain p-4 transition-all duration-500 group-hover:scale-105 animate-slide-up">
+                                </template>
                             </div>
-                            <!-- Thumbnails Slider -->
+
+                            <!-- Thumbnails -->
                             @if(count($images) > 1)
                                 <div class="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
-                                    @foreach($images as $img)
-                                        <button @mouseover="mainImage = '{{ $img }}'" 
-                                                @click="mainImage = '{{ $img }}'"
-                                                :class="mainImage === '{{ $img }}' ? 'ring-2 ring-[#d4af37] border-transparent' : 'border-[#0d1b4b]/10 hover:border-[#d4af37]/50'"
+                                    @foreach($images as $i => $img)
+                                        <button type="button"
+                                                @click="activeIndex = {{ $i }}"
+                                                @mouseover="activeIndex = {{ $i }}"
+                                                :class="activeIndex === {{ $i }} ? 'thumbnail-active' : 'thumbnail-inactive'"
                                                 class="w-20 h-20 rounded-2xl border-2 flex-shrink-0 overflow-hidden transition-all bg-[#0d1b4b]/5">
-                                            <img src="{{ $img }}" class="w-full h-full object-cover">
+                                            <img src="{{ $img }}" alt="صورة {{ $i + 1 }}" class="w-full h-full object-cover">
                                         </button>
                                     @endforeach
                                 </div>
                             @endif
                         @else
                             <div class="w-full h-96 lg:h-[32rem] rounded-3xl overflow-hidden bg-[#0d1b4b]/5 border border-[#0d1b4b]/10 shadow-inner flex items-center justify-center text-[#0d1b4b]/30">
-                                <svg class="w-24 h-24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                                <svg class="w-24 h-24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                             </div>
                         @endif
                     </div>
 
-                    <!-- Right: Details -->
-                    <div class="w-full lg:w-1/2 flex flex-col justify-center">
-                        @if($product->category)
-                            <span class="theme-accent-text text-xs font-black uppercase tracking-widest mb-3 block">{{ $product->category->name }}</span>
-                        @endif
-                        <h1 class="text-3xl lg:text-5xl font-black text-[#0d1b4b] mb-6 leading-tight">{{ $product->name }}</h1>
-                        
-                        <div class="mb-8">
-                            @if($product->hasActiveDiscount())
-                                <div class="flex items-center gap-4">
-                                    <span class="text-4xl font-black text-[#0d1b4b]">{{ number_format($product->effectivePrice(), 2) }} <span class="text-lg font-medium text-[#0d1b4b]/45">ل.س</span></span>
-                                    <div class="flex flex-col">
-                                        <span class="line-through text-[#0d1b4b]/35 text-lg">{{ number_format($product->price, 0) }}</span>
-                                        <span class="text-red-500 font-bold text-xs uppercase tracking-widest mt-0.5">وفر {{ number_format($product->discount_percent, 0) }}%</span>
-                                    </div>
-                                </div>
-                            @else
-                                <span class="text-4xl font-black text-[#0d1b4b]">{{ number_format($product->price, 2) }} <span class="text-lg font-medium text-[#0d1b4b]/45">ل.س</span></span>
+                    <!-- ===== Details Panel ===== -->
+                    <div class="w-full lg:w-1/2 flex flex-col justify-between">
+                        <div>
+                            @if($product->category)
+                                <span class="theme-accent-text text-xs font-black uppercase tracking-widest mb-3 block">{{ $product->category->name }}</span>
                             @endif
+                            <h1 class="text-3xl lg:text-5xl font-black text-[#0d1b4b] mb-6 leading-tight">{{ $product->name }}</h1>
+
+                            <!-- Price -->
+                            <div class="mb-8">
+                                @if($product->hasActiveDiscount())
+                                    <div class="flex items-center gap-4">
+                                        <span class="text-4xl font-black text-[#0d1b4b]">
+                                            {{ number_format($product->effectivePrice(), 2) }}
+                                            <span class="text-lg font-medium text-[#0d1b4b]/45">ل.س</span>
+                                        </span>
+                                        <div class="flex flex-col">
+                                            <span class="line-through text-[#0d1b4b]/35 text-lg">{{ number_format($product->price, 0) }}</span>
+                                            <span class="text-red-500 font-bold text-xs uppercase tracking-widest mt-0.5">وفر {{ number_format($product->discount_percent, 0) }}%</span>
+                                        </div>
+                                    </div>
+                                @else
+                                    <span class="text-4xl font-black text-[#0d1b4b]">
+                                        {{ number_format($product->price, 2) }}
+                                        <span class="text-lg font-medium text-[#0d1b4b]/45">ل.س</span>
+                                    </span>
+                                @endif
+                            </div>
+
+                            <!-- Description -->
+                            <div class="prose prose-lg text-[#0d1b4b]/70 font-medium mb-10 leading-relaxed border-t border-b border-[#0d1b4b]/5 py-6">
+                                {{ $product->description ?? 'لا يوجد وصف متاح لهذا المنتج حالياً.' }}
+                            </div>
                         </div>
 
-                        <div class="prose prose-lg text-[#0d1b4b]/70 font-medium mb-10 leading-relaxed border-t border-b border-[#0d1b4b]/5 py-6">
-                            {{ $product->description ?? 'لا يوجد وصف متاح لهذا المنتج حالياً.' }}
-                        </div>
+                        <!-- ===== CTA Buttons ===== -->
+                        <div class="flex flex-col gap-3 mt-4">
+                            <!-- Add to Cart -->
+                            <button type="button"
+                                    @click="addToCart()"
+                                    :disabled="cartAdded"
+                                    class="w-full theme-primary-bg theme-primary-bg-hover text-white font-black py-5 px-6 rounded-2xl shadow-2xl shadow-[#0d1b4b]/20 transition-all text-lg flex justify-center items-center gap-3 disabled:opacity-60">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+                                </svg>
+                                أضف للسلة
+                            </button>
 
-                        <a href="{{ route('shop.show', $shop->slug) }}" class="w-full theme-primary-bg theme-primary-bg-hover text-white font-black py-5 px-6 rounded-2xl shadow-2xl shadow-[#0d1b4b]/20 transition-all text-center text-lg flex justify-center items-center gap-3">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
-                            الرجوع للمتجر للإضافة للسلة
-                        </a>
-                        <p class="text-center text-xs text-[#0d1b4b]/45 mt-4">قم بإضافة المنتج للسلة من واجهة المتجر الرئيسية</p>
+                            <!-- Go Back -->
+                            <a href="{{ route('shop.show', $shop->slug) }}"
+                               class="w-full bg-white border-2 border-[#0d1b4b]/12 hover:border-[#0d1b4b]/30 text-[#0d1b4b]/65 hover:text-[#0d1b4b] font-bold py-4 px-6 rounded-2xl transition-all text-lg flex justify-center items-center gap-3">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                                </svg>
+                                العودة للمتجر
+                            </a>
+                        </div>
                     </div>
-                    
-                </div>
+
+                </div><!-- /flex -->
             </div>
         </main>
 
