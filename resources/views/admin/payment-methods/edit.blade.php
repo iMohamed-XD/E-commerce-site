@@ -29,6 +29,13 @@
                     </div>
 
                     <div>
+                        <x-input-label for="link" :value="__('رابط مباشر (اختياري - واتساب أو تطبيق خارجي)')" />
+                        <x-text-input id="link" class="block mt-1 w-full text-left" dir="ltr" type="url" name="link" :value="old('link', $pm->link)" placeholder="https://..." />
+                        <p class="text-xs text-[#0d1b4b]/40 mt-1">يُستخدم لفتح تطبيق خارجي مباشرة (مثال: رابط واتساب أو رابط دفع)</p>
+                        <x-input-error :messages="$errors->get('link')" class="mt-2" />
+                    </div>
+
+                    <div>
                         <x-input-label for="details" :value="__('تفاصيل اختيارية (أوقات التحويل، ملاحظات)')" />
                         <textarea id="details" name="details" rows="3" class="block mt-1 w-full bg-white border border-[#0d1b4b]/15 rounded-xl shadow-sm focus:border-[#d4af37] focus:ring focus:ring-[#d4af37]/20">{{ old('details', $pm->details) }}</textarea>
                         <x-input-error :messages="$errors->get('details')" class="mt-2" />

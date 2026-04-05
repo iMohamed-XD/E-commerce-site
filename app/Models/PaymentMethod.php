@@ -11,7 +11,7 @@ class PaymentMethod extends Model
     use HasFactory;
 
     protected $fillable = [
-        'name', 'logo_path', 'qr_path', 'account_id',
+        'name', 'logo_path', 'qr_path', 'account_id', 'link',
         'details', 'is_active', 'sort_order'
     ];
     
@@ -22,14 +22,14 @@ class PaymentMethod extends Model
     public function getLogoUrlAttribute(): ?string
     {
         return $this->logo_path
-            ? Storage::disk('media')->temporaryUrl($this->logo_path, now()->addHours(2))
+            ? Storage::url($this->logo_path)
             : null;
     }
     
     public function getQrUrlAttribute(): ?string
     {
         return $this->qr_path
-            ? Storage::disk('media')->temporaryUrl($this->qr_path, now()->addHours(2))
+            ? Storage::url($this->qr_path)
             : null;
     }
 }

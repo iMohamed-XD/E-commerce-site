@@ -60,6 +60,17 @@
                                 <p class="text-sm text-[#0d1b4b]/60 mb-6">{{ $pm->details }}</p>
                             @endif
 
+                            @if($pm->link)
+                                <a href="{{ $pm->link }}" target="_blank" class="w-full mb-6 inline-flex items-center justify-center gap-2 px-6 py-3 bg-green-500 hover:bg-green-600 text-white font-bold rounded-xl transition-all shadow-lg shadow-green-500/20 active:scale-95">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                                    @if(str_contains(strtolower($pm->link), 'wa.me') || str_contains(strtolower($pm->link), 'whatsapp'))
+                                        <span>فتح في واتساب</span>
+                                    @else
+                                        <span>افتح الرابط المباشر</span>
+                                    @endif
+                                </a>
+                            @endif
+
                             @if($pm->qr_path)
                                 <div class="mt-auto">
                                     <p class="text-xs font-bold text-[#0d1b4b]/40 mb-3 uppercase tracking-widest">امسح الكود للدفع</p>

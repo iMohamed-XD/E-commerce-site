@@ -25,13 +25,14 @@ class AdminPaymentMethodController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'account_id' => 'required|string|max:255',
+            'link' => 'nullable|url|max:255',
             'logo' => 'nullable|image|max:1024',
             'qr' => 'nullable|image|max:1024',
             'details' => 'nullable|string',
             'sort_order' => 'nullable|integer',
         ]);
 
-        $data = $request->only('name', 'account_id', 'details');
+        $data = $request->only('name', 'account_id', 'link', 'details');
         $data['sort_order'] = $request->sort_order ?? 0;
         $data['is_active'] = $request->has('is_active');
 
@@ -58,13 +59,14 @@ class AdminPaymentMethodController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'account_id' => 'required|string|max:255',
+            'link' => 'nullable|url|max:255',
             'logo' => 'nullable|image|max:1024',
             'qr' => 'nullable|image|max:1024',
             'details' => 'nullable|string',
             'sort_order' => 'nullable|integer',
         ]);
 
-        $data = $request->only('name', 'account_id', 'details');
+        $data = $request->only('name', 'account_id', 'link', 'details');
         $data['sort_order'] = $request->sort_order ?? 0;
         $data['is_active'] = $request->has('is_active');
 
