@@ -68,9 +68,7 @@ class ShopController extends Controller
                 $query->where('is_active', true);
             })->get();
 
-        $theme = Shop::resolveTheme($shop->theme);
-
-        return view('shop.show', compact('shop', 'categories', 'theme'));
+        return view('shop.show', compact('shop', 'categories'));
     }
 
     public function applyPromo(Request $request, $slug)
