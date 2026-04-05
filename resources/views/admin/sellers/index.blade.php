@@ -39,8 +39,12 @@
                                 </td>
                                 <td class="px-6 py-4 text-[#0d1b4b]/50 text-xs">{{ $seller->created_at->format('Y-m-d') }}</td>
                                 <td class="px-6 py-4">
-                                    <form method="POST" action="{{ route('admin.sellers.destroy', $seller) }}" onsubmit="return confirm('حذف هذا البائع وجميع بياناته نهائياً؟');">
+                                    <form method="POST" action="{{ route('admin.sellers.destroy', $seller) }}" class="flex flex-col gap-1 items-end" onsubmit="return confirm('حذف هذا البائع وجميع بياناته نهائياً؟');">
                                         @csrf @method('DELETE')
+                                        <div class="flex items-center gap-2 mb-1">
+                                            <label for="block_email_{{ $seller->id }}" class="text-[10px] text-[#0d1b4b]/40 cursor-pointer">حظر البريد؟</label>
+                                            <input type="checkbox" name="block_email" id="block_email_{{ $seller->id }}" value="1" class="rounded text-[#0d1b4b] focus:ring-[#0d1b4b] w-3 h-3">
+                                        </div>
                                         <button type="submit" class="text-red-500 hover:text-red-700 font-bold text-xs transition">حذف</button>
                                     </form>
                                 </td>

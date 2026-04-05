@@ -27,10 +27,22 @@ class AdminSellerController extends Controller
         return view('admin.sellers.show', compact('user'));
     }
 
-    public function destroy(User $user)
+    public function destroy(\Illuminate\Http\Request $request, User $user)
     {
         if ($user->role === 'admin') {
             abort(403, 'لا يمكن حذف مدير عبر هذا المسار');
+        }
+
+        // Handle Optional Blocking
+        if ($request->has('block_email')) {
+            \App\Models\BlockedEmail::create(['email' => $user->email]);
+            
+            try {
+                \Illuminate\Support\Facades\Mail::to($user->email)->send(new \App\Mail\AccountDeleted($user->name));
+            } catch (\Exception $e) {
+                // Log and continue if mail fails
+                \Illuminate\Support\Facades\Log::error("Failed to send deletion mail to {$user->email}: " . $e->getMessage());
+            }
         }
 
         $shop = $user->shop;
@@ -45,6 +57,10 @@ class AdminSellerController extends Controller
 
         $user->delete();
 
-        return redirect()->route('admin.sellers.index')->with('success', 'تم حذف البائع ومستلزماته بنجاح!');
+        $message = $request->has('block_email') 
+            ? 'تم حذف البائع وحظر بريده الإلكتروني بنجاح!' 
+            : 'تم حذف البائع ومستلزماته بنجاح!';
+
+        return redirect()->route('admin.sellers.index')->with('success', $message);
     }
 }

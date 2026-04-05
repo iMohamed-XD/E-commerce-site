@@ -24,6 +24,11 @@ class GoogleController extends Controller
             return redirect('/login')->withErrors('Google authentication failed.');
         }
 
+        // Check for blocked email
+        if (\App\Models\BlockedEmail::where('email', $googleUser->getEmail())->exists()) {
+            return redirect('/login')->withErrors('هذا البريد الإلكتروني محظور من المنصة لمخالفة الشروط.');
+        }
+
         // Find existing user or create a new one
         $user = User::updateOrCreate(
             ['google_id' => $googleUser->getId()],
