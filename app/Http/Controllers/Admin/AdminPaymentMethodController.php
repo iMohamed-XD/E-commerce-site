@@ -31,11 +31,11 @@ class AdminPaymentMethodController extends Controller
         $data['is_active'] = $request->has('is_active');
 
         if ($request->hasFile('logo')) {
-            $data['logo_path'] = $request->file('logo')->store('payment-methods', 'media');
+            $data['logo_path'] = $request->file('logo')->store('payment-methods');
         }
 
         if ($request->hasFile('qr')) {
-            $data['qr_path'] = $request->file('qr')->store('payment-methods', 'media');
+            $data['qr_path'] = $request->file('qr')->store('payment-methods');
         }
 
         PaymentMethod::create($data);
@@ -60,16 +60,16 @@ class AdminPaymentMethodController extends Controller
 
         if ($request->hasFile('logo')) {
             if ($pm->logo_path) {
-                Storage::disk('media')->delete($pm->logo_path);
+                Storage::delete($pm->logo_path);
             }
-            $data['logo_path'] = $request->file('logo')->store('payment-methods', 'media');
+            $data['logo_path'] = $request->file('logo')->store('payment-methods');
         }
 
         if ($request->hasFile('qr')) {
             if ($pm->qr_path) {
-                Storage::disk('media')->delete($pm->qr_path);
+                Storage::delete($pm->qr_path);
             }
-            $data['qr_path'] = $request->file('qr')->store('payment-methods', 'media');
+            $data['qr_path'] = $request->file('qr')->store('payment-methods');
         }
 
         $pm->update($data);
@@ -80,10 +80,10 @@ class AdminPaymentMethodController extends Controller
     public function destroy(PaymentMethod $pm)
     {
         if ($pm->logo_path) {
-            Storage::disk('media')->delete($pm->logo_path);
+            Storage::delete($pm->logo_path);
         }
         if ($pm->qr_path) {
-            Storage::disk('media')->delete($pm->qr_path);
+            Storage::delete($pm->qr_path);
         }
         $pm->delete();
 

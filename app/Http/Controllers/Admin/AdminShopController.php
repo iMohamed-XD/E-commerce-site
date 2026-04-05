@@ -46,16 +46,16 @@ class AdminShopController extends Controller
     {
         foreach ($shop->products as $product) {
             if ($product->image_path) {
-                \Illuminate\Support\Facades\Storage::disk('media')->delete($product->image_path);
+                \Illuminate\Support\Facades\Storage::delete($product->image_path);
             }
-            \Illuminate\Support\Facades\Storage::disk('media')->deleteDirectory("products/{$product->id}");
+            \Illuminate\Support\Facades\Storage::deleteDirectory("products/{$product->id}");
         }
 
         if ($shop->logo_path) {
-            \Illuminate\Support\Facades\Storage::disk('media')->delete($shop->logo_path);
+            \Illuminate\Support\Facades\Storage::delete($shop->logo_path);
         }
         if ($shop->hero_image_path) {
-            \Illuminate\Support\Facades\Storage::disk('media')->delete($shop->hero_image_path);
+            \Illuminate\Support\Facades\Storage::delete($shop->hero_image_path);
         }
 
         $shop->delete();

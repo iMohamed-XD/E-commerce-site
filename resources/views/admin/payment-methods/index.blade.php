@@ -39,7 +39,7 @@
                                 <tr class="border-b border-[#0d1b4b]/5 hover:bg-[#fdfbf4] transition">
                                     <td class="py-4 px-4 font-bold text-[#0d1b4b] flex items-center gap-3">
                                         @if($pm->logo_path)
-                                            <img src="{{ Storage::disk('media')->temporaryUrl($pm->logo_path, now()->addHours(2)) }}" class="h-8 w-8 object-contain bg-white rounded p-1 border border-black/5" alt="">
+                                            <img src="{{ Storage::url($pm->logo_path) }}" class="h-8 w-8 object-contain bg-white rounded p-1 border border-black/5" alt="">
                                         @endif
                                         {{ $pm->name }}
                                     </td>

@@ -41,11 +41,14 @@
                                         </div>
                                     </td>
                                     <td class="py-4 px-4 text-center">
+                                    <div class="flex items-center justify-center gap-4">
+                                        <a href="{{ route('admin.shops.show', $shop) }}" class="text-[#d4af37] font-bold hover:underline">إدارة</a>
                                         <form method="POST" action="{{ route('admin.shops.destroy', $shop) }}" onsubmit="return confirm('هل أنت متأكد من حذف المتجر وجميع منتجاته وصوره نهائياً؟');">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="text-red-500 hover:text-red-700 font-bold px-3 py-1 bg-red-50 hover:bg-red-100 rounded-lg transition">حذف</button>
+                                            <button type="submit" class="text-red-500 hover:text-red-700 font-bold transition">حذف</button>
                                         </form>
+                                    </div>
                                     </td>
                                 </tr>
                             @empty
