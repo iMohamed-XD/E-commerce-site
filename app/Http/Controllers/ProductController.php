@@ -48,7 +48,7 @@ class ProductController extends Controller
 
         $imagePath = null;
         if ($request->hasFile('image')) {
-            $imagePath = $request->file('image')->store('products', 'media');
+            $imagePath = $request->file('image')->store('products');
         }
 
         $product = $shop->products()->create([
@@ -65,7 +65,7 @@ class ProductController extends Controller
         if ($request->hasFile('secondary_images')) {
             $sort = 0;
             foreach($request->file('secondary_images') as $file) {
-                $path = $file->store("products/{$product->id}/secondary", 'media');
+                $path = $file->store("products/{$product->id}/secondary");
                 $product->productImages()->create([
                     'path' => $path,
                     'sort_order' => $sort++
@@ -108,9 +108,9 @@ class ProductController extends Controller
 
         if ($request->hasFile('image')) {
             if ($product->image_path) {
-                Storage::disk('media')->delete($product->image_path);
+                Storage::delete($product->image_path);
             }
-            $product->image_path = $request->file('image')->store('products', 'media');
+            $product->image_path = $request->file('image')->store('products');
         }
 
         $product->update([
@@ -125,7 +125,7 @@ class ProductController extends Controller
         if ($request->hasFile('secondary_images')) {
             // Delete old secondary images if replacing (as per the info text "رفع صور جديدة هنا سيقوم بحذف الصور الإضافية السابقة واستبدالها.")
             foreach($product->productImages as $oldImg) {
-                Storage::disk('media')->delete($oldImg->path);
+                Storage::delete($oldImg->path);
                 $oldImg->delete();
             }
 
@@ -133,7 +133,7 @@ class ProductController extends Controller
             $sort = $sort >= 0 && $product->productImages()->count() > 0 ? $sort + 1 : 0;
             
             foreach ($request->file('secondary_images') as $file) {
-                $path = $file->store("products/{$product->id}/secondary", 'media');
+                $path = $file->store("products/{$product->id}/secondary");
                 $product->productImages()->create([
                     'path' => $path,
                     'sort_order' => $sort++
@@ -149,9 +149,9 @@ class ProductController extends Controller
         Gate::authorize('manage', $product);
 
         if ($product->image_path) {
-            Storage::disk('media')->delete($product->image_path);
+            Storage::delete($product->image_path);
         }
-        Storage::disk('media')->deleteDirectory("products/{$product->id}");
+        Storage::deleteDirectory("products/{$product->id}");
 
         $product->delete();
 
@@ -164,7 +164,7 @@ class ProductController extends Controller
         if ($image->product_id !== $product->id) {
             abort(404);
         }
-        Storage::disk('media')->delete($image->path);
+        Storage::delete($image->path);
         $image->delete();
         return response()->json(['success' => true]);
     }
@@ -190,9 +190,9 @@ class ProductController extends Controller
             $products = $productsQuery->get();
             foreach($products as $product) {
                 if ($product->image_path) {
-                    Storage::disk('media')->delete($product->image_path);
+                    Storage::delete($product->image_path);
                 }
-                Storage::disk('media')->deleteDirectory("products/{$product->id}");
+                Storage::deleteDirectory("products/{$product->id}");
                 $product->delete();
             }
             return redirect()->route('products.index')->with('success', 'تم حذف المنتجات المحددة بنجاح.');
