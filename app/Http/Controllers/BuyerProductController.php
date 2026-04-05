@@ -19,12 +19,12 @@ class BuyerProductController extends Controller
         
         $images = [];
         if ($product->image_path) {
-            $images[] = Storage::disk('media')->temporaryUrl($product->image_path, now()->addHours(2));
+            $images[] = Storage::url($product->image_path);
         }
         
         foreach ($product->productImages as $productImage) {
             if ($productImage->path) {
-                $images[] = Storage::disk('media')->temporaryUrl($productImage->path, now()->addHours(2));
+                $images[] = Storage::url($productImage->path);
             }
         }
         

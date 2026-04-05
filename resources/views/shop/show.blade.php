@@ -215,23 +215,27 @@
                                 </div>
                             @endif
 
-                            <div class="relative w-full h-72 overflow-hidden bg-[#0d1b4b]/4">
-                                @if($product->image_path)
-                                    <img src="{{ Storage::url($product->image_path) }}" alt="{{ $product->name }}" class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-[1.5s] ease-out">
-                                @else
-                                    <div class="w-full h-full flex items-center justify-center text-[#0d1b4b]/35 bg-[#0d1b4b]/4">
-                                        <svg class="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                                    </div>
-                                @endif
-                                
-                                <div class="absolute inset-0 bg-gradient-to-t from-[#0d1b4b]/20 via-transparent to-transparent opacity-0 group-hover:opacity-60 transition-opacity duration-500"></div>
-                            </div>
+                            <a href="{{ route('buyer.product.show', ['shop' => $shop->slug, 'product' => $product->id]) }}" class="block">
+                                <div class="relative w-full h-72 overflow-hidden bg-[#0d1b4b]/4">
+                                    @if($product->image_path)
+                                        <img src="{{ Storage::url($product->image_path) }}" alt="{{ $product->name }}" class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-[1.5s] ease-out">
+                                    @else
+                                        <div class="w-full h-full flex items-center justify-center text-[#0d1b4b]/35 bg-[#0d1b4b]/4">
+                                            <svg class="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                                        </div>
+                                    @endif
+                                    
+                                    <div class="absolute inset-0 bg-gradient-to-t from-[#0d1b4b]/20 via-transparent to-transparent opacity-0 group-hover:opacity-60 transition-opacity duration-500"></div>
+                                </div>
+                            </a>
 
                             <div class="p-8 flex flex-col flex-grow relative">
-                                @if($product->category)
-                                    <span class="theme-accent-text text-[10px] font-black uppercase tracking-widest mb-2 block">{{ $product->category->name }}</span>
-                                @endif
-                                <h3 class="text-xl font-extrabold text-[#0d1b4b] mb-3 transition-colors duration-300 leading-tight">{{ $product->name }}</h3>
+                                <a href="{{ route('buyer.product.show', ['shop' => $shop->slug, 'product' => $product->id]) }}" class="block">
+                                    @if($product->category)
+                                        <span class="theme-accent-text text-[10px] font-black uppercase tracking-widest mb-2 block">{{ $product->category->name }}</span>
+                                    @endif
+                                    <h3 class="text-xl font-extrabold text-[#0d1b4b] mb-3 transition-colors duration-300 leading-tight group-hover:theme-accent-text">{{ $product->name }}</h3>
+                                </a>
                                 
                                 <div class="mb-6">
                                     @if($isDiscounted)
@@ -244,8 +248,8 @@
                                     @endif
                                 </div>
 
-                                <button @click="addToCart({{ $product->id }}, '{{ addslashes($product->name) }}', {{ $currentPrice }}, '{{ $product->image_path ? Storage::url($product->image_path) : '' }}')" 
-                                        class="mt-auto w-full group/btn relative overflow-hidden theme-primary-bg theme-primary-bg-hover text-white font-black py-4 px-6 rounded-2xl transition-all duration-300 flex items-center justify-center gap-3 shadow-xl">
+                                <button @click.prevent="addToCart({{ $product->id }}, '{{ addslashes($product->name) }}', {{ $currentPrice }}, '{{ $product->image_path ? Storage::url($product->image_path) : '' }}')" 
+                                        class="mt-auto z-10 w-full group/btn relative overflow-hidden theme-primary-bg theme-primary-bg-hover text-white font-black py-4 px-6 rounded-2xl transition-all duration-300 flex items-center justify-center gap-3 shadow-xl">
                                     <svg class="w-5 h-5 transition-transform group-hover/btn:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
                                     <span>أضف للسلة</span>
                                 </button>
