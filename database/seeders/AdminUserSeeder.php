@@ -20,7 +20,7 @@ class AdminUserSeeder extends Seeder
         // Only seed if configured to avoid exposing default passwords to production accidentally
         if ($adminPassword) {
             User::firstOrCreate(
-                ['email' => 'mohammad.ferasamin@gmail.com'],
+                ['email' => 'mahlyteam@gmail.com'],
                 [
                     'name' => 'Mohammad Feras Amin',
                     'role' => 'admin',
@@ -31,7 +31,7 @@ class AdminUserSeeder extends Seeder
         } else {
             // For purely local deployments with docker-compose when variable wasn't supplied
             User::firstOrCreate(
-                ['email' => 'mohammad.ferasamin@gmail.com'],
+                ['email' => 'mahlyteam@gmail.com'],
                 [
                     'name' => 'Mohammad Feras Amin',
                     'role' => 'admin',
