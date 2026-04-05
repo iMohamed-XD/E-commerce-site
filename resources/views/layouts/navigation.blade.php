@@ -42,6 +42,10 @@
                         <x-nav-link :href="route('feedback.show')" :active="request()->routeIs('feedback.*')" class="text-sm font-medium transition-colors hover:text-[#0d1b4b] focus:text-[#0d1b4b] focus:outline-none focus:ring-2 focus:ring-[#d4af37]/40 rounded-md">
                             {{ __('تقييم المنصة') }}
                         </x-nav-link>
+                        <a href="{{ route('support.index') }}" class="inline-flex items-center px-4 py-2 bg-pink-500 hover:bg-pink-600 text-white text-xs font-black rounded-xl transition-all shadow-lg shadow-pink-500/20 gap-2 self-center mr-4">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"/></svg>
+                            <span>{{ __('ادعمنا') }}</span>
+                        </a>
                     @endif
                 </div>
             </div>
@@ -139,6 +143,12 @@
                 <x-responsive-nav-link :href="route('feedback.show')" :active="request()->routeIs('feedback.*')" class="text-right">
                     {{ __('تقييم المنصة') }}
                 </x-responsive-nav-link>
+                <div class="px-4 py-2">
+                    <a href="{{ route('support.index') }}" class="flex items-center justify-center gap-2 w-full py-3 bg-pink-500 text-white rounded-xl font-black shadow-lg shadow-pink-500/20">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"/></svg>
+                        <span>{{ __('ادعم المنصة') }}</span>
+                    </a>
+                </div>
             @endif
         </div>
 
