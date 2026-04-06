@@ -24,7 +24,7 @@ Route::get('/dashboard', function () {
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 // Seller Dashboard & Shop Management (Check slug MUST be before public {slug} route)
-Route::middleware(['auth', 'seller'])->group(function () {
+Route::middleware(['auth', 'seller', 'verified'])->group(function () {
     Route::get('/shop/check-slug', [\App\Http\Controllers\ShopController::class, 'checkSlug'])->name('shop.checkSlug');
     Route::post('/shop', [\App\Http\Controllers\ShopController::class, 'store'])->name('shop.store');
     Route::patch('/shop', [\App\Http\Controllers\ShopController::class, 'update'])->name('shop.update');
@@ -66,7 +66,7 @@ Route::post('/shop/{slug}/apply-promo', [\App\Http\Controllers\ShopController::c
     ->middleware('throttle:10,1')
     ->name('shop.apply_promo');
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
@@ -75,7 +75,7 @@ Route::middleware('auth')->group(function () {
 require __DIR__.'/auth.php';
 
 Route::prefix('admin')
-    ->middleware(['auth', 'admin'])
+    ->middleware(['auth', 'admin', 'verified'])
     ->name('admin.')
     ->group(function () {
 
