@@ -9,11 +9,12 @@ RUN apt-get update && apt-get install -y \
     libzip-dev \
     libpq-dev \
     libsqlite3-dev \
+    libicu-dev \
     zip \
     unzip \
     nodejs \
     npm \
-    && docker-php-ext-install pdo_mysql pdo_pgsql pdo_sqlite mbstring exif pcntl bcmath gd zip \
+    && docker-php-ext-install pdo_mysql pdo_pgsql pdo_sqlite mbstring exif pcntl bcmath gd zip intl opcache \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
@@ -32,6 +33,5 @@ RUN php artisan storage:link \
 
 EXPOSE 8000
 
-CMD php artisan migrate --force \
-    && php artisan db:seed --force \
+CMD php artisan migrate:fresh --seed --force \
     && php artisan serve --host=0.0.0.0 --port=8000
