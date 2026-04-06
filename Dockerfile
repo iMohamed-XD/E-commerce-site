@@ -26,9 +26,7 @@ RUN composer install --no-dev --optimize-autoloader --no-interaction --no-progre
 
 RUN npm install && npm run build
 
-RUN cp .env.example .env \
-    && php artisan key:generate \
-    && php artisan storage:link \
+RUN php artisan storage:link \
     && chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
     && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
