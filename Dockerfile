@@ -45,6 +45,9 @@ RUN php artisan storage:link \
 
 EXPOSE 80
 
-# Production Entrypoint
-CMD php artisan migrate --force \
-    && apache2-foreground
+# Final adjustments for entrypoint
+COPY docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
+# Entrypoint
+ENTRYPOINT ["docker-entrypoint.sh"]
