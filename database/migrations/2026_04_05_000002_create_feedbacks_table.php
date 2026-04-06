@@ -20,8 +20,10 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        // Add DB-level check constraint for rating
-        DB::statement('ALTER TABLE feedbacks ADD CONSTRAINT feedbacks_rating_check CHECK (rating >= 1 AND rating <= 5)');
+        // Add DB-level check constraint for rating, skipping for SQLite
+        if (config('database.default') !== 'sqlite') {
+            DB::statement('ALTER TABLE feedbacks ADD CONSTRAINT feedbacks_rating_check CHECK (rating >= 1 AND rating <= 5)');
+        }
     }
 
     /**
