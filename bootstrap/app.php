@@ -11,6 +11,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Trust reverse-proxy headers (e.g. Coolify) so generated URLs keep https scheme.
+        $middleware->trustProxies(at: '*');
+
         $middleware->alias([
             'seller' => \App\Http\Middleware\EnsureUserIsSeller::class,
             'admin' => \App\Http\Middleware\EnsureUserIsAdmin::class,
