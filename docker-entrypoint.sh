@@ -18,6 +18,13 @@ fi
 
 echo "Database is ready!"
 
+# Ensure local public storage paths exist and are writable for uploads
+mkdir -p storage/app/public/shops/logos storage/app/public/shops/heroes bootstrap/cache
+if [ "$(id -u)" = "0" ]; then
+  chown -R www-data:www-data storage bootstrap/cache
+fi
+chmod -R ug+rwX storage bootstrap/cache
+
 # Run migrations if database is ready
 php artisan migrate --force
 
