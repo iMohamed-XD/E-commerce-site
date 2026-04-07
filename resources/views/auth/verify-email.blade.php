@@ -4,6 +4,9 @@
             {{ __('شكراً لانضمامك إلينا! قبل البدء، هل يمكنك تفعيل حسابك بالضغط على الرابط الذي أرسلناه لتوّنا إلى بريدك الإلكتروني؟ إذا لم يصلك البريد، يسعدنا إرسال رابط آخر.') }}
         </div>
 
+        <div class="mb-5 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-4 py-2">
+            {{ __('ملاحظة: قد تجد رسالة التفعيل في مجلد البريد العشوائي (Spam/Junk).') }}
+        </div>
         @if (session('status') == 'verification-link-sent')
             <div class="mb-5 font-semibold text-sm text-green-700 bg-green-50 border border-green-200 rounded-xl px-4 py-2">
                 {{ __('تم إرسال رابط تفعيل جديد إلى البريد الإلكتروني الذي قدمته أثناء التسجيل.') }}
@@ -29,3 +32,4 @@
         </div>
     </div>
 </x-guest-layout>
+
