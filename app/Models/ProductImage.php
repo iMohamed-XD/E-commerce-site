@@ -20,8 +20,14 @@ class ProductImage extends Model
 
     public function getUrlAttribute(): ?string
     {
-        return $this->path
-            ? Storage::disk('media')->temporaryUrl($this->path, now()->addHours(2))
-            : null;
+        if (!$this->path) {
+            return null;
+        }
+
+        if (filter_var($this->path, FILTER_VALIDATE_URL)) {
+            return $this->path;
+        }
+
+        return Storage::disk('public')->url($this->path);
     }
 }
