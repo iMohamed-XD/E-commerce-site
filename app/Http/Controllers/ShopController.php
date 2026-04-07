@@ -15,6 +15,8 @@ class ShopController extends Controller
 {
     public function store(Request $request)
     {
+        $publicDisk = Storage::disk('public');
+
         $request->validate([
             'name' => 'required|string|max:255',
             'slug' => 'required|string|max:255|unique:shops,slug',
@@ -26,22 +28,24 @@ class ShopController extends Controller
 
         $logoPath = null;
         if ($request->hasFile('logo')) {
-            $logoPath = $request->file('logo')->store('shops/logos');
+            $logoPath = $request->file('logo')->store('shops/logos', 'public');
         } elseif ($request->filled('cropped_logo')) {
             $imageParts = explode(";base64,", $request->cropped_logo);
             if (count($imageParts) === 2) {
                 $imageTypeAux = explode("image/", $imageParts[0]);
                 $imageType = $imageTypeAux[1] ?? 'png';
                 $imageBase64 = base64_decode($imageParts[1]);
-                $filename = 'shops/logos/' . uniqid() . '.' . $imageType;
-                Storage::put($filename, $imageBase64);
-                $logoPath = $filename;
+                if ($imageBase64 !== false) {
+                    $filename = 'shops/logos/' . uniqid() . '.' . $imageType;
+                    $publicDisk->put($filename, $imageBase64);
+                    $logoPath = $filename;
+                }
             }
         }
 
         $heroImagePath = null;
         if ($request->hasFile('hero_image')) {
-            $heroImagePath = $request->file('hero_image')->store('shops/heroes');
+            $heroImagePath = $request->file('hero_image')->store('shops/heroes', 'public');
         }
 
         $shop = Shop::create([
@@ -184,6 +188,8 @@ class ShopController extends Controller
 
     public function update(Request $request)
     {
+        $publicDisk = Storage::disk('public');
+
         $shop = Auth::user()->shop;
         if (!$shop) {
             abort(404);
@@ -205,29 +211,31 @@ class ShopController extends Controller
 
         if ($request->hasFile('logo')) {
             if ($shop->logo_path) {
-                Storage::delete($shop->logo_path);
+                $publicDisk->delete($shop->logo_path);
             }
-            $shop->logo_path = $request->file('logo')->store('shops/logos');
+            $shop->logo_path = $request->file('logo')->store('shops/logos', 'public');
         } elseif ($request->filled('cropped_logo')) {
             if ($shop->logo_path) {
-                Storage::delete($shop->logo_path);
+                $publicDisk->delete($shop->logo_path);
             }
             $imageParts = explode(";base64,", $request->cropped_logo);
             if (count($imageParts) === 2) {
                 $imageTypeAux = explode("image/", $imageParts[0]);
                 $imageType = $imageTypeAux[1] ?? 'png';
                 $imageBase64 = base64_decode($imageParts[1]);
-                $filename = 'shops/logos/' . uniqid() . '.' . $imageType;
-                Storage::put($filename, $imageBase64);
-                $shop->logo_path = $filename;
+                if ($imageBase64 !== false) {
+                    $filename = 'shops/logos/' . uniqid() . '.' . $imageType;
+                    $publicDisk->put($filename, $imageBase64);
+                    $shop->logo_path = $filename;
+                }
             }
         }
 
         if ($request->hasFile('hero_image')) {
             if ($shop->hero_image_path) {
-                Storage::delete($shop->hero_image_path);
+                $publicDisk->delete($shop->hero_image_path);
             }
-            $shop->hero_image_path = $request->file('hero_image')->store('shops/heroes');
+            $shop->hero_image_path = $request->file('hero_image')->store('shops/heroes', 'public');
         }
 
         $shop->save();
