@@ -657,7 +657,7 @@
     <x-support-section id="support" />
 
     <!-- TESTIMONIALS -->
-    <section id="testimonials" class="relative z-10 py-32 px-6 border-t border-[#0d1b4b]/8 bg-[#f0f4ff]/30">
+    {{-- <section id="testimonials" class="relative z-10 py-32 px-6 border-t border-[#0d1b4b]/8 bg-[#f0f4ff]/30">
         <div class="max-w-7xl mx-auto">
             <div class="text-center mb-20">
                 <span class="inline-block px-4 py-1.5 rounded-full border border-[#d4af37]/30 bg-[#d4af37]/8 text-[#a07c1e] text-xs font-bold tracking-widest uppercase mb-6">آراء البائعين</span>
@@ -741,7 +741,7 @@
                 <div><p class="text-4xl font-black text-[#d4af37] mb-1">{{ number_format($avgRating, 1) }} / 5</p><p class="text-[#0d1b4b]/45 text-sm">متوسط التقييم</p></div>
             </div>
         </div>
-    </section>
+    </section> --}}
 
         <!-- ─── Footer — dark navy for premium closure ───────────────── -->
         <footer class="relative z-10 bg-[#0d1b4b] border-t border-[#d4af37]/15 py-20 px-6">
