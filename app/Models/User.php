@@ -27,6 +27,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'role',
         'google_id',
         'email_verified_at',
+        'password_reset_requested_at',
     ];
 
     /**
@@ -48,6 +49,7 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return [
             'email_verified_at' => 'datetime',
+            'password_reset_requested_at' => 'datetime',
             'password' => 'hashed',
         ];
     }

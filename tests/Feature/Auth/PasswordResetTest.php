@@ -3,7 +3,7 @@
 namespace Tests\Feature\Auth;
 
 use App\Models\User;
-use Illuminate\Auth\Notifications\ResetPassword;
+use App\Notifications\ResetPasswordNotification as ResetPassword;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
@@ -69,5 +69,23 @@ class PasswordResetTest extends TestCase
 
             return true;
         });
+    }
+
+    public function test_seller_can_only_request_password_reset_once_per_day(): void
+    {
+        Notification::fake();
+
+        $seller = User::factory()->create([
+            'role' => 'seller',
+            'password_reset_requested_at' => null,
+        ]);
+
+        $first = $this->post('/forgot-password', ['email' => $seller->email]);
+        $first->assertSessionHasNoErrors();
+
+        Notification::assertSentTo($seller, ResetPassword::class);
+
+        $second = $this->post('/forgot-password', ['email' => $seller->email]);
+        $second->assertSessionHasErrors('email');
     }
 }

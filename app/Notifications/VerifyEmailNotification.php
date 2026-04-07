@@ -4,7 +4,6 @@ namespace App\Notifications;
 
 use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Notifications\Messages\MailMessage;
-use Illuminate\Support\Facades\Lang;
 
 class VerifyEmailNotification extends VerifyEmail
 {
@@ -19,11 +18,11 @@ class VerifyEmailNotification extends VerifyEmail
         $verificationUrl = $this->verificationUrl($notifiable);
 
         return (new MailMessage)
-            ->subject(Lang::get('تفعيل حسابك في محلي | Mahly'))
-            ->greeting(Lang::get('مرحباً بك في محلي!'))
-            ->line(Lang::get('يسعدنا انضمامك إلينا. يرجى الضغط على الزر أدناه لتفعيل بريدك الإلكتروني والبدء في استكشاف المنتجات المحلية الفاخرة.'))
-            ->action(Lang::get('تفعيل البريد الإلكتروني'), $verificationUrl)
-            ->line(Lang::get('إذا لم تقم بإنشاء حساب، فلا داعي لاتخاذ أي إجراء.'))
-            ->salutation(Lang::get('مع تحيات فريق محلي'));
+            ->subject('تفعيل حسابك في Mahly')
+            ->greeting('مرحباً بك في Mahly!')
+            ->line('يسعدنا انضمامك إلينا. يرجى الضغط على الزر أدناه لتفعيل بريدك الإلكتروني والبدء في استكشاف المنتجات المحلية الفاخرة.')
+            ->action('تفعيل البريد الإلكتروني', $verificationUrl)
+            ->line('إذا لم تقم بإنشاء حساب، فلا داعي لاتخاذ أي إجراء.')
+            ->salutation('مع تحيات فريق Mahly');
     }
 }
