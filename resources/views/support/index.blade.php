@@ -21,7 +21,21 @@
         <!-- Header -->
         <div class="bg-white border-b border-[#0d1b4b]/10 shadow-sm relative overflow-hidden">
             <div class="absolute inset-0 bg-[#0d1b4b]/5 pointer-events-none"></div>
+            @php
+                $backUrl = url()->previous();
+                if ($backUrl === url()->current()) {
+                    $backUrl = route('landing');
+                }
+            @endphp
             <div class="max-w-7xl mx-auto px-4 py-16 sm:px-6 lg:px-8 text-center relative z-10">
+                <div class="flex justify-start mb-6">
+                    <a href="{{ $backUrl }}" class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-[#0d1b4b]/15 hover:border-[#0d1b4b]/30 text-[#0d1b4b] rounded-xl font-bold transition-all shadow-sm hover:shadow">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                        </svg>
+                        <span>رجوع</span>
+                    </a>
+                </div>
                 <a href="/" class="inline-block mb-6">
                     <x-application-logo class="h-16 w-auto" />
                 </a>
