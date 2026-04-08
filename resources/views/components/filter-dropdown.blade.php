@@ -26,6 +26,7 @@
 <div
     id="{{ $id }}-root"
     class="relative h-12"
+    style="height: 3rem;"
     :class="{ 'z-[120]': open }"
     x-data="{
         open: false,
@@ -63,6 +64,7 @@
     <button
         type="button"
         class="flex h-full w-full items-center justify-between rounded-xl border border-[#0d1b4b]/15 bg-white px-4 text-sm font-medium leading-none text-[#0d1b4b]/70 shadow-sm transition hover:bg-[#fdfbf4] hover:text-[#0d1b4b] focus:outline-none focus:ring-2 focus:ring-[#d4af37]/40"
+        style="height: 100%;"
         @click="open = !open"
         :aria-expanded="open.toString()"
     >
