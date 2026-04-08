@@ -39,8 +39,8 @@
                 </div>
 
                 <form method="GET" action="{{ route('products.index') }}" class="mt-5 grid grid-cols-1 gap-3 md:grid-cols-5 md:items-end">
-                    <div class="flex flex-col justify-end">
-                        <label for="products-field-dropdown" class="block min-h-5 text-xs font-bold text-[#0d1b4b]/60 mb-1">الحقل</label>
+                    <div class="flex flex-col justify-end gap-1">
+                        <label for="products-field-dropdown" class="block h-4 text-xs font-bold leading-none text-[#0d1b4b]/60">الحقل</label>
                         <x-filter-dropdown
                             id="products-field-dropdown"
                             name="field"
@@ -62,10 +62,10 @@
                         />
                     </div>
 
-                    <div class="md:col-span-2 flex flex-col justify-end">
-                        <label for="products-value-text" class="block min-h-5 text-xs font-bold text-[#0d1b4b]/60 mb-1">القيمة</label>
+                    <div class="md:col-span-2 flex flex-col justify-end gap-1">
+                        <label for="products-value-text" class="block h-4 text-xs font-bold leading-none text-[#0d1b4b]/60">القيمة</label>
                         <input id="products-value-text" name="value" value="{{ $value }}" type="text" class="h-12 w-full bg-white border border-[#0d1b4b]/15 rounded-xl px-3 text-sm text-[#0d1b4b]" placeholder="اكتب قيمة البحث أو التصفية">
-                        <div id="products-value-active-wrap" class="hidden">
+                        <div id="products-value-active-wrap" class="hidden h-12">
                             <x-filter-dropdown
                                 id="products-value-active-dropdown"
                                 name="value"
@@ -77,7 +77,7 @@
                                 placeholder="اختر حالة النشاط"
                             />
                         </div>
-                        <div id="products-value-discount-wrap" class="hidden">
+                        <div id="products-value-discount-wrap" class="hidden h-12">
                             <x-filter-dropdown
                                 id="products-value-discount-dropdown"
                                 name="value"
@@ -91,8 +91,8 @@
                         </div>
                     </div>
 
-                    <div class="flex flex-col justify-end">
-                        <label for="products-per-page-dropdown" class="block min-h-5 text-xs font-bold text-[#0d1b4b]/60 mb-1">عدد النتائج</label>
+                    <div class="flex flex-col justify-end gap-1">
+                        <label for="products-per-page-dropdown" class="block h-4 text-xs font-bold leading-none text-[#0d1b4b]/60">عدد النتائج</label>
                         <x-filter-dropdown
                             id="products-per-page-dropdown"
                             name="per_page"

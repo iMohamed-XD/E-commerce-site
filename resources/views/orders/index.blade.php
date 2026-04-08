@@ -83,8 +83,8 @@
                     <input type="hidden" name="status" value="{{ $status }}">
                     <input type="hidden" name="per_page" value="{{ $perPage }}">
 
-                    <div class="flex flex-col justify-end">
-                        <label for="orders-field-dropdown" class="block min-h-5 text-xs font-bold text-[#0d1b4b]/60 mb-1">الحقل</label>
+                    <div class="flex flex-col justify-end gap-1">
+                        <label for="orders-field-dropdown" class="block h-4 text-xs font-bold leading-none text-[#0d1b4b]/60">الحقل</label>
                         <x-filter-dropdown
                             id="orders-field-dropdown"
                             name="field"
@@ -108,10 +108,10 @@
                         />
                     </div>
 
-                    <div class="md:col-span-2 flex flex-col justify-end">
-                        <label for="orders-value-text" class="block min-h-5 text-xs font-bold text-[#0d1b4b]/60 mb-1">القيمة</label>
+                    <div class="md:col-span-2 flex flex-col justify-end gap-1">
+                        <label for="orders-value-text" class="block h-4 text-xs font-bold leading-none text-[#0d1b4b]/60">القيمة</label>
                         <input id="orders-value-text" name="value" value="{{ $value }}" type="text" class="h-12 w-full bg-white border border-[#0d1b4b]/15 rounded-xl px-3 text-sm text-[#0d1b4b]" placeholder="اكتب قيمة البحث أو التصفية">
-                        <div id="orders-value-payment-wrap" class="hidden">
+                        <div id="orders-value-payment-wrap" class="hidden h-12">
                             <x-filter-dropdown
                                 id="orders-value-payment-dropdown"
                                 name="value"
@@ -123,7 +123,7 @@
                                 placeholder="اختر طريقة الدفع"
                             />
                         </div>
-                        <div id="orders-value-archived-wrap" class="hidden">
+                        <div id="orders-value-archived-wrap" class="hidden h-12">
                             <x-filter-dropdown
                                 id="orders-value-archived-dropdown"
                                 name="value"
