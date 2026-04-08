@@ -17,7 +17,7 @@ class LandingController extends Controller
         }
 
         $sellersCount = User::where('role', 'seller')->count();
-        $ordersCount = Order::where('status', 'completed')->count();
+        $ordersCount = Order::whereIn('status', ['done', 'completed'])->count();
         $avgRating = Feedback::avg('rating') ?: 5.0;
 
         return view('landing', compact('sellersCount', 'ordersCount', 'avgRating'));

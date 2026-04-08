@@ -81,16 +81,33 @@ class ShopController extends Controller
 
     public function show($slug)
     {
-        $shop = Shop::where('slug', $slug)->with(['products' => function ($query) {
-            $query->where('is_active', true)->orderBy('created_at', 'desc');
-        }])->firstOrFail();
+        $shop = Shop::where('slug', $slug)->firstOrFail();
+
+        $search = trim((string) request('search', ''));
+
+        $productsQuery = $shop->products()
+            ->with('category')
+            ->where('is_active', true)
+            ->orderBy('created_at', 'desc');
+
+        if ($search !== '') {
+            $productsQuery->where(function ($query) use ($search) {
+                $query->where('name', 'like', '%' . $search . '%')
+                    ->orWhere('description', 'like', '%' . $search . '%')
+                    ->orWhereHas('category', function ($categoryQuery) use ($search) {
+                        $categoryQuery->where('name', 'like', '%' . $search . '%');
+                    });
+            });
+        }
+
+        $products = $productsQuery->paginate(20)->withQueryString();
 
         $categories = $shop->categories()
             ->whereHas('products', function ($query) {
                 $query->where('is_active', true);
             })->get();
 
-        return view('shop.show', compact('shop', 'categories'));
+        return view('shop.show', compact('shop', 'categories', 'products', 'search'));
     }
 
     public function applyPromo(Request $request, $slug)

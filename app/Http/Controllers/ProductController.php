@@ -13,15 +13,60 @@ use Illuminate\Support\Facades\Auth;
 
 class ProductController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $shop = Auth::user()->shop;
         if (!$shop) {
             return redirect()->route('dashboard');
         }
 
-        $products = $shop->products()->latest()->get();
-        return view('products.index', compact('products', 'shop'));
+        $perPage = (int) $request->input('per_page', 20);
+        if (!in_array($perPage, [10, 15, 20, 25, 30], true)) {
+            $perPage = 20;
+        }
+
+        $field = $request->string('field')->toString();
+        $value = trim((string) $request->input('value', ''));
+
+        $productsQuery = $shop->products()->with('category')->latest();
+
+        if ($value !== '') {
+            $allowedFields = [
+                'id',
+                'name',
+                'description',
+                'price',
+                'quantity_available',
+                'is_active',
+                'discount_percent',
+                'discount_active',
+                'category_name',
+                'created_at',
+            ];
+
+            if (in_array($field, $allowedFields, true)) {
+                if ($field === 'id') {
+                    $productsQuery->where('id', (int) $value);
+                } elseif (in_array($field, ['price', 'quantity_available', 'discount_percent'], true)) {
+                    $productsQuery->where($field, (float) $value);
+                } elseif (in_array($field, ['is_active', 'discount_active'], true)) {
+                    $normalized = in_array(mb_strtolower($value), ['1', 'true', 'yes', 'active', 'نشط', 'مفعل'], true) ? 1 : 0;
+                    $productsQuery->where($field, $normalized);
+                } elseif ($field === 'category_name') {
+                    $productsQuery->whereHas('category', function ($query) use ($value) {
+                        $query->where('name', 'like', '%' . $value . '%');
+                    });
+                } elseif ($field === 'created_at') {
+                    $productsQuery->whereDate('created_at', $value);
+                } else {
+                    $productsQuery->where($field, 'like', '%' . $value . '%');
+                }
+            }
+        }
+
+        $products = $productsQuery->paginate($perPage)->withQueryString();
+
+        return view('products.index', compact('products', 'shop', 'perPage', 'field', 'value'));
     }
 
     public function create()

@@ -188,7 +188,7 @@
                         $totalCategories = $shop->categories()->count();
                         $totalProducts = $shop->products()->count();
                         $totalOrders   = $shop->orders()->count();
-                        $totalRevenue  = $shop->orders()->where('status', 'completed')->sum('total_amount');
+                        $totalRevenue  = $shop->orders()->whereIn('status', ['done', 'completed'])->sum('total_amount');
                         $needsCategoryOnboarding = $totalCategories === 0;
                         $needsProductOnboarding = $totalProducts === 0;
                         $showSellerOnboarding = $needsCategoryOnboarding || $needsProductOnboarding;

@@ -173,40 +173,55 @@
             @endif
 
             <!-- Categories Header -->
-            <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12 border-b border-[#0d1b4b]/10 pb-8">
-                <div>
-                    <h2 class="text-4xl font-black text-[#0d1b4b] mb-2">تسوق منتجاتنا</h2>
-                    <p class="text-[#0d1b4b]/50 font-medium">اختر من تشكيلة واسعة من المنتجات المميزة</p>
+            <div class="mb-12 border-b border-[#0d1b4b]/10 pb-8">
+                <div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+                    <div>
+                        <h2 class="text-4xl font-black text-[#0d1b4b] mb-2">تسوق منتجاتنا</h2>
+                        <p class="text-[#0d1b4b]/50 font-medium">اختر من تشكيلة واسعة من المنتجات المميزة</p>
+                    </div>
+
+                    @if($categories->count() > 0)
+                    <div class="flex flex-wrap gap-2">
+                        <button @click="currentFilter = 'all'"
+                                :class="currentFilter === 'all' ? 'theme-primary-bg text-white shadow-[#0d1b4b]/20' : 'bg-white text-[#0d1b4b]/60 border border-[#0d1b4b]/15 hover:bg-[#fdfbf4]'"
+                                class="px-5 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 shadow-sm border border-transparent">
+                            الكل
+                        </button>
+                        @foreach($categories as $cat)
+                        <button @click="currentFilter = '{{ $cat->id }}'"
+                                :class="currentFilter === '{{ $cat->id }}' ? 'bg-[#0d1b4b] text-white shadow-[#0d1b4b]/20' : 'bg-white text-[#0d1b4b]/60 border border-[#0d1b4b]/15 hover:bg-[#fdfbf4]'"
+                                class="px-5 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 shadow-sm border border-transparent">
+                            {{ $cat->name }}
+                        </button>
+                        @endforeach
+                    </div>
+                    @endif
                 </div>
-                
-                @if($categories->count() > 0)
-                <div class="flex flex-wrap gap-2">
-                    <button @click="currentFilter = 'all'"
-                            :class="currentFilter === 'all' ? 'theme-primary-bg text-white shadow-[#0d1b4b]/20' : 'bg-white text-[#0d1b4b]/60 border border-[#0d1b4b]/15 hover:bg-[#fdfbf4]'"
-                            class="px-5 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 shadow-sm border border-transparent">
-                        الكل
-                    </button>
-                    @foreach($categories as $cat)
-                    <button @click="currentFilter = '{{ $cat->id }}'"
-                            :class="currentFilter === '{{ $cat->id }}' ? 'bg-[#0d1b4b] text-white shadow-[#0d1b4b]/20' : 'bg-white text-[#0d1b4b]/60 border border-[#0d1b4b]/15 hover:bg-[#fdfbf4]'"
-                            class="px-5 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 shadow-sm border border-transparent">
-                        {{ $cat->name }}
-                    </button>
-                    @endforeach
-                </div>
-                @endif
+
+                <form method="GET" action="{{ route('shop.show', $shop->slug) }}" class="mt-5">
+                    <div class="relative max-w-xl">
+                        <input type="text"
+                               name="search"
+                               value="{{ $search }}"
+                               placeholder="ابحث عن منتج أو فئة..."
+                               class="w-full bg-white border border-[#0d1b4b]/15 rounded-2xl px-5 py-3.5 text-[#0d1b4b] font-bold placeholder-[#0d1b4b]/35 focus:ring-2 focus:ring-[#d4af37]/25 transition">
+                        <button type="submit" class="absolute left-2 top-1/2 -translate-y-1/2 theme-primary-bg text-white text-sm font-black px-4 py-2 rounded-xl hover:opacity-95 transition">
+                            بحث
+                        </button>
+                    </div>
+                </form>
             </div>
 
-            @if($shop->products->isEmpty())
+            @if($products->isEmpty())
                 <div class="text-center py-32 bg-white/70 border-2 border-dashed border-[#0d1b4b]/15 rounded-3xl">
                     <div class="bg-[#0d1b4b]/6 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 text-[#0d1b4b]/35">
                         <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
                     </div>
-                    <p class="text-[#0d1b4b]/45 text-xl font-bold">لا توجد منتجات حالياً.</p>
+                    <p class="text-[#0d1b4b]/45 text-xl font-bold">لا توجد منتجات مطابقة للبحث حالياً.</p>
                 </div>
             @else
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-                    @foreach($shop->products as $product)
+                    @foreach($products as $product)
                         @php
                             $isDiscounted = $product->hasActiveDiscount();
                             $currentPrice = $product->effectivePrice();
@@ -270,6 +285,29 @@
                         </div>
                     @endforeach
                 </div>
+
+                @if($products->lastPage() > 1)
+                    <div class="mt-8 bg-white/70 border border-[#0d1b4b]/10 rounded-2xl px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+                        <div class="text-sm text-[#0d1b4b]/60">الصفحة {{ $products->currentPage() }} من {{ $products->lastPage() }}</div>
+                        <div class="flex items-center gap-1">
+                            @if($products->onFirstPage())
+                                <span class="px-3 py-1.5 rounded-lg bg-[#0d1b4b]/5 text-[#0d1b4b]/30 text-sm font-bold">السابق</span>
+                            @else
+                                <a href="{{ $products->previousPageUrl() }}" class="px-3 py-1.5 rounded-lg border border-[#0d1b4b]/15 bg-white text-[#0d1b4b] text-sm font-bold hover:bg-[#fdfbf4]">السابق</a>
+                            @endif
+
+                            @foreach($products->getUrlRange(max(1, $products->currentPage() - 2), min($products->lastPage(), $products->currentPage() + 2)) as $page => $url)
+                                <a href="{{ $url }}" class="px-3 py-1.5 rounded-lg text-sm font-bold {{ $page === $products->currentPage() ? 'bg-[#0d1b4b] text-white' : 'border border-[#0d1b4b]/15 bg-white text-[#0d1b4b] hover:bg-[#fdfbf4]' }}">{{ $page }}</a>
+                            @endforeach
+
+                            @if($products->hasMorePages())
+                                <a href="{{ $products->nextPageUrl() }}" class="px-3 py-1.5 rounded-lg border border-[#0d1b4b]/15 bg-white text-[#0d1b4b] text-sm font-bold hover:bg-[#fdfbf4]">التالي</a>
+                            @else
+                                <span class="px-3 py-1.5 rounded-lg bg-[#0d1b4b]/5 text-[#0d1b4b]/30 text-sm font-bold">التالي</span>
+                            @endif
+                        </div>
+                    </div>
+                @endif
             @endif
         </main>
 
@@ -358,7 +396,7 @@
                                             <svg class="w-4 h-4 transition-transform" :class="openPromo ? 'rotate-90' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
                                         </button>
                                         <div x-show="openPromo" x-transition class="flex gap-2">
-                                            <input type="text" x-model="promoInput" x-bind:disabled="promoApplied" class="flex-1 bg-white border border-[#0d1b4b]/15 rounded-xl px-4 py-3 text-sm font-bold text-[#0d1b4b] uppercase placeholder-[#0d1b4b]/30 focus:ring-2 focus:ring-[#d4af37]/25 transition" placeholder="PROMO20">
+                                            <input type="text" x-model="promoInput" x-bind:disabled="promoApplied" class="flex-1 bg-white border border-[#0d1b4b]/15 rounded-xl px-4 py-3 text-sm font-bold text-[#0d1b4b] uppercase placeholder-[#0d1b4b]/30 focus:ring-2 focus:ring-[#d4af37]/25 transition" placeholder="أدخل رمز الخصم">
                                             <button @click="applyPromo" x-show="!promoApplied" class="theme-primary-bg theme-primary-bg-hover px-6 py-3 rounded-xl text-sm font-black text-white transition">تطبيق</button>
                                             <button @click="removePromo" x-show="promoApplied" class="bg-red-600 px-6 py-3 rounded-xl text-sm font-black text-white hover:bg-red-500 transition">إلغاء</button>
                                         </div>
@@ -418,7 +456,7 @@
                                 </div>
                                 <div class="space-y-2">
                                     <label class="text-[10px] font-black theme-accent-text uppercase tracking-[0.2em] px-1">البريد (اختياري)</label>
-                                    <input type="email" name="buyer_email" dir="ltr" class="w-full bg-white border border-[#0d1b4b]/15 rounded-2xl px-5 py-4 text-[#0d1b4b] font-bold text-left placeholder-[#0d1b4b]/30 focus:ring-2 focus:ring-[#d4af37]/25 transition" placeholder="mail@example.com">
+                                    <input type="email" name="buyer_email" dir="ltr" class="w-full bg-white border border-[#0d1b4b]/15 rounded-2xl px-5 py-4 text-[#0d1b4b] font-bold text-left placeholder-[#0d1b4b]/30 focus:ring-2 focus:ring-[#d4af37]/25 transition" placeholder="أدخل بريدك الإلكتروني">
                                 </div>
                             </div>
                             <div class="space-y-2">
@@ -469,7 +507,7 @@
                                     </div>
 
                                     <div class="flex justify-center">
-                                        <img src="{{ Storage::url($shop->shamcash_qr_path) }}" alt="QR شام كاش" class="w-40 h-40 rounded-2xl border border-[#0d1b4b]/10 bg-white p-2 object-contain">
+                                        <img src="{{ Storage::url($shop->shamcash_qr_path) }}" alt="رمز شام كاش" class="w-40 h-40 rounded-2xl border border-[#0d1b4b]/10 bg-white p-2 object-contain">
                                     </div>
 
                                     <div class="space-y-2">
@@ -537,7 +575,7 @@
                     isCartOpen: false,
                     isCheckoutOpen: false,
                     currentFilter: 'all',
-                    stockByProduct: @json($shop->products->mapWithKeys(fn($product) => [$product->id => (int) $product->quantity_available])),
+                    stockByProduct: @json($products->getCollection()->mapWithKeys(fn($product) => [$product->id => (int) $product->quantity_available])),
                     cart: [],
                     promoInput: '',
                     promoApplied: false,
