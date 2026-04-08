@@ -38,9 +38,9 @@
                     </a>
                 </div>
 
-                <form method="GET" action="{{ route('products.index') }}" class="mt-5 grid grid-cols-1 gap-3 md:grid-cols-5 md:items-end">
-                    <div class="flex flex-col justify-end gap-1">
-                        <label for="products-field-dropdown" class="block h-4 text-xs font-bold leading-none text-[#0d1b4b]/60">الحقل</label>
+                <form method="GET" action="{{ route('products.index') }}" class="mt-5 grid grid-cols-1 gap-3 md:grid-cols-5">
+                    <div class="grid grid-rows-[auto_3rem] gap-1">
+                        <label for="products-field-dropdown" class="block text-xs font-bold leading-none text-[#0d1b4b]/60">الحقل</label>
                         <x-filter-dropdown
                             id="products-field-dropdown"
                             name="field"
@@ -62,10 +62,11 @@
                         />
                     </div>
 
-                    <div class="md:col-span-2 flex flex-col justify-end gap-1">
-                        <label for="products-value-text" class="block h-4 text-xs font-bold leading-none text-[#0d1b4b]/60">القيمة</label>
-                        <input id="products-value-text" name="value" value="{{ $value }}" type="text" class="h-12 w-full bg-white border border-[#0d1b4b]/15 rounded-xl px-3 text-sm text-[#0d1b4b]" placeholder="اكتب قيمة البحث أو التصفية">
-                        <div id="products-value-active-wrap" class="hidden h-12">
+                    <div class="md:col-span-2 grid grid-rows-[auto_3rem] gap-1">
+                        <label for="products-value-text" class="block text-xs font-bold leading-none text-[#0d1b4b]/60">القيمة</label>
+                        <div class="relative h-12">
+                            <input id="products-value-text" name="value" value="{{ $value }}" type="text" class="absolute inset-0 h-12 w-full bg-white border border-[#0d1b4b]/15 rounded-xl px-3 text-sm text-[#0d1b4b]" placeholder="اكتب قيمة البحث أو التصفية">
+                            <div id="products-value-active-wrap" class="absolute inset-0 hidden">
                             <x-filter-dropdown
                                 id="products-value-active-dropdown"
                                 name="value"
@@ -76,8 +77,8 @@
                                 ]"
                                 placeholder="اختر حالة النشاط"
                             />
-                        </div>
-                        <div id="products-value-discount-wrap" class="hidden h-12">
+                            </div>
+                            <div id="products-value-discount-wrap" class="absolute inset-0 hidden">
                             <x-filter-dropdown
                                 id="products-value-discount-dropdown"
                                 name="value"
@@ -88,11 +89,12 @@
                                 ]"
                                 placeholder="اختر حالة الخصم"
                             />
+                            </div>
                         </div>
                     </div>
 
-                    <div class="flex flex-col justify-end gap-1">
-                        <label for="products-per-page-dropdown" class="block h-4 text-xs font-bold leading-none text-[#0d1b4b]/60">عدد النتائج</label>
+                    <div class="grid grid-rows-[auto_3rem] gap-1">
+                        <label for="products-per-page-dropdown" class="block text-xs font-bold leading-none text-[#0d1b4b]/60">عدد النتائج</label>
                         <x-filter-dropdown
                             id="products-per-page-dropdown"
                             name="per_page"
@@ -108,9 +110,12 @@
                         />
                     </div>
 
-                    <div class="flex items-end gap-2 md:h-[72px]">
-                        <button type="submit" class="flex-1 h-12 bg-[#0d1b4b] text-white font-black rounded-xl text-sm hover:bg-[#1a2d6b] transition">تصفية</button>
-                        <a href="{{ route('products.index', ['per_page' => $perPage]) }}" class="inline-flex h-12 items-center px-4 border border-[#0d1b4b]/15 rounded-xl text-sm font-bold text-[#0d1b4b]/70 bg-white hover:bg-[#fdfbf4] transition">إعادة ضبط</a>
+                    <div class="grid grid-rows-[auto_3rem] gap-1">
+                        <span aria-hidden="true" class="block"></span>
+                        <div class="flex h-12 items-stretch gap-2">
+                            <button type="submit" class="flex-1 h-12 bg-[#0d1b4b] text-white font-black rounded-xl text-sm hover:bg-[#1a2d6b] transition">تصفية</button>
+                            <a href="{{ route('products.index', ['per_page' => $perPage]) }}" class="inline-flex h-12 items-center px-4 border border-[#0d1b4b]/15 rounded-xl text-sm font-bold text-[#0d1b4b]/70 bg-white hover:bg-[#fdfbf4] transition">إعادة ضبط</a>
+                        </div>
                     </div>
                 </form>
             </div>
