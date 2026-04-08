@@ -23,8 +23,38 @@
     $initialLabel = collect($normalizedOptions)->firstWhere('value', $initialValue)['label'] ?? ($initialValue !== '' ? $initialValue : $placeholder);
 @endphp
 
-{{-- Change this line --}}
-<div id="{{ $id }}-root" class="relative h-12 w-full" style="height: 3rem; width: 100%;">
+<div
+    id="{{ $id }}-root"
+    class="relative h-12"
+    style="height: 3rem;"
+    :class="{ 'z-[120]': open }"
+    x-data="{
+        open: false,
+        value: @js($initialValue),
+        label: @js($initialLabel),
+        options: @js($normalizedOptions),
+        choose(option) {
+            this.value = option.value;
+            this.label = option.label;
+            this.open = false;
+            this.$dispatch('filter-dropdown-change', {
+                id: @js($id),
+                name: @js($name),
+                value: this.value,
+                label: this.label,
+            });
+
+            if (@js((bool) $autoSubmit)) {
+                const form = this.$el.closest('form');
+                if (form) {
+                    form.submit();
+                }
+            }
+        }
+    }"
+    @click.outside="open = false"
+    @keydown.escape.window="open = false"
+>
     @if($name)
         <input id="{{ $id }}" type="hidden" name="{{ $name }}" x-model="value">
     @else
