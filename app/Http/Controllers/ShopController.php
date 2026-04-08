@@ -6,7 +6,6 @@ use Illuminate\Http\Request;
 use App\Models\Shop;
 use App\Models\Order;
 use App\Models\OrderItem;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
@@ -24,15 +23,18 @@ class ShopController extends Controller
             'logo' => 'nullable|image|max:2048',
             'hero_image' => 'nullable|image|max:4096',
             'color' => ['required', 'string', Rule::in(array_keys(config('shop_colors', ['navy' => []])))],
+            'shamcash_account_number' => 'nullable|string|max:255',
+            'shamcash_qr' => 'nullable|image|max:4096',
+            'shamcash_is_active' => 'nullable|boolean',
         ]);
 
         $logoPath = null;
         if ($request->hasFile('logo')) {
             $logoPath = $request->file('logo')->store('shops/logos', 'public');
         } elseif ($request->filled('cropped_logo')) {
-            $imageParts = explode(";base64,", $request->cropped_logo);
+            $imageParts = explode(';base64,', $request->cropped_logo);
             if (count($imageParts) === 2) {
-                $imageTypeAux = explode("image/", $imageParts[0]);
+                $imageTypeAux = explode('image/', $imageParts[0]);
                 $imageType = $imageTypeAux[1] ?? 'png';
                 $imageBase64 = base64_decode($imageParts[1]);
                 if ($imageBase64 !== false) {
@@ -48,7 +50,18 @@ class ShopController extends Controller
             $heroImagePath = $request->file('hero_image')->store('shops/heroes', 'public');
         }
 
-        $shop = Shop::create([
+        $shamcashQrPath = null;
+        if ($request->hasFile('shamcash_qr')) {
+            $shamcashQrPath = $request->file('shamcash_qr')->store('shops/shamcash', 'public');
+        }
+
+        $shamcashAccountNumber = trim((string) $request->input('shamcash_account_number', ''));
+        $shamcashAccountNumber = $shamcashAccountNumber !== '' ? $shamcashAccountNumber : null;
+        $shamcashIsActive = $request->boolean('shamcash_is_active');
+        $hasShamcashSetup = !empty($shamcashAccountNumber) && !empty($shamcashQrPath);
+        $shamcashIsActive = $shamcashIsActive && $hasShamcashSetup;
+
+        Shop::create([
             'user_id' => Auth::id(),
             'name' => $request->name,
             'slug' => $request->slug,
@@ -56,6 +69,9 @@ class ShopController extends Controller
             'logo_path' => $logoPath,
             'hero_image_path' => $heroImagePath,
             'color' => $request->input('color', 'navy'),
+            'shamcash_account_number' => $shamcashAccountNumber,
+            'shamcash_qr_path' => $shamcashQrPath,
+            'shamcash_is_active' => $shamcashIsActive,
         ]);
 
         return redirect()->route('dashboard')->with('success', 'تم إنشاء متجرك بنجاح!');
@@ -63,12 +79,12 @@ class ShopController extends Controller
 
     public function show($slug)
     {
-        $shop = Shop::where('slug', $slug)->with(['products' => function($query) {
+        $shop = Shop::where('slug', $slug)->with(['products' => function ($query) {
             $query->where('is_active', true)->orderBy('created_at', 'desc');
         }])->firstOrFail();
 
         $categories = $shop->categories()
-            ->whereHas('products', function($query) {
+            ->whereHas('products', function ($query) {
                 $query->where('is_active', true);
             })->get();
 
@@ -78,19 +94,19 @@ class ShopController extends Controller
     public function applyPromo(Request $request, $slug)
     {
         $shop = Shop::where('slug', $slug)->firstOrFail();
-        
+
         $code = strtoupper(trim($request->code));
         $promo = $shop->promoCodes()->where('code', $code)->first();
-        
+
         if (!$promo || !$promo->isValid()) {
             return response()->json(['valid' => false, 'message' => 'كود الخصم غير صحيح أو منتهي الصلاحية.']);
         }
-        
+
         return response()->json([
             'valid' => true,
             'code' => $promo->code,
             'discount_percentage' => $promo->discount_percentage,
-            'message' => 'تم تطبيق كود الخصم بنجاح!'
+            'message' => 'تم تطبيق كود الخصم بنجاح!',
         ]);
     }
 
@@ -105,6 +121,8 @@ class ShopController extends Controller
             'buyer_address' => 'required|string',
             'cart' => 'required|json',
             'promo_code' => 'nullable|string',
+            'payment_method' => 'required|in:cod,shamcash',
+            'shamcash_transaction_number' => 'nullable|string|max:255',
         ]);
 
         $cart = json_decode($request->cart, true);
@@ -120,7 +138,7 @@ class ShopController extends Controller
             if ($product) {
                 $priceToUse = $product->effectivePrice();
                 $totalAmount += $priceToUse * $item['quantity'];
-                
+
                 $orderItems[] = [
                     'product_id' => $product->id,
                     'quantity' => $item['quantity'],
@@ -133,7 +151,22 @@ class ShopController extends Controller
             return back()->withErrors(['cart' => 'المنتجات في العربة غير صالحة.']);
         }
 
-        // Apply global Promo Code discount
+        $shamcashAvailable = $shop->shamcash_is_active && !empty($shop->shamcash_account_number) && !empty($shop->shamcash_qr_path);
+        $paymentMethod = $request->input('payment_method', 'cod');
+        if ($paymentMethod === 'shamcash' && !$shamcashAvailable) {
+            $paymentMethod = 'cod';
+        }
+
+        $shamcashTransactionNumber = null;
+        if ($paymentMethod === 'shamcash') {
+            $shamcashTransactionNumber = trim((string) $request->input('shamcash_transaction_number', ''));
+            if ($shamcashTransactionNumber === '') {
+                return back()->withErrors([
+                    'shamcash_transaction_number' => 'يرجى إدخال رقم عملية التحويل عبر شام كاش.',
+                ])->withInput();
+            }
+        }
+
         $promoCodeUsed = null;
         if ($request->filled('promo_code')) {
             $promo = $shop->promoCodes()->where('code', strtoupper(trim($request->promo_code)))->first();
@@ -151,6 +184,8 @@ class ShopController extends Controller
             'buyer_phone' => $request->buyer_phone,
             'buyer_address' => $request->buyer_address,
             'promo_code_used' => $promoCodeUsed,
+            'payment_method' => $paymentMethod,
+            'shamcash_transaction_number' => $shamcashTransactionNumber,
             'total_amount' => $totalAmount,
             'status' => 'pending',
         ]);
@@ -175,8 +210,7 @@ class ShopController extends Controller
         }
 
         $query = Shop::where('slug', $slug);
-        
-        // If updating, ignore current shop
+
         if ($shopId = Auth::user()->shop?->id) {
             $query->where('id', '!=', $shopId);
         }
@@ -202,12 +236,17 @@ class ShopController extends Controller
             'logo' => 'nullable|image|max:2048',
             'hero_image' => 'nullable|image|max:4096',
             'color' => ['required', 'string', Rule::in(array_keys(config('shop_colors', ['navy' => []])))],
+            'shamcash_account_number' => 'nullable|string|max:255',
+            'shamcash_qr' => 'nullable|image|max:4096',
+            'shamcash_is_active' => 'nullable|boolean',
+            'shamcash_remove_qr' => 'nullable|boolean',
         ]);
 
         $shop->name = $request->name;
         $shop->slug = $request->slug;
         $shop->description = $request->description;
         $shop->color = $request->input('color', 'navy');
+        $shop->shamcash_account_number = trim((string) $request->input('shamcash_account_number', '')) ?: null;
 
         if ($request->hasFile('logo')) {
             if ($shop->logo_path) {
@@ -218,9 +257,9 @@ class ShopController extends Controller
             if ($shop->logo_path) {
                 $publicDisk->delete($shop->logo_path);
             }
-            $imageParts = explode(";base64,", $request->cropped_logo);
+            $imageParts = explode(';base64,', $request->cropped_logo);
             if (count($imageParts) === 2) {
-                $imageTypeAux = explode("image/", $imageParts[0]);
+                $imageTypeAux = explode('image/', $imageParts[0]);
                 $imageType = $imageTypeAux[1] ?? 'png';
                 $imageBase64 = base64_decode($imageParts[1]);
                 if ($imageBase64 !== false) {
@@ -237,6 +276,21 @@ class ShopController extends Controller
             }
             $shop->hero_image_path = $request->file('hero_image')->store('shops/heroes', 'public');
         }
+
+        if ($request->boolean('shamcash_remove_qr') && $shop->shamcash_qr_path) {
+            $publicDisk->delete($shop->shamcash_qr_path);
+            $shop->shamcash_qr_path = null;
+        }
+
+        if ($request->hasFile('shamcash_qr')) {
+            if ($shop->shamcash_qr_path) {
+                $publicDisk->delete($shop->shamcash_qr_path);
+            }
+            $shop->shamcash_qr_path = $request->file('shamcash_qr')->store('shops/shamcash', 'public');
+        }
+
+        $hasShamcashSetup = !empty($shop->shamcash_account_number) && !empty($shop->shamcash_qr_path);
+        $shop->shamcash_is_active = $request->boolean('shamcash_is_active') && $hasShamcashSetup;
 
         $shop->save();
 

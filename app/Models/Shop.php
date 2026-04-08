@@ -6,7 +6,22 @@ use Illuminate\Database\Eloquent\Model;
 
 class Shop extends Model
 {
-    protected $fillable = ['user_id', 'name', 'slug', 'description', 'logo_path', 'hero_image_path', 'color'];
+    protected $fillable = [
+        'user_id',
+        'name',
+        'slug',
+        'description',
+        'logo_path',
+        'hero_image_path',
+        'color',
+        'shamcash_account_number',
+        'shamcash_qr_path',
+        'shamcash_is_active',
+    ];
+
+    protected $casts = [
+        'shamcash_is_active' => 'boolean',
+    ];
 
     public function getColorHexAttribute(): string
     {

@@ -108,6 +108,29 @@
                                     <x-input-error :messages="$errors->get('description')" class="mt-1.5" />
                                 </div>
 
+                                <div class="rounded-2xl border border-[#0d1b4b]/10 bg-[#f8faff] p-5 space-y-4">
+                                    <div class="flex items-center justify-between gap-3">
+                                        <h4 class="text-sm font-black text-[#0d1b4b]">إعدادات شام كاش (اختياري)</h4>
+                                        <label class="inline-flex items-center gap-2 text-xs font-bold text-[#0d1b4b]/70 cursor-pointer">
+                                            <input type="checkbox" name="shamcash_is_active" value="1" class="rounded border-[#0d1b4b]/25 text-[#0d1b4b] focus:ring-[#d4af37]/30" {{ old('shamcash_is_active') ? 'checked' : '' }}>
+                                            تفعيل شام كاش
+                                        </label>
+                                    </div>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <x-input-label for="create_shamcash_account_number" :value="__('رقم حساب شام كاش')" />
+                                            <x-text-input id="create_shamcash_account_number" class="block mt-1.5 w-full" type="text" name="shamcash_account_number" :value="old('shamcash_account_number')" placeholder="أدخل رقم الحساب" />
+                                            <x-input-error :messages="$errors->get('shamcash_account_number')" class="mt-1.5" />
+                                        </div>
+                                        <div>
+                                            <x-input-label for="create_shamcash_qr" :value="__('QR شام كاش')" />
+                                            <input id="create_shamcash_qr" type="file" name="shamcash_qr" accept="image/*" class="block mt-1.5 w-full text-sm text-[#0d1b4b]/70 file:mr-2 file:rounded-lg file:border-0 file:bg-[#0d1b4b] file:px-3 file:py-2 file:text-xs file:font-bold file:text-white hover:file:bg-[#1a2d6b]" />
+                                            <x-input-error :messages="$errors->get('shamcash_qr')" class="mt-1.5" />
+                                        </div>
+                                    </div>
+                                    <p class="text-[11px] text-[#0d1b4b]/45">عند التفعيل يجب إدخال رقم الحساب ورفع صورة QR.</p>
+                                </div>
+
                                 <x-shop-theme-picker
                                     name="color"
                                     :selected="old('color', 'navy')"
@@ -369,6 +392,38 @@
                                                focus:border-[#d4af37] focus:ring-2 focus:ring-[#d4af37]/20 rounded-xl shadow-sm py-2.5 px-4
                                                outline-none transition-all duration-200 resize-none">{{ old('description', $shop->description) }}</textarea>
                                     <x-input-error :messages="$errors->get('description')" class="mt-1.5" />
+                                </div>
+
+                                <div class="rounded-2xl border border-[#0d1b4b]/10 bg-[#f8faff] p-5 space-y-4">
+                                    <div class="flex items-center justify-between gap-3">
+                                        <h4 class="text-sm font-black text-[#0d1b4b]">إعدادات شام كاش</h4>
+                                        <label class="inline-flex items-center gap-2 text-xs font-bold text-[#0d1b4b]/70 cursor-pointer">
+                                            <input type="checkbox" name="shamcash_is_active" value="1" class="rounded border-[#0d1b4b]/25 text-[#0d1b4b] focus:ring-[#d4af37]/30" {{ old('shamcash_is_active', $shop->shamcash_is_active) ? 'checked' : '' }}>
+                                            تفعيل شام كاش
+                                        </label>
+                                    </div>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <x-input-label for="edit_shamcash_account_number" :value="__('رقم حساب شام كاش')" />
+                                            <x-text-input id="edit_shamcash_account_number" class="block mt-1.5 w-full" type="text" name="shamcash_account_number" :value="old('shamcash_account_number', $shop->shamcash_account_number)" placeholder="أدخل رقم الحساب" />
+                                            <x-input-error :messages="$errors->get('shamcash_account_number')" class="mt-1.5" />
+                                        </div>
+                                        <div>
+                                            <x-input-label for="edit_shamcash_qr" :value="__('QR شام كاش')" />
+                                            <input id="edit_shamcash_qr" type="file" name="shamcash_qr" accept="image/*" class="block mt-1.5 w-full text-sm text-[#0d1b4b]/70 file:mr-2 file:rounded-lg file:border-0 file:bg-[#0d1b4b] file:px-3 file:py-2 file:text-xs file:font-bold file:text-white hover:file:bg-[#1a2d6b]" />
+                                            <x-input-error :messages="$errors->get('shamcash_qr')" class="mt-1.5" />
+                                        </div>
+                                    </div>
+                                    @if($shop->shamcash_qr_path)
+                                        <div class="flex items-center gap-4 rounded-xl border border-[#0d1b4b]/10 bg-white p-3">
+                                            <img src="{{ Storage::url($shop->shamcash_qr_path) }}" alt="QR شام كاش" class="w-16 h-16 rounded-lg object-cover border border-[#0d1b4b]/10">
+                                            <label class="inline-flex items-center gap-2 text-xs font-bold text-red-600 cursor-pointer">
+                                                <input type="checkbox" name="shamcash_remove_qr" value="1" class="rounded border-red-300 text-red-600 focus:ring-red-200">
+                                                حذف رمز QR الحالي
+                                            </label>
+                                        </div>
+                                    @endif
+                                    <p class="text-[11px] text-[#0d1b4b]/45">يمكنك تفعيل/إيقاف شام كاش وتعديل بياناته في أي وقت.</p>
                                 </div>
 
                                 <x-shop-theme-picker

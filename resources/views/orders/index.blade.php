@@ -86,6 +86,18 @@
                                             <span class="text-[#0d1b4b]/45 w-24 shrink-0">العنوان:</span>
                                             <span class="text-[#0d1b4b]/80">{{ $order->buyer_address }}</span>
                                         </div>
+                                        <div class="flex gap-2">
+                                            <span class="text-[#0d1b4b]/45 w-24 shrink-0">طريقة الدفع:</span>
+                                            <span class="text-[#0d1b4b] font-semibold">
+                                                {{ $order->payment_method === 'shamcash' ? 'شام كاش' : 'الدفع عند الاستلام' }}
+                                            </span>
+                                        </div>
+                                        @if($order->payment_method === 'shamcash' && $order->shamcash_transaction_number)
+                                            <div class="flex gap-2">
+                                                <span class="text-[#0d1b4b]/45 w-24 shrink-0">رقم العملية:</span>
+                                                <span class="text-[#0d1b4b] font-semibold" dir="ltr">{{ $order->shamcash_transaction_number }}</span>
+                                            </div>
+                                        @endif
                                     </div>
                                 </div>
 

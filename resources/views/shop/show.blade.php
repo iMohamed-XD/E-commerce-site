@@ -372,21 +372,22 @@
         </div>
 
         <!-- Checkout Form Modal -->
+        @php($hasShamCash = $shop->shamcash_is_active && !empty($shop->shamcash_account_number) && !empty($shop->shamcash_qr_path))
         <div x-show="isCheckoutOpen" class="fixed inset-0 z-[60] overflow-y-auto px-4 py-8" x-cloak>
             <div class="flex items-center justify-center min-h-screen">
                 <div x-show="isCheckoutOpen" x-transition.opacity class="fixed inset-0 bg-[#0d1b4b]/50 backdrop-blur-md" @click="isCheckoutOpen = false"></div>
 
-                <div x-show="isCheckoutOpen" 
+                <div x-show="isCheckoutOpen"
                     x-transition:enter="transform transition ease-out duration-300"
                     x-transition:enter-start="opacity-0 translate-y-12"
                     x-transition:enter-end="opacity-100 translate-y-0"
                     class="relative bg-white border border-[#0d1b4b]/10 p-8 sm:p-12 rounded-[3rem] shadow-2xl shadow-[#0d1b4b]/15 max-w-xl w-full">
-                    
+
                     <form action="{{ route('shop.checkout', $shop->slug) }}" method="POST" @submit="submitCheckout">
                         @csrf
                         <input type="hidden" name="cart" x-model="JSON.stringify(cart)">
                         <input type="hidden" name="promo_code" x-model="promoInput" x-bind:disabled="!promoApplied">
-                        
+
                         <div class="mb-10 text-center">
                             <h3 class="text-3xl font-black text-[#0d1b4b] mb-2">إتمام الطلب</h3>
                             <p class="text-[#0d1b4b]/50 font-medium italic">يرجى تعبئة بيانات التوصيل بدقة</p>
@@ -413,11 +414,47 @@
                             </div>
                         </div>
 
-                        <div class="mt-10 p-6 bg-[#f4f7ff] rounded-3xl border border-[#0d1b4b]/10">
-                            <div class="flex justify-between items-center mb-2">
-                                <span class="text-xs text-[#0d1b4b]/45 font-bold">الدفع</span>
-                                <span class="text-xs text-[#0d1b4b] font-black">💵 عند الاستلام</span>
+                        <div class="mt-8 p-6 bg-[#f4f7ff] rounded-3xl border border-[#0d1b4b]/10 space-y-4">
+                            <p class="text-xs text-[#0d1b4b]/45 font-bold">طريقة الدفع</p>
+                            <div class="space-y-3">
+                                <label class="flex items-start gap-3 p-3 rounded-2xl border border-[#0d1b4b]/10 bg-white cursor-pointer">
+                                    <input type="radio" name="payment_method" value="cod" x-model="paymentMethod" class="mt-1 text-[#0d1b4b] focus:ring-[#d4af37]/30" checked>
+                                    <div>
+                                        <p class="text-sm font-black text-[#0d1b4b]">الدفع عند الاستلام</p>
+                                        <p class="text-xs text-[#0d1b4b]/55">ادفع نقداً عند استلام الطلب.</p>
+                                    </div>
+                                </label>
+
+                                @if($hasShamCash)
+                                    <label class="flex items-start gap-3 p-3 rounded-2xl border border-[#0d1b4b]/10 bg-white cursor-pointer">
+                                        <input type="radio" name="payment_method" value="shamcash" x-model="paymentMethod" class="mt-1 text-[#0d1b4b] focus:ring-[#d4af37]/30">
+                                        <div>
+                                            <p class="text-sm font-black text-[#0d1b4b]">شام كاش</p>
+                                            <p class="text-xs text-[#0d1b4b]/55">حوّل المبلغ مباشرة إلى حساب البائع عبر شام كاش.</p>
+                                        </div>
+                                    </label>
+                                @endif
                             </div>
+
+                            @if($hasShamCash)
+                                <div x-show="paymentMethod === 'shamcash'" x-transition class="space-y-4 rounded-2xl border border-[#d4af37]/35 bg-[#fff9e8] p-4">
+                                    <div class="flex items-center justify-between gap-3">
+                                        <p class="text-xs font-black text-[#a07c1e] uppercase tracking-widest">بيانات حساب شام كاش</p>
+                                        <p class="text-sm font-black text-[#0d1b4b]" dir="ltr">{{ $shop->shamcash_account_number }}</p>
+                                    </div>
+
+                                    <div class="flex justify-center">
+                                        <img src="{{ Storage::url($shop->shamcash_qr_path) }}" alt="QR شام كاش" class="w-40 h-40 rounded-2xl border border-[#0d1b4b]/10 bg-white p-2 object-contain">
+                                    </div>
+
+                                    <div class="space-y-2">
+                                        <label class="text-[10px] font-black text-[#a07c1e] uppercase tracking-[0.2em] px-1">رقم عملية التحويل</label>
+                                        <input type="text" name="shamcash_transaction_number" x-bind:disabled="paymentMethod !== 'shamcash'" class="w-full bg-white border border-[#0d1b4b]/15 rounded-2xl px-5 py-4 text-[#0d1b4b] font-bold placeholder-[#0d1b4b]/30 focus:ring-2 focus:ring-[#d4af37]/25 transition" placeholder="أدخل رقم العملية بعد التحويل">
+                                        <p class="text-xs text-[#0d1b4b]/60">مهم: اكتب رسالة واضحة داخل تطبيق شام كاش، واستخدم نفس الاسم الموجود في حسابك على شام كاش.</p>
+                                    </div>
+                                </div>
+                            @endif
+
                             <div class="flex justify-between items-center border-t border-[#0d1b4b]/10 pt-4">
                                 <span class="text-lg font-black text-[#0d1b4b]">المجموع</span>
                                 <span class="text-3xl font-black theme-accent-text" x-text="number_format(finalTotal, 2) + ' ل.س'"></span>
@@ -426,7 +463,7 @@
 
                         <div class="mt-8 flex flex-col gap-3">
                             <button type="submit" class="w-full theme-primary-bg theme-primary-bg-hover text-white font-black py-5 rounded-2xl shadow-2xl shadow-[#0d1b4b]/20 transition-all transform active:scale-95">
-                                ✅ إرسال الطلب الآن
+                                إرسال الطلب الآن
                             </button>
                             <button type="button" @click="isCheckoutOpen = false; isCartOpen = true" class="w-full text-[#0d1b4b]/45 font-bold py-3 hover:text-[#0d1b4b] transition">
                                 إلغاء والعودة للسلة
@@ -452,6 +489,7 @@
                     promoApplied: false,
                     promoMessage: '',
                     discountPercentage: 0,
+                    paymentMethod: 'cod',
                     
                     // Toast State
                     showToast: false,
