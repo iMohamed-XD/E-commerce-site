@@ -42,7 +42,7 @@
                     <div>
                         <label for="products-field" class="block text-xs font-bold text-[#0d1b4b]/60 mb-1">الحقل</label>
                         <div class="relative">
-                            <select id="products-field" name="field" class="appearance-none w-full bg-white border border-[#0d1b4b]/15 rounded-xl ps-3 pe-10 py-2.5 text-sm font-bold text-[#0d1b4b] focus:outline-none focus:ring-2 focus:ring-[#d4af37]/25">
+                            <select id="products-field" name="field" class="appearance-none w-full rounded-xl border border-[#0d1b4b]/15 bg-white px-4 py-2.5 text-sm font-medium text-[#0d1b4b]/70 shadow-sm transition hover:bg-[#fdfbf4] hover:text-[#0d1b4b] focus:outline-none focus:ring-2 focus:ring-[#d4af37]/40">
                                 <option value="">اختر الحقل للتصفية</option>
                                 <option value="id" @selected($field === 'id')>رقم المنتج</option>
                                 <option value="name" @selected($field === 'name')>الاسم</option>
@@ -55,26 +55,32 @@
                                 <option value="discount_active" @selected($field === 'discount_active')>حالة الخصم</option>
                                 <option value="created_at" @selected($field === 'created_at')>تاريخ الإنشاء</option>
                             </select>
-                            <span class="pointer-events-none absolute inset-y-0 end-3 flex items-center text-[#0d1b4b]/50">
+                            <span class="pointer-events-none absolute inset-y-0 start-3 flex items-center text-[#0d1b4b]/45">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                             </span>
                         </div>
                     </div>
 
                     <div class="md:col-span-2">
-                        <label for="products-value" class="block text-xs font-bold text-[#0d1b4b]/60 mb-1">القيمة</label>
-                        <input id="products-value" name="value" value="{{ $value }}" type="text" class="w-full bg-white border border-[#0d1b4b]/15 rounded-xl px-3 py-2.5 text-sm text-[#0d1b4b]" placeholder="اكتب قيمة البحث أو التصفية">
+                        <label for="products-value-text" class="block text-xs font-bold text-[#0d1b4b]/60 mb-1">القيمة</label>
+                        <input id="products-value-text" name="value" value="{{ $value }}" type="text" class="w-full bg-white border border-[#0d1b4b]/15 rounded-xl px-3 py-2.5 text-sm text-[#0d1b4b]" placeholder="اكتب قيمة البحث أو التصفية">
+                        <div id="products-value-select-wrap" class="relative hidden">
+                            <select id="products-value-select" class="appearance-none w-full rounded-xl border border-[#0d1b4b]/15 bg-white px-4 py-2.5 text-sm font-medium text-[#0d1b4b]/70 shadow-sm transition hover:bg-[#fdfbf4] hover:text-[#0d1b4b] focus:outline-none focus:ring-2 focus:ring-[#d4af37]/40"></select>
+                            <span class="pointer-events-none absolute inset-y-0 start-3 flex items-center text-[#0d1b4b]/45">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                            </span>
+                        </div>
                     </div>
 
                     <div>
                         <label for="products-per-page" class="block text-xs font-bold text-[#0d1b4b]/60 mb-1">عدد النتائج</label>
                         <div class="relative">
-                            <select id="products-per-page" name="per_page" class="appearance-none w-full bg-white border border-[#0d1b4b]/15 rounded-xl ps-3 pe-10 py-2.5 text-sm font-bold text-[#0d1b4b] focus:outline-none focus:ring-2 focus:ring-[#d4af37]/25">
+                            <select id="products-per-page" name="per_page" class="appearance-none w-full rounded-xl border border-[#0d1b4b]/15 bg-white px-4 py-2.5 text-sm font-medium text-[#0d1b4b]/70 shadow-sm transition hover:bg-[#fdfbf4] hover:text-[#0d1b4b] focus:outline-none focus:ring-2 focus:ring-[#d4af37]/40">
                                 @foreach([10,15,20,25,30] as $size)
                                     <option value="{{ $size }}" @selected($perPage === $size)>{{ $size }} لكل صفحة</option>
                                 @endforeach
                             </select>
-                            <span class="pointer-events-none absolute inset-y-0 end-3 flex items-center text-[#0d1b4b]/50">
+                            <span class="pointer-events-none absolute inset-y-0 start-3 flex items-center text-[#0d1b4b]/45">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                             </span>
                         </div>
@@ -248,6 +254,60 @@
     </div>
 
     <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const fieldInput = document.getElementById('products-field');
+            const textInput = document.getElementById('products-value-text');
+            const selectWrap = document.getElementById('products-value-select-wrap');
+            const selectInput = document.getElementById('products-value-select');
+
+            if (!fieldInput || !textInput || !selectWrap || !selectInput) {
+                return;
+            }
+
+            const initialValue = @json((string) $value);
+            const optionsByField = {
+                is_active: [
+                    { value: '1', label: 'نشط' },
+                    { value: '0', label: 'غير نشط' },
+                ],
+                discount_active: [
+                    { value: '1', label: 'مفعّل' },
+                    { value: '0', label: 'غير مفعّل' },
+                ],
+            };
+
+            const syncValueInput = () => {
+                const fieldName = fieldInput.value;
+                const options = optionsByField[fieldName] ?? null;
+
+                if (!options) {
+                    textInput.classList.remove('hidden');
+                    textInput.setAttribute('name', 'value');
+                    selectWrap.classList.add('hidden');
+                    selectInput.removeAttribute('name');
+                    return;
+                }
+
+                selectInput.innerHTML = options
+                    .map((option) => `<option value="${option.value}">${option.label}</option>`)
+                    .join('');
+
+                if (initialValue && options.some((option) => option.value === initialValue)) {
+                    selectInput.value = initialValue;
+                } else {
+                    selectInput.selectedIndex = 0;
+                }
+
+                textInput.classList.add('hidden');
+                textInput.removeAttribute('name');
+                selectWrap.classList.remove('hidden');
+                selectInput.setAttribute('name', 'value');
+            };
+
+            fieldInput.addEventListener('change', syncValueInput);
+            syncValueInput();
+        });
+
         document.addEventListener('alpine:init', () => {
             Alpine.data('productManager', () => ({
                 selectedProducts: [],
