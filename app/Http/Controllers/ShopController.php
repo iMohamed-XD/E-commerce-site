@@ -255,7 +255,17 @@ class ShopController extends Controller
 
                     $product = $products->get($item['product_id']);
                     if ($product) {
-                        $product->decrement('quantity_available', $item['quantity']);
+                        // Atomic stock deduction guard: prevents quantity from dropping below zero.
+                        $updated = $product->newQuery()
+                            ->where('id', $product->id)
+                            ->where('quantity_available', '>=', (int) $item['quantity'])
+                            ->decrement('quantity_available', (int) $item['quantity']);
+
+                        if ($updated === 0) {
+                            throw ValidationException::withMessages([
+                                'cart' => "الكمية المتاحة من {$product->name} لم تعد كافية، يرجى تعديل السلة والمحاولة مرة أخرى.",
+                            ]);
+                        }
                     }
                 }
             });

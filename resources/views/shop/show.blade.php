@@ -163,6 +163,14 @@
                     </div>
                 </div>
             @endif
+            @if($errors->has('cart'))
+                <div class="mb-8">
+                    <div class="bg-red-500/10 border border-red-500/20 text-red-700 p-4 rounded-2xl flex items-center gap-3">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M4.93 19h14.14c1.54 0 2.5-1.67 1.73-3L13.73 4c-.77-1.33-2.69-1.33-3.46 0L3.2 16c-.77 1.33.19 3 1.73 3z"></path></svg>
+                        <p class="font-bold">{{ $errors->first('cart') }}</p>
+                    </div>
+                </div>
+            @endif
 
             <!-- Categories Header -->
             <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12 border-b border-[#0d1b4b]/10 pb-8">
@@ -202,12 +210,13 @@
                         @php
                             $isDiscounted = $product->hasActiveDiscount();
                             $currentPrice = $product->effectivePrice();
+                            $isOutOfStock = (int) $product->quantity_available <= 0;
                         @endphp
                         <div x-show="currentFilter === 'all' || currentFilter === '{{ $product->category_id }}'" 
                              x-transition:enter="transition ease-out duration-300"
                              x-transition:enter-start="opacity-0 scale-95"
                              x-transition:enter-end="opacity-100 scale-100"
-                             class="bg-white/75 backdrop-blur-xl border border-[#0d1b4b]/10 rounded-[2.5rem] shadow-sm hover:shadow-2xl hover:shadow-[#0d1b4b]/10 hover:border-[#d4af37]/35 transition-all duration-500 overflow-hidden group flex flex-col h-full relative">
+                             class="bg-white/75 backdrop-blur-xl border border-[#0d1b4b]/10 rounded-[2.5rem] shadow-sm transition-all duration-500 overflow-hidden group flex flex-col h-full relative {{ $isOutOfStock ? 'opacity-60 grayscale' : 'hover:shadow-2xl hover:shadow-[#0d1b4b]/10 hover:border-[#d4af37]/35' }}">
                             
                             @if($isDiscounted)
                                 <div class="absolute top-6 left-6 z-10 bg-red-600 text-white text-[10px] font-black px-3 py-1.5 rounded-full shadow-xl shadow-red-600/20 uppercase tracking-tighter">
@@ -248,11 +257,15 @@
                                     @endif
                                 </div>
 
-                                <button @click.prevent="addToCart({{ $product->id }}, '{{ addslashes($product->name) }}', {{ $currentPrice }}, '{{ $product->image_path ? Storage::url($product->image_path) : '' }}')" 
-                                        class="mt-auto z-10 w-full group/btn relative overflow-hidden theme-primary-bg theme-primary-bg-hover text-white font-black py-4 px-6 rounded-2xl transition-all duration-300 flex items-center justify-center gap-3 shadow-xl">
+                                <button @click.prevent="addToCart({{ $product->id }}, '{{ addslashes($product->name) }}', {{ $currentPrice }}, '{{ $product->image_path ? Storage::url($product->image_path) : '' }}', {{ (int) $product->quantity_available }})"
+                                        @disabled($isOutOfStock)
+                                        class="mt-auto z-10 w-full group/btn relative overflow-hidden text-white font-black py-4 px-6 rounded-2xl transition-all duration-300 flex items-center justify-center gap-3 shadow-xl {{ $isOutOfStock ? 'bg-gray-400 cursor-not-allowed shadow-none' : 'theme-primary-bg theme-primary-bg-hover' }}">
                                     <svg class="w-5 h-5 transition-transform group-hover/btn:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
-                                    <span>أضف للسلة</span>
+                                    <span>{{ $isOutOfStock ? 'نفدت الكمية' : 'أضف للسلة' }}</span>
                                 </button>
+                                @if($isOutOfStock)
+                                    <p class="mt-3 text-xs font-bold text-red-700 text-center">لا يوجد المزيد من هذا المنتج حالياً.</p>
+                                @endif
                             </div>
                         </div>
                     @endforeach
@@ -326,7 +339,7 @@
                                                         <div class="flex items-center bg-[#0d1b4b]/6 rounded-lg p-1">
                                                             <button @click="updateQuantity(item.id, item.quantity - 1)" class="w-6 h-6 rounded-md bg-white text-[#0d1b4b] border border-[#0d1b4b]/15 font-black">-</button>
                                                             <span class="px-3 font-black text-[#0d1b4b]/60" x-text="item.quantity"></span>
-                                                            <button @click="updateQuantity(item.id, item.quantity + 1)" class="w-6 h-6 rounded-md bg-white text-[#0d1b4b] border border-[#0d1b4b]/15 font-black">+</button>
+                                                            <button @click="updateQuantity(item.id, item.quantity + 1)" :disabled="!canIncreaseQuantity(item)" class="w-6 h-6 rounded-md bg-white text-[#0d1b4b] border border-[#0d1b4b]/15 font-black disabled:opacity-40 disabled:cursor-not-allowed">+</button>
                                                         </div>
                                                         <button @click="removeFromCart(item.id)" class="text-red-500 font-bold hover:text-red-400 transition">إزالة</button>
                                                     </div>
@@ -524,6 +537,7 @@
                     isCartOpen: false,
                     isCheckoutOpen: false,
                     currentFilter: 'all',
+                    stockByProduct: @json($shop->products->mapWithKeys(fn($product) => [$product->id => (int) $product->quantity_available])),
                     cart: [],
                     promoInput: '',
                     promoApplied: false,
@@ -552,6 +566,8 @@
                                 this.removePromo();
                             }
                         });
+
+                        this.syncCartWithStock();
                     },
                     
                     get totalItems() {
@@ -569,9 +585,30 @@
                         return this.cartTotal;
                     },
                     
-                    addToCart(id, name, price, image) {
+                    addToCart(id, name, price, image, quantityAvailable = null) {
+                        const available = Number.isFinite(Number(quantityAvailable))
+                            ? Number(quantityAvailable)
+                            : this.getAvailableQuantity(id);
+
+                        if (available <= 0) {
+                            this.toastMessage = 'هذا المنتج غير متوفر حالياً.';
+                            this.showToast = true;
+                            setTimeout(() => {
+                                this.showToast = false;
+                            }, 2500);
+                            return;
+                        }
+
                         const existingItem = this.cart.find(item => item.id === id);
                         if (existingItem) {
+                            if (existingItem.quantity >= available) {
+                                this.toastMessage = `لا يمكن طلب أكثر من الكمية المتاحة (${available}).`;
+                                this.showToast = true;
+                                setTimeout(() => {
+                                    this.showToast = false;
+                                }, 2500);
+                                return;
+                            }
                             existingItem.quantity += 1;
                         } else {
                             this.cart.push({
@@ -579,7 +616,8 @@
                                 name: name,
                                 price: parseFloat(price),
                                 image: image,
-                                quantity: 1
+                                quantity: 1,
+                                maxQuantity: available
                             });
                         }
                         
@@ -602,10 +640,47 @@
                             this.removeFromCart(id);
                             return;
                         }
+
+                        const maxAvailable = this.getAvailableQuantity(id);
+                        if (maxAvailable > 0 && quantity > maxAvailable) {
+                            this.toastMessage = `لا يمكن طلب أكثر من الكمية المتاحة (${maxAvailable}).`;
+                            this.showToast = true;
+                            setTimeout(() => {
+                                this.showToast = false;
+                            }, 2500);
+                            return;
+                        }
+
                         const item = this.cart.find(item => item.id === id);
                         if (item) {
                             item.quantity = quantity;
+                            item.maxQuantity = maxAvailable > 0 ? maxAvailable : item.maxQuantity;
                         }
+                    },
+
+                    canIncreaseQuantity(item) {
+                        const maxAvailable = this.getAvailableQuantity(item.id);
+                        return maxAvailable > 0 && item.quantity < maxAvailable;
+                    },
+
+                    getAvailableQuantity(productId) {
+                        const value = this.stockByProduct?.[productId];
+                        const parsed = Number.parseInt(value, 10);
+                        return Number.isFinite(parsed) ? parsed : 0;
+                    },
+
+                    syncCartWithStock() {
+                        this.cart = (this.cart || [])
+                            .map((item) => {
+                                const available = this.getAvailableQuantity(item.id);
+                                if (available <= 0) return null;
+                                return {
+                                    ...item,
+                                    quantity: Math.min(item.quantity, available),
+                                    maxQuantity: available,
+                                };
+                            })
+                            .filter(Boolean);
                     },
                     
                     removeFromCart(id) {
