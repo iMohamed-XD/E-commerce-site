@@ -79,12 +79,12 @@
                     @endforeach
                 </div>
 
-                <form method="GET" action="{{ route('orders.index') }}" class="mt-5 grid grid-cols-1 gap-3 md:grid-cols-4">
+                <form method="GET" action="{{ route('orders.index') }}" class="mt-5 grid grid-cols-1 gap-3 md:grid-cols-4 md:items-start">
                     <input type="hidden" name="status" value="{{ $status }}">
                     <input type="hidden" name="per_page" value="{{ $perPage }}">
 
-                    <div class="grid grid-rows-[auto_3rem] gap-1">
-                        <label for="orders-field-dropdown" class="block text-xs font-bold leading-none text-[#0d1b4b]/60">الحقل</label>
+                    <div class="flex flex-col gap-1">
+                        <label for="orders-field-dropdown" class="block text-xs font-bold text-[#0d1b4b]/60">الحقل</label>
                         <x-filter-dropdown
                             id="orders-field-dropdown"
                             name="field"
@@ -108,8 +108,8 @@
                         />
                     </div>
 
-                    <div class="md:col-span-2 grid grid-rows-[auto_3rem] gap-1">
-                        <label for="orders-value-text" class="block text-xs font-bold leading-none text-[#0d1b4b]/60">القيمة</label>
+                    <div class="md:col-span-2 flex flex-col gap-1">
+                        <label for="orders-value-text" class="block text-xs font-bold text-[#0d1b4b]/60">القيمة</label>
                         <div class="relative h-12">
                             <input id="orders-value-text" name="value" value="{{ $value }}" type="text" class="absolute inset-0 h-12 w-full bg-white border border-[#0d1b4b]/15 rounded-xl px-3 text-sm text-[#0d1b4b]" placeholder="اكتب قيمة البحث أو التصفية">
                             <div id="orders-value-payment-wrap" class="absolute inset-0 hidden">
@@ -139,8 +139,8 @@
                         </div>
                     </div>
 
-                    <div class="grid grid-rows-[auto_3rem] gap-1">
-                        <span aria-hidden="true" class="block"></span>
+                    <div class="flex flex-col gap-1">
+                        <span aria-hidden="true" class="block text-xs leading-5 invisible">placeholder</span>
                         <div class="flex h-12 items-stretch gap-2">
                             <button type="submit" class="flex-1 h-12 bg-[#0d1b4b] text-white font-black rounded-xl text-sm hover:bg-[#1a2d6b] transition">تصفية</button>
                             <a href="{{ route('orders.index', ['status' => $status, 'per_page' => $perPage]) }}" class="inline-flex h-12 items-center px-4 border border-[#0d1b4b]/15 rounded-xl text-sm font-bold text-[#0d1b4b]/70 bg-white hover:bg-[#fdfbf4] transition">إعادة ضبط</a>
