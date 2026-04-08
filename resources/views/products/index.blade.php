@@ -38,9 +38,9 @@
                     </a>
                 </div>
 
-                <form method="GET" action="{{ route('products.index') }}" class="mt-5 grid grid-cols-1 md:grid-cols-5 gap-3">
-                    <div>
-                        <label for="products-field-dropdown" class="block text-xs font-bold text-[#0d1b4b]/60 mb-1">الحقل</label>
+                <form method="GET" action="{{ route('products.index') }}" class="mt-5 grid grid-cols-1 gap-3 md:grid-cols-5 md:items-end">
+                    <div class="flex flex-col justify-end">
+                        <label for="products-field-dropdown" class="block min-h-5 text-xs font-bold text-[#0d1b4b]/60 mb-1">الحقل</label>
                         <x-filter-dropdown
                             id="products-field-dropdown"
                             name="field"
@@ -62,10 +62,10 @@
                         />
                     </div>
 
-                    <div class="md:col-span-2">
-                        <label for="products-value-text" class="block text-xs font-bold text-[#0d1b4b]/60 mb-1">القيمة</label>
-                        <input id="products-value-text" name="value" value="{{ $value }}" type="text" class="w-full bg-white border border-[#0d1b4b]/15 rounded-xl px-3 py-2.5 text-sm text-[#0d1b4b]" placeholder="اكتب قيمة البحث أو التصفية">
-                        <div id="products-value-active-wrap" class="hidden mt-0.5">
+                    <div class="md:col-span-2 flex flex-col justify-end">
+                        <label for="products-value-text" class="block min-h-5 text-xs font-bold text-[#0d1b4b]/60 mb-1">القيمة</label>
+                        <input id="products-value-text" name="value" value="{{ $value }}" type="text" class="h-12 w-full bg-white border border-[#0d1b4b]/15 rounded-xl px-3 text-sm text-[#0d1b4b]" placeholder="اكتب قيمة البحث أو التصفية">
+                        <div id="products-value-active-wrap" class="hidden">
                             <x-filter-dropdown
                                 id="products-value-active-dropdown"
                                 name="value"
@@ -77,7 +77,7 @@
                                 placeholder="اختر حالة النشاط"
                             />
                         </div>
-                        <div id="products-value-discount-wrap" class="hidden mt-0.5">
+                        <div id="products-value-discount-wrap" class="hidden">
                             <x-filter-dropdown
                                 id="products-value-discount-dropdown"
                                 name="value"
@@ -91,8 +91,8 @@
                         </div>
                     </div>
 
-                    <div>
-                        <label for="products-per-page-dropdown" class="block text-xs font-bold text-[#0d1b4b]/60 mb-1">عدد النتائج</label>
+                    <div class="flex flex-col justify-end">
+                        <label for="products-per-page-dropdown" class="block min-h-5 text-xs font-bold text-[#0d1b4b]/60 mb-1">عدد النتائج</label>
                         <x-filter-dropdown
                             id="products-per-page-dropdown"
                             name="per_page"
@@ -108,9 +108,9 @@
                         />
                     </div>
 
-                    <div class="flex items-end gap-2">
-                        <button type="submit" class="flex-1 bg-[#0d1b4b] text-white font-black rounded-xl py-2.5 text-sm hover:bg-[#1a2d6b] transition">تصفية</button>
-                        <a href="{{ route('products.index', ['per_page' => $perPage]) }}" class="px-4 py-2.5 border border-[#0d1b4b]/15 rounded-xl text-sm font-bold text-[#0d1b4b]/70 bg-white hover:bg-[#fdfbf4] transition">إعادة ضبط</a>
+                    <div class="flex items-end gap-2 md:h-[72px]">
+                        <button type="submit" class="flex-1 h-12 bg-[#0d1b4b] text-white font-black rounded-xl text-sm hover:bg-[#1a2d6b] transition">تصفية</button>
+                        <a href="{{ route('products.index', ['per_page' => $perPage]) }}" class="inline-flex h-12 items-center px-4 border border-[#0d1b4b]/15 rounded-xl text-sm font-bold text-[#0d1b4b]/70 bg-white hover:bg-[#fdfbf4] transition">إعادة ضبط</a>
                     </div>
                 </form>
             </div>

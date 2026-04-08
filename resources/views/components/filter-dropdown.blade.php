@@ -62,14 +62,14 @@
 
     <button
         type="button"
-        class="inline-flex w-full items-center gap-2 rounded-xl border border-[#0d1b4b]/15 bg-white px-4 py-2.5 text-sm font-medium text-[#0d1b4b]/70 shadow-sm transition hover:bg-[#fdfbf4] hover:text-[#0d1b4b] focus:outline-none focus:ring-2 focus:ring-[#d4af37]/40"
+        class="inline-flex h-12 w-full items-center justify-between rounded-xl border border-[#0d1b4b]/15 bg-white px-4 text-sm font-medium leading-none text-[#0d1b4b]/70 shadow-sm transition hover:bg-[#fdfbf4] hover:text-[#0d1b4b] focus:outline-none focus:ring-2 focus:ring-[#d4af37]/40"
         @click="open = !open"
         :aria-expanded="open.toString()"
     >
-        <svg class="h-4 w-4 shrink-0 text-[#0d1b4b]/45" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+        <span class="min-w-0 flex-1 truncate text-right" x-text="label"></span>
+        <svg class="ms-2 h-4 w-4 shrink-0 text-[#0d1b4b]/45" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
         </svg>
-        <span class="min-w-0 flex-1 truncate text-right" x-text="label"></span>
     </button>
 
     <div

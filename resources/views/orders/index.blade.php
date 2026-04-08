@@ -36,9 +36,9 @@
                         <p class="text-sm text-[#0d1b4b]/45 mt-1">يمكنك التصفية حسب الحالة أو أي حقل من حقول الطلب.</p>
                     </div>
 
-                    <form method="GET" action="{{ route('orders.index') }}" class="flex flex-col sm:flex-row gap-2 sm:items-center">
+                    <form method="GET" action="{{ route('orders.index') }}" class="inline-flex items-center gap-2">
                         <input type="hidden" name="status" value="{{ $status }}">
-                        <label for="orders-per-page-dropdown" class="text-sm font-bold text-[#0d1b4b]/70">عدد النتائج:</label>
+                        <label for="orders-per-page-dropdown" class="text-sm font-bold leading-none text-[#0d1b4b]/70">عدد النتائج:</label>
                         <div class="min-w-[170px]">
                             <x-filter-dropdown
                                 id="orders-per-page-dropdown"
@@ -79,12 +79,12 @@
                     @endforeach
                 </div>
 
-                <form method="GET" action="{{ route('orders.index') }}" class="mt-5 grid grid-cols-1 md:grid-cols-4 gap-3">
+                <form method="GET" action="{{ route('orders.index') }}" class="mt-5 grid grid-cols-1 gap-3 md:grid-cols-4 md:items-end">
                     <input type="hidden" name="status" value="{{ $status }}">
                     <input type="hidden" name="per_page" value="{{ $perPage }}">
 
-                    <div>
-                        <label for="orders-field-dropdown" class="block text-xs font-bold text-[#0d1b4b]/60 mb-1">الحقل</label>
+                    <div class="flex flex-col justify-end">
+                        <label for="orders-field-dropdown" class="block min-h-5 text-xs font-bold text-[#0d1b4b]/60 mb-1">الحقل</label>
                         <x-filter-dropdown
                             id="orders-field-dropdown"
                             name="field"
@@ -108,10 +108,10 @@
                         />
                     </div>
 
-                    <div class="md:col-span-2">
-                        <label for="orders-value-text" class="block text-xs font-bold text-[#0d1b4b]/60 mb-1">القيمة</label>
-                        <input id="orders-value-text" name="value" value="{{ $value }}" type="text" class="w-full bg-white border border-[#0d1b4b]/15 rounded-xl px-3 py-2.5 text-sm text-[#0d1b4b]" placeholder="اكتب قيمة البحث أو التصفية">
-                        <div id="orders-value-payment-wrap" class="hidden mt-0.5">
+                    <div class="md:col-span-2 flex flex-col justify-end">
+                        <label for="orders-value-text" class="block min-h-5 text-xs font-bold text-[#0d1b4b]/60 mb-1">القيمة</label>
+                        <input id="orders-value-text" name="value" value="{{ $value }}" type="text" class="h-12 w-full bg-white border border-[#0d1b4b]/15 rounded-xl px-3 text-sm text-[#0d1b4b]" placeholder="اكتب قيمة البحث أو التصفية">
+                        <div id="orders-value-payment-wrap" class="hidden">
                             <x-filter-dropdown
                                 id="orders-value-payment-dropdown"
                                 name="value"
@@ -123,7 +123,7 @@
                                 placeholder="اختر طريقة الدفع"
                             />
                         </div>
-                        <div id="orders-value-archived-wrap" class="hidden mt-0.5">
+                        <div id="orders-value-archived-wrap" class="hidden">
                             <x-filter-dropdown
                                 id="orders-value-archived-dropdown"
                                 name="value"
@@ -137,9 +137,9 @@
                         </div>
                     </div>
 
-                    <div class="flex items-end gap-2">
-                        <button type="submit" class="flex-1 bg-[#0d1b4b] text-white font-black rounded-xl py-2.5 text-sm hover:bg-[#1a2d6b] transition">تصفية</button>
-                        <a href="{{ route('orders.index', ['status' => $status, 'per_page' => $perPage]) }}" class="px-4 py-2.5 border border-[#0d1b4b]/15 rounded-xl text-sm font-bold text-[#0d1b4b]/70 bg-white hover:bg-[#fdfbf4] transition">إعادة ضبط</a>
+                    <div class="flex items-end gap-2 md:h-[72px]">
+                        <button type="submit" class="flex-1 h-12 bg-[#0d1b4b] text-white font-black rounded-xl text-sm hover:bg-[#1a2d6b] transition">تصفية</button>
+                        <a href="{{ route('orders.index', ['status' => $status, 'per_page' => $perPage]) }}" class="inline-flex h-12 items-center px-4 border border-[#0d1b4b]/15 rounded-xl text-sm font-bold text-[#0d1b4b]/70 bg-white hover:bg-[#fdfbf4] transition">إعادة ضبط</a>
                     </div>
                 </form>
             </div>
