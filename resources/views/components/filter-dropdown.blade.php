@@ -1,4 +1,4 @@
-{{-- components/filter-dropdown --}}
+﻿{{-- components/filter-dropdown --}}
 @props([
     'id',
     'name' => null,
@@ -26,6 +26,7 @@
 <div
     id="{{ $id }}-root"
     class="relative"
+    :class="{ 'z-[120]': open }"
     x-data="{
         open: false,
         value: @js($initialValue),
@@ -79,7 +80,7 @@
         x-transition:leave="transition ease-in duration-75"
         x-transition:leave-start="opacity-100 scale-100"
         x-transition:leave-end="opacity-0 scale-95"
-        class="absolute start-0 z-50 mt-2 w-full rounded-md shadow-xl"
+        class="absolute start-0 z-[9999] mt-2 w-full rounded-md shadow-xl"
         style="display: none;"
     >
         <div class="rounded-md border border-[#0d1b4b]/10 bg-white py-1 ring-1 ring-black/5">
@@ -97,3 +98,4 @@
         </div>
     </div>
 </div>
+
