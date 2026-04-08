@@ -303,8 +303,7 @@
                 return;
             }
 
-            const syncValueInput = () => {
-                const fieldName = fieldInput.value;
+            const syncValueInput = (fieldName = fieldInput.value) => {
                 const isPaymentField = fieldName === 'payment_method';
                 const isArchivedField = fieldName === 'archived_from_status';
 
@@ -320,11 +319,12 @@
 
             document.addEventListener('filter-dropdown-change', (event) => {
                 if (event.detail?.id === 'orders-field-dropdown') {
-                    syncValueInput();
+                    syncValueInput(event.detail?.value ?? fieldInput.value);
                 }
             });
 
             syncValueInput();
+            setTimeout(syncValueInput, 0);
         });
     </script>
 </x-app-layout>

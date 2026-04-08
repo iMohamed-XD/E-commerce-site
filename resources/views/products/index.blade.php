@@ -288,8 +288,7 @@
                 return;
             }
 
-            const syncValueInput = () => {
-                const fieldName = fieldInput.value;
+            const syncValueInput = (fieldName = fieldInput.value) => {
                 const isActiveField = fieldName === 'is_active';
                 const isDiscountField = fieldName === 'discount_active';
 
@@ -305,11 +304,12 @@
 
             document.addEventListener('filter-dropdown-change', (event) => {
                 if (event.detail?.id === 'products-field-dropdown') {
-                    syncValueInput();
+                    syncValueInput(event.detail?.value ?? fieldInput.value);
                 }
             });
 
             syncValueInput();
+            setTimeout(syncValueInput, 0);
         });
 
         document.addEventListener('alpine:init', () => {
