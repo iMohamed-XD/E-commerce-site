@@ -18,7 +18,7 @@ class OrderController extends Controller
         }
 
         $status = $request->string('status')->toString();
-        if (!in_array($status, ['all', 'pending', 'done', 'canceled', 'archived'], true)) {
+        if (!in_array($status, ['all', 'pending', 'done', 'canceled', 'archived', 'archived_done', 'archived_canceled'], true)) {
             $status = 'pending';
         }
 
@@ -74,7 +74,14 @@ class OrderController extends Controller
                 }
             }
 
-            $order->update(['status' => $newStatus]);
+            $updatePayload = ['status' => $newStatus];
+            if ($newStatus === 'archived') {
+                $updatePayload['archived_from_status'] = $oldStatus;
+            } elseif ($newStatus !== 'archived') {
+                $updatePayload['archived_from_status'] = null;
+            }
+
+            $order->update($updatePayload);
         });
 
         return redirect()->route('orders.index')->with('success', 'تم تحديث حالة الطلب بنجاح!');
@@ -105,6 +112,16 @@ class OrderController extends Controller
             return;
         }
 
+        if ($status === 'archived_done') {
+            $query->where('status', 'archived')->whereIn('archived_from_status', ['done', 'completed']);
+            return;
+        }
+
+        if ($status === 'archived_canceled') {
+            $query->where('status', 'archived')->whereIn('archived_from_status', ['canceled', 'cancelled']);
+            return;
+        }
+
         $query->where('status', $status);
     }
 
@@ -124,6 +141,7 @@ class OrderController extends Controller
             'payment_method',
             'total_amount',
             'status',
+            'archived_from_status',
             'shamcash_transaction_number',
             'created_at',
         ];
@@ -150,6 +168,18 @@ class OrderController extends Controller
                 $query->whereIn('status', ['canceled', 'cancelled']);
             } else {
                 $query->where('status', $normalized);
+            }
+            return;
+        }
+
+        if ($field === 'archived_from_status') {
+            $normalized = $this->normalizeStatus($value);
+            if ($normalized === 'done') {
+                $query->whereIn('archived_from_status', ['done', 'completed']);
+            } elseif ($normalized === 'canceled') {
+                $query->whereIn('archived_from_status', ['canceled', 'cancelled']);
+            } else {
+                $query->where('archived_from_status', $normalized);
             }
             return;
         }

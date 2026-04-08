@@ -41,19 +41,24 @@
                 <form method="GET" action="{{ route('products.index') }}" class="mt-5 grid grid-cols-1 md:grid-cols-5 gap-3">
                     <div>
                         <label for="products-field" class="block text-xs font-bold text-[#0d1b4b]/60 mb-1">الحقل</label>
-                        <select id="products-field" name="field" class="w-full bg-white border border-[#0d1b4b]/15 rounded-xl px-3 py-2.5 text-sm text-[#0d1b4b]">
-                            <option value="">اختر الحقل للتصفية</option>
-                            <option value="id" @selected($field === 'id')>رقم المنتج</option>
-                            <option value="name" @selected($field === 'name')>الاسم</option>
-                            <option value="description" @selected($field === 'description')>الوصف</option>
-                            <option value="category_name" @selected($field === 'category_name')>الفئة</option>
-                            <option value="price" @selected($field === 'price')>السعر</option>
-                            <option value="quantity_available" @selected($field === 'quantity_available')>الكمية المتاحة</option>
-                            <option value="is_active" @selected($field === 'is_active')>نشط / غير نشط</option>
-                            <option value="discount_percent" @selected($field === 'discount_percent')>نسبة الخصم</option>
-                            <option value="discount_active" @selected($field === 'discount_active')>حالة الخصم</option>
-                            <option value="created_at" @selected($field === 'created_at')>تاريخ الإنشاء</option>
-                        </select>
+                        <div class="relative">
+                            <select id="products-field" name="field" class="appearance-none w-full bg-white border border-[#0d1b4b]/15 rounded-xl ps-3 pe-10 py-2.5 text-sm font-bold text-[#0d1b4b] focus:outline-none focus:ring-2 focus:ring-[#d4af37]/25">
+                                <option value="">اختر الحقل للتصفية</option>
+                                <option value="id" @selected($field === 'id')>رقم المنتج</option>
+                                <option value="name" @selected($field === 'name')>الاسم</option>
+                                <option value="description" @selected($field === 'description')>الوصف</option>
+                                <option value="category_name" @selected($field === 'category_name')>الفئة</option>
+                                <option value="price" @selected($field === 'price')>السعر</option>
+                                <option value="quantity_available" @selected($field === 'quantity_available')>الكمية المتاحة</option>
+                                <option value="is_active" @selected($field === 'is_active')>نشط / غير نشط</option>
+                                <option value="discount_percent" @selected($field === 'discount_percent')>نسبة الخصم</option>
+                                <option value="discount_active" @selected($field === 'discount_active')>حالة الخصم</option>
+                                <option value="created_at" @selected($field === 'created_at')>تاريخ الإنشاء</option>
+                            </select>
+                            <span class="pointer-events-none absolute inset-y-0 end-3 flex items-center text-[#0d1b4b]/50">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                            </span>
+                        </div>
                     </div>
 
                     <div class="md:col-span-2">
@@ -63,11 +68,16 @@
 
                     <div>
                         <label for="products-per-page" class="block text-xs font-bold text-[#0d1b4b]/60 mb-1">عدد النتائج</label>
-                        <select id="products-per-page" name="per_page" class="w-full bg-white border border-[#0d1b4b]/15 rounded-xl px-3 py-2.5 text-sm text-[#0d1b4b]">
-                            @foreach([10,15,20,25,30] as $size)
-                                <option value="{{ $size }}" @selected($perPage === $size)>{{ $size }} لكل صفحة</option>
-                            @endforeach
-                        </select>
+                        <div class="relative">
+                            <select id="products-per-page" name="per_page" class="appearance-none w-full bg-white border border-[#0d1b4b]/15 rounded-xl ps-3 pe-10 py-2.5 text-sm font-bold text-[#0d1b4b] focus:outline-none focus:ring-2 focus:ring-[#d4af37]/25">
+                                @foreach([10,15,20,25,30] as $size)
+                                    <option value="{{ $size }}" @selected($perPage === $size)>{{ $size }} لكل صفحة</option>
+                                @endforeach
+                            </select>
+                            <span class="pointer-events-none absolute inset-y-0 end-3 flex items-center text-[#0d1b4b]/50">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                            </span>
+                        </div>
                     </div>
 
                     <div class="flex items-end gap-2">

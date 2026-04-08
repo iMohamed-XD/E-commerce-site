@@ -39,11 +39,16 @@
                     <form method="GET" action="{{ route('orders.index') }}" class="flex flex-col sm:flex-row gap-2 sm:items-center">
                         <input type="hidden" name="status" value="{{ $status }}">
                         <label for="orders-per-page" class="text-sm font-bold text-[#0d1b4b]/70">عدد النتائج:</label>
-                        <select id="orders-per-page" name="per_page" onchange="this.form.submit()" class="bg-white border border-[#0d1b4b]/15 rounded-xl px-3 py-2 text-sm text-[#0d1b4b]">
-                            @foreach([10,15,20,25,30] as $size)
-                                <option value="{{ $size }}" @selected($perPage === $size)>{{ $size }} لكل صفحة</option>
-                            @endforeach
-                        </select>
+                        <div class="relative min-w-[150px]">
+                            <select id="orders-per-page" name="per_page" onchange="this.form.submit()" class="appearance-none w-full bg-white border border-[#0d1b4b]/15 rounded-xl ps-3 pe-10 py-2 text-sm font-bold text-[#0d1b4b] focus:outline-none focus:ring-2 focus:ring-[#d4af37]/25">
+                                @foreach([10,15,20,25,30] as $size)
+                                    <option value="{{ $size }}" @selected($perPage === $size)>{{ $size }} لكل صفحة</option>
+                                @endforeach
+                            </select>
+                            <span class="pointer-events-none absolute inset-y-0 end-3 flex items-center text-[#0d1b4b]/50">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                            </span>
+                        </div>
                     </form>
                 </div>
 
@@ -53,6 +58,8 @@
                         'done' => 'مكتمل',
                         'canceled' => 'ملغي',
                         'archived' => 'مؤرشف',
+                        'archived_done' => 'مؤرشف من مكتمل',
+                        'archived_canceled' => 'مؤرشف من ملغي',
                         'all' => 'الكل',
                     ];
                 @endphp
@@ -72,20 +79,26 @@
 
                     <div>
                         <label for="orders-field" class="block text-xs font-bold text-[#0d1b4b]/60 mb-1">الحقل</label>
-                        <select id="orders-field" name="field" class="w-full bg-white border border-[#0d1b4b]/15 rounded-xl px-3 py-2.5 text-sm text-[#0d1b4b]">
-                            <option value="">اختر الحقل للتصفية</option>
-                            <option value="id" @selected($field === 'id')>رقم الطلب</option>
-                            <option value="buyer_name" @selected($field === 'buyer_name')>اسم المشتري</option>
-                            <option value="buyer_phone" @selected($field === 'buyer_phone')>رقم الهاتف</option>
-                            <option value="buyer_email" @selected($field === 'buyer_email')>البريد الإلكتروني</option>
-                            <option value="buyer_address" @selected($field === 'buyer_address')>العنوان</option>
-                            <option value="promo_code_used" @selected($field === 'promo_code_used')>رمز الخصم</option>
-                            <option value="payment_method" @selected($field === 'payment_method')>طريقة الدفع</option>
-                            <option value="status" @selected($field === 'status')>الحالة</option>
-                            <option value="total_amount" @selected($field === 'total_amount')>الإجمالي</option>
-                            <option value="shamcash_transaction_number" @selected($field === 'shamcash_transaction_number')>رقم عملية شام كاش</option>
-                            <option value="created_at" @selected($field === 'created_at')>تاريخ الإنشاء</option>
-                        </select>
+                        <div class="relative">
+                            <select id="orders-field" name="field" class="appearance-none w-full bg-white border border-[#0d1b4b]/15 rounded-xl ps-3 pe-10 py-2.5 text-sm font-bold text-[#0d1b4b] focus:outline-none focus:ring-2 focus:ring-[#d4af37]/25">
+                                <option value="">اختر الحقل للتصفية</option>
+                                <option value="id" @selected($field === 'id')>رقم الطلب</option>
+                                <option value="buyer_name" @selected($field === 'buyer_name')>اسم المشتري</option>
+                                <option value="buyer_phone" @selected($field === 'buyer_phone')>رقم الهاتف</option>
+                                <option value="buyer_email" @selected($field === 'buyer_email')>البريد الإلكتروني</option>
+                                <option value="buyer_address" @selected($field === 'buyer_address')>العنوان</option>
+                                <option value="promo_code_used" @selected($field === 'promo_code_used')>رمز الخصم</option>
+                                <option value="payment_method" @selected($field === 'payment_method')>طريقة الدفع</option>
+                                <option value="status" @selected($field === 'status')>الحالة</option>
+                                <option value="archived_from_status" @selected($field === 'archived_from_status')>الحالة قبل الأرشفة</option>
+                                <option value="total_amount" @selected($field === 'total_amount')>الإجمالي</option>
+                                <option value="shamcash_transaction_number" @selected($field === 'shamcash_transaction_number')>رقم عملية شام كاش</option>
+                                <option value="created_at" @selected($field === 'created_at')>تاريخ الإنشاء</option>
+                            </select>
+                            <span class="pointer-events-none absolute inset-y-0 end-3 flex items-center text-[#0d1b4b]/50">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                            </span>
+                        </div>
                     </div>
 
                     <div class="md:col-span-2">
@@ -129,6 +142,18 @@
                                 <div class="flex flex-wrap items-center gap-3">
                                     <h4 class="text-lg font-black text-[#0d1b4b]">طلب رقم {{ $order->id }}</h4>
                                     <span class="px-3 py-1 rounded-full text-xs font-semibold border {{ $sc['classes'] }}">{{ $sc['label'] }}</span>
+                                    @if($normalizedStatus === 'archived')
+                                        @php
+                                            $archivedFrom = match ($order->archived_from_status) {
+                                                'done', 'completed' => 'مكتمل',
+                                                'canceled', 'cancelled' => 'ملغي',
+                                                default => 'غير معروف',
+                                            };
+                                        @endphp
+                                        <span class="px-3 py-1 rounded-full text-xs font-semibold border border-[#0d1b4b]/20 bg-[#0d1b4b]/5 text-[#0d1b4b]/70">
+                                            الحالة السابقة: {{ $archivedFrom }}
+                                        </span>
+                                    @endif
                                     @if($order->promo_code_used)
                                         <span class="px-3 py-1 rounded-full text-xs font-semibold bg-[#0d1b4b]/8 text-[#0d1b4b] border border-[#0d1b4b]/15">
                                             رمز خصم: {{ $order->promo_code_used }}

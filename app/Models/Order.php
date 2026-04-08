@@ -17,6 +17,7 @@ class Order extends Model
         'shamcash_transaction_number',
         'total_amount',
         'status',
+        'archived_from_status',
     ];
 
     public function shop()
