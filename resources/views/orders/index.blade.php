@@ -83,6 +83,7 @@
                     <input type="hidden" name="status" value="{{ $status }}">
                     <input type="hidden" name="per_page" value="{{ $perPage }}">
 
+                    {{-- Field dropdown --}}
                     <div class="flex flex-col">
                         <label for="orders-field-dropdown" class="text-xs font-bold text-[#0d1b4b]/60" style="height: 20px; margin-bottom: 4px; display: flex; align-items: flex-end; line-height: 20px;">الحقل</label>
                         <x-filter-dropdown
@@ -108,37 +109,62 @@
                         />
                     </div>
 
-                    <div class="md:col-span-2 flex flex-col">
+                    {{-- Value input: text or dropdown depending on selected field --}}
+                    <div
+                        class="md:col-span-2 flex flex-col"
+                        x-data="{ _vfield: '{{ $field }}' }"
+                        x-on:filter-dropdown-change.window="
+                            if ($event.detail?.id === 'orders-field-dropdown')
+                                _vfield = $event.detail.value
+                        "
+                    >
                         <label for="orders-value-text" class="text-xs font-bold text-[#0d1b4b]/60" style="height: 20px; margin-bottom: 4px; display: flex; align-items: flex-end; line-height: 20px;">القيمة</label>
-                        <div class="relative h-12" style="height: 3rem;">
-                            <input id="orders-value-text" name="value" value="{{ $value }}" type="text" class="absolute inset-0 h-12 w-full bg-white border border-[#0d1b4b]/15 rounded-xl px-3 text-sm text-[#0d1b4b]" style="height: 3rem;" placeholder="اكتب قيمة البحث أو التصفية">
-                            <div id="orders-value-payment-wrap" class="absolute inset-0 hidden">
-                            <x-filter-dropdown
-                                id="orders-value-payment-dropdown"
+
+                        <div class="relative w-full" style="height: 3rem;">
+
+                            {{-- Text input (default) --}}
+                            <input
+                                x-show="_vfield !== 'payment_method' && _vfield !== 'archived_from_status'"
+                                id="orders-value-text"
                                 name="value"
-                                :value="$value"
-                                :options="[
-                                    ['value' => 'cod', 'label' => 'الدفع عند الاستلام'],
-                                    ['value' => 'shamcash', 'label' => 'شام كاش'],
-                                ]"
-                                placeholder="اختر طريقة الدفع"
-                            />
+                                value="{{ $value }}"
+                                type="text"
+                                class="absolute inset-0 h-full w-full bg-white border border-[#0d1b4b]/15 rounded-xl px-3 text-sm text-[#0d1b4b] placeholder-[#0d1b4b]/35"
+                                placeholder="اكتب قيمة البحث أو التصفية"
+                            >
+
+                            {{-- payment_method dropdown --}}
+                            <div x-show="_vfield === 'payment_method'" class="absolute inset-0 h-full w-full">
+                                <x-filter-dropdown
+                                    id="orders-value-payment-dropdown"
+                                    name="value"
+                                    :value="$value"
+                                    :options="[
+                                        ['value' => 'cod', 'label' => 'الدفع عند الاستلام'],
+                                        ['value' => 'shamcash', 'label' => 'شام كاش'],
+                                    ]"
+                                    placeholder="اختر طريقة الدفع"
+                                />
                             </div>
-                            <div id="orders-value-archived-wrap" class="absolute inset-0 hidden">
-                            <x-filter-dropdown
-                                id="orders-value-archived-dropdown"
-                                name="value"
-                                :value="$value"
-                                :options="[
-                                    ['value' => 'done', 'label' => 'مكتمل'],
-                                    ['value' => 'canceled', 'label' => 'ملغي'],
-                                ]"
-                                placeholder="اختر الحالة السابقة"
-                            />
+
+                            {{-- archived_from_status dropdown --}}
+                            <div x-show="_vfield === 'archived_from_status'" class="absolute inset-0 h-full w-full">
+                                <x-filter-dropdown
+                                    id="orders-value-archived-dropdown"
+                                    name="value"
+                                    :value="$value"
+                                    :options="[
+                                        ['value' => 'done', 'label' => 'مكتمل'],
+                                        ['value' => 'canceled', 'label' => 'ملغي'],
+                                    ]"
+                                    placeholder="اختر الحالة السابقة"
+                                />
                             </div>
+
                         </div>
                     </div>
 
+                    {{-- Submit / reset --}}
                     <div class="flex flex-col">
                         <span aria-hidden="true" style="height: 20px; margin-bottom: 4px; display: block; visibility: hidden; line-height: 20px;">.</span>
                         <div class="flex h-12 items-stretch gap-2" style="height: 3rem;">
@@ -294,43 +320,4 @@
             @endif
         </div>
     </div>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const fieldInput = document.getElementById('orders-field-dropdown');
-            const textInput = document.getElementById('orders-value-text');
-            const paymentWrap = document.getElementById('orders-value-payment-wrap');
-            const archivedWrap = document.getElementById('orders-value-archived-wrap');
-            const paymentInput = document.getElementById('orders-value-payment-dropdown');
-            const archivedInput = document.getElementById('orders-value-archived-dropdown');
-
-            if (!fieldInput || !textInput || !paymentWrap || !archivedWrap || !paymentInput || !archivedInput) {
-                return;
-            }
-
-            const syncValueInput = (fieldName = fieldInput.value) => {
-                const isPaymentField = fieldName === 'payment_method';
-                const isArchivedField = fieldName === 'archived_from_status';
-
-                textInput.classList.toggle('hidden', isPaymentField || isArchivedField);
-                textInput.disabled = isPaymentField || isArchivedField;
-
-                paymentWrap.classList.toggle('hidden', !isPaymentField);
-                archivedWrap.classList.toggle('hidden', !isArchivedField);
-
-                paymentInput.disabled = !isPaymentField;
-                archivedInput.disabled = !isArchivedField;
-            };
-
-            document.addEventListener('filter-dropdown-change', (event) => {
-                if (event.detail?.id === 'orders-field-dropdown') {
-                    syncValueInput(event.detail?.value ?? fieldInput.value);
-                }
-            });
-
-            syncValueInput();
-            setTimeout(syncValueInput, 0);
-        });
-    </script>
 </x-app-layout>
-

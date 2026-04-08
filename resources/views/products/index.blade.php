@@ -39,6 +39,8 @@
                 </div>
 
                 <form method="GET" action="{{ route('products.index') }}" class="mt-5 grid grid-cols-1 gap-3 md:grid-cols-5 md:items-start">
+
+                    {{-- Field dropdown --}}
                     <div class="flex flex-col">
                         <label for="products-field-dropdown" class="text-xs font-bold text-[#0d1b4b]/60" style="height: 20px; margin-bottom: 4px; display: flex; align-items: flex-end; line-height: 20px;">الحقل</label>
                         <x-filter-dropdown
@@ -62,37 +64,62 @@
                         />
                     </div>
 
-                    <div class="md:col-span-2 flex flex-col">
+                    {{-- Value input: text or dropdown depending on selected field --}}
+                    <div
+                        class="md:col-span-2 flex flex-col"
+                        x-data="{ _vfield: '{{ $field }}' }"
+                        x-on:filter-dropdown-change.window="
+                            if ($event.detail?.id === 'products-field-dropdown')
+                                _vfield = $event.detail.value
+                        "
+                    >
                         <label for="products-value-text" class="text-xs font-bold text-[#0d1b4b]/60" style="height: 20px; margin-bottom: 4px; display: flex; align-items: flex-end; line-height: 20px;">القيمة</label>
-                        <div class="relative h-12" style="height: 3rem;">
-                            <input id="products-value-text" name="value" value="{{ $value }}" type="text" class="absolute inset-0 h-12 w-full bg-white border border-[#0d1b4b]/15 rounded-xl px-3 text-sm text-[#0d1b4b]" style="height: 3rem;" placeholder="اكتب قيمة البحث أو التصفية">
-                            <div id="products-value-active-wrap" class="absolute inset-0 hidden">
-                            <x-filter-dropdown
-                                id="products-value-active-dropdown"
+
+                        <div class="relative w-full" style="height: 3rem;">
+
+                            {{-- Text input (default) --}}
+                            <input
+                                x-show="_vfield !== 'is_active' && _vfield !== 'discount_active'"
+                                id="products-value-text"
                                 name="value"
-                                :value="$value"
-                                :options="[
-                                    ['value' => '1', 'label' => 'نشط'],
-                                    ['value' => '0', 'label' => 'غير نشط'],
-                                ]"
-                                placeholder="اختر حالة النشاط"
-                            />
+                                value="{{ $value }}"
+                                type="text"
+                                class="absolute inset-0 h-full w-full bg-white border border-[#0d1b4b]/15 rounded-xl px-3 text-sm text-[#0d1b4b] placeholder-[#0d1b4b]/35"
+                                placeholder="اكتب قيمة البحث أو التصفية"
+                            >
+
+                            {{-- is_active dropdown --}}
+                            <div x-show="_vfield === 'is_active'" class="absolute inset-0 h-full w-full">
+                                <x-filter-dropdown
+                                    id="products-value-active-dropdown"
+                                    name="value"
+                                    :value="$value"
+                                    :options="[
+                                        ['value' => '1', 'label' => 'نشط'],
+                                        ['value' => '0', 'label' => 'غير نشط'],
+                                    ]"
+                                    placeholder="اختر حالة النشاط"
+                                />
                             </div>
-                            <div id="products-value-discount-wrap" class="absolute inset-0 hidden">
-                            <x-filter-dropdown
-                                id="products-value-discount-dropdown"
-                                name="value"
-                                :value="$value"
-                                :options="[
-                                    ['value' => '1', 'label' => 'مفعّل'],
-                                    ['value' => '0', 'label' => 'غير مفعّل'],
-                                ]"
-                                placeholder="اختر حالة الخصم"
-                            />
+
+                            {{-- discount_active dropdown --}}
+                            <div x-show="_vfield === 'discount_active'" class="absolute inset-0 h-full w-full">
+                                <x-filter-dropdown
+                                    id="products-value-discount-dropdown"
+                                    name="value"
+                                    :value="$value"
+                                    :options="[
+                                        ['value' => '1', 'label' => 'مفعّل'],
+                                        ['value' => '0', 'label' => 'غير مفعّل'],
+                                    ]"
+                                    placeholder="اختر حالة الخصم"
+                                />
                             </div>
+
                         </div>
                     </div>
 
+                    {{-- Per page dropdown --}}
                     <div class="flex flex-col">
                         <label for="products-per-page-dropdown" class="text-xs font-bold text-[#0d1b4b]/60" style="height: 20px; margin-bottom: 4px; display: flex; align-items: flex-end; line-height: 20px;">عدد النتائج</label>
                         <x-filter-dropdown
@@ -110,6 +137,7 @@
                         />
                     </div>
 
+                    {{-- Submit / reset --}}
                     <div class="flex flex-col">
                         <span aria-hidden="true" style="height: 20px; margin-bottom: 4px; display: block; visibility: hidden; line-height: 20px;">.</span>
                         <div class="flex h-12 items-stretch gap-2" style="height: 3rem;">
@@ -117,9 +145,11 @@
                             <a href="{{ route('products.index', ['per_page' => $perPage]) }}" class="inline-flex h-12 items-center px-4 border border-[#0d1b4b]/15 rounded-xl text-sm font-bold text-[#0d1b4b]/70 bg-white hover:bg-[#fdfbf4] transition" style="height: 3rem;">إعادة ضبط</a>
                         </div>
                     </div>
+
                 </form>
             </div>
 
+            {{-- Bulk action bar --}}
             <div x-show="selectedProducts.length > 0" x-transition x-cloak class="bg-white/80 border border-[#d4af37]/30 shadow-lg rounded-2xl p-4 flex flex-col sm:flex-row justify-between items-center gap-4">
                 <span class="font-black text-[#a07c1e]">تم تحديد <span x-text="selectedProducts.length"></span> منتجات</span>
                 <div class="flex flex-wrap gap-2">
@@ -130,6 +160,7 @@
                 </div>
             </div>
 
+            {{-- Products table --}}
             <div class="bg-white/70 backdrop-blur-xl border border-[#0d1b4b]/10 overflow-hidden shadow-xl shadow-[#0d1b4b]/6 sm:rounded-3xl">
                 <div class="p-6 text-[#0d1b4b] overflow-x-auto">
                     @if($products->isEmpty())
@@ -185,7 +216,7 @@
                                             @endif
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
-                                             @if($product->discount_percent)
+                                            @if($product->discount_percent)
                                                 <form action="{{ route('products.toggle_discount', $product) }}" method="POST">
                                                     @csrf
                                                     @method('PATCH')
@@ -219,6 +250,7 @@
                 </div>
             </div>
 
+            {{-- Pagination --}}
             @if($products->lastPage() > 1)
                 <div class="bg-white/70 border border-[#0d1b4b]/10 rounded-2xl px-4 py-3 flex flex-wrap items-center justify-between gap-3">
                     <div class="text-sm text-[#0d1b4b]/60">الصفحة {{ $products->currentPage() }} من {{ $products->lastPage() }}</div>
@@ -242,10 +274,10 @@
                 </div>
             @endif
 
+            {{-- Bulk discount modal --}}
             <div x-show="showDiscountModal" class="fixed inset-0 z-50 overflow-y-auto" x-cloak>
                 <div class="flex items-center justify-center min-h-screen p-4">
                     <div x-show="showDiscountModal" x-transition.opacity class="fixed inset-0 bg-[#0d1b4b]/45 backdrop-blur-sm" @click="showDiscountModal = false"></div>
-
                     <div x-show="showDiscountModal" x-transition class="relative bg-white border border-[#0d1b4b]/10 rounded-2xl shadow-2xl shadow-[#0d1b4b]/15 w-full max-w-md z-10">
                         <div class="px-6 py-4 border-b border-[#0d1b4b]/10 flex items-center justify-between">
                             <h3 class="text-lg font-black text-[#0d1b4b]">تطبيق خصم جماعي</h3>
@@ -255,7 +287,7 @@
                         </div>
                         <div class="px-6 py-5 space-y-4">
                             <p class="text-xs text-[#0d1b4b]/45">سيتم تطبيق هذا الخصم على <span class="text-[#a07c1e] font-bold" x-text="selectedProducts.length"></span> منتجات محددة.</p>
-                             <div>
+                            <div>
                                 <label class="block text-sm font-bold text-[#0d1b4b]/70 mb-1">نسبة الخصم (%)</label>
                                 <input type="number" step="0.01" min="0" max="100" x-model="discountPercent"
                                     class="w-full bg-white border border-[#0d1b4b]/15 text-[#0d1b4b] rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#d4af37]/20 focus:border-[#d4af37] placeholder-[#0d1b4b]/30"
@@ -270,6 +302,7 @@
                 </div>
             </div>
 
+            {{-- Hidden bulk form --}}
             <form id="bulkForm" method="POST" action="{{ route('products.bulk_action') }}" class="hidden">
                 @csrf
                 <input type="hidden" name="action" x-model="bulkAction">
@@ -281,42 +314,6 @@
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const fieldInput = document.getElementById('products-field-dropdown');
-            const textInput = document.getElementById('products-value-text');
-            const activeWrap = document.getElementById('products-value-active-wrap');
-            const discountWrap = document.getElementById('products-value-discount-wrap');
-            const activeInput = document.getElementById('products-value-active-dropdown');
-            const discountInput = document.getElementById('products-value-discount-dropdown');
-
-            if (!fieldInput || !textInput || !activeWrap || !discountWrap || !activeInput || !discountInput) {
-                return;
-            }
-
-            const syncValueInput = (fieldName = fieldInput.value) => {
-                const isActiveField = fieldName === 'is_active';
-                const isDiscountField = fieldName === 'discount_active';
-
-                textInput.classList.toggle('hidden', isActiveField || isDiscountField);
-                textInput.disabled = isActiveField || isDiscountField;
-
-                activeWrap.classList.toggle('hidden', !isActiveField);
-                discountWrap.classList.toggle('hidden', !isDiscountField);
-
-                activeInput.disabled = !isActiveField;
-                discountInput.disabled = !isDiscountField;
-            };
-
-            document.addEventListener('filter-dropdown-change', (event) => {
-                if (event.detail?.id === 'products-field-dropdown') {
-                    syncValueInput(event.detail?.value ?? fieldInput.value);
-                }
-            });
-
-            syncValueInput();
-            setTimeout(syncValueInput, 0);
-        });
-
         document.addEventListener('alpine:init', () => {
             Alpine.data('productManager', () => ({
                 selectedProducts: [],
@@ -347,5 +344,3 @@
         });
     </script>
 </x-app-layout>
-
-
