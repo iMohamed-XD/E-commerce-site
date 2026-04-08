@@ -73,3 +73,10 @@ npm run dev
 
 ## 📄 License
 This project is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+## Coolify Forced Rebuild (Manual, No-Cache)
+- Keep webhook auto-deploy enabled as the default fast path.
+- When UI/CSS appears stale after deploy, trigger a one-time forced rebuild:
+  - Coolify UI: run deploy/start with **Force Rebuild / Without Cache**.
+  - API/script: use `scripts/coolify-force-redeploy.ps1` or `scripts/coolify-force-redeploy.sh`.
+- Full runbook: [docs/coolify-clean-rebuild.md](docs/coolify-clean-rebuild.md)
