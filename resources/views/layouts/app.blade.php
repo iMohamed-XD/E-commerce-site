@@ -16,10 +16,46 @@
 
     <style>
         body { font-family: 'Tajawal', sans-serif !important; }
+        [x-cloak] { display: none !important; }
 
         .hero-dotgrid {
             background-image: radial-gradient(circle, #0d1b4b12 1px, transparent 1px);
             background-size: 28px 28px;
+        }
+
+        .filter-field {
+            display: flex;
+            min-width: 0;
+            flex-direction: column;
+        }
+
+        .filter-label {
+            display: flex;
+            height: 20px;
+            align-items: flex-end;
+            margin-bottom: 4px;
+            line-height: 20px;
+        }
+
+        .filter-control {
+            position: relative;
+            width: 100%;
+            height: 3rem;
+        }
+
+        .filter-spacer {
+            display: block;
+            height: 20px;
+            margin-bottom: 4px;
+            visibility: hidden;
+            line-height: 20px;
+        }
+
+        .filter-action-row {
+            display: flex;
+            height: 3rem;
+            align-items: stretch;
+            gap: 0.5rem;
         }
     </style>
 </head>

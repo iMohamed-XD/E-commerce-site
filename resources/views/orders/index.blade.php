@@ -84,8 +84,8 @@
                     <input type="hidden" name="per_page" value="{{ $perPage }}">
 
                     {{-- Field dropdown --}}
-                    <div class="flex flex-col">
-                        <label for="orders-field-dropdown" class="text-xs font-bold text-[#0d1b4b]/60" style="height: 20px; margin-bottom: 4px; display: flex; align-items: flex-end; line-height: 20px;">الحقل</label>
+                    <div class="filter-field">
+                        <label for="orders-field-dropdown" class="filter-label text-xs font-bold text-[#0d1b4b]/60">الحقل</label>
                         <x-filter-dropdown
                             id="orders-field-dropdown"
                             name="field"
@@ -111,20 +111,21 @@
 
                     {{-- Value input: text or dropdown depending on selected field --}}
                     <div
-                        class="md:col-span-2 flex flex-col"
-                        x-data="{ _vfield: '{{ $field }}' }"
+                        class="filter-field md:col-span-2"
+                        x-data="{ valueField: @js((string) $field) }"
                         x-on:filter-dropdown-change.window="
                             if ($event.detail?.id === 'orders-field-dropdown')
-                                _vfield = $event.detail.value
+                                valueField = $event.detail.value
                         "
                     >
-                        <label for="orders-value-text" class="text-xs font-bold text-[#0d1b4b]/60" style="height: 20px; margin-bottom: 4px; display: flex; align-items: flex-end; line-height: 20px;">القيمة</label>
+                        <label for="orders-value-text" class="filter-label text-xs font-bold text-[#0d1b4b]/60">القيمة</label>
 
-                        <div class="relative w-full" style="height: 3rem;">
+                        <div class="filter-control">
 
                             {{-- Text input (default) --}}
                             <input
-                                x-show="_vfield !== 'payment_method' && _vfield !== 'archived_from_status'"
+                                x-bind:class="valueField === 'payment_method' || valueField === 'archived_from_status' ? 'opacity-0 pointer-events-none' : ''"
+                                x-bind:disabled="valueField === 'payment_method' || valueField === 'archived_from_status'"
                                 id="orders-value-text"
                                 name="value"
                                 value="{{ $value }}"
@@ -134,42 +135,46 @@
                             >
 
                             {{-- payment_method dropdown --}}
-                            <div x-show="_vfield === 'payment_method'" class="absolute inset-0 h-full w-full">
-                                <x-filter-dropdown
-                                    id="orders-value-payment-dropdown"
-                                    name="value"
-                                    :value="$value"
-                                    :options="[
-                                        ['value' => 'cod', 'label' => 'الدفع عند الاستلام'],
-                                        ['value' => 'shamcash', 'label' => 'شام كاش'],
-                                    ]"
-                                    placeholder="اختر طريقة الدفع"
-                                />
-                            </div>
+                            <template x-if="valueField === 'payment_method'">
+                                <div class="absolute inset-0 h-full w-full">
+                                    <x-filter-dropdown
+                                        id="orders-value-payment-dropdown"
+                                        name="value"
+                                        :value="$value"
+                                        :options="[
+                                            ['value' => 'cod', 'label' => 'الدفع عند الاستلام'],
+                                            ['value' => 'shamcash', 'label' => 'شام كاش'],
+                                        ]"
+                                        placeholder="اختر طريقة الدفع"
+                                    />
+                                </div>
+                            </template>
 
                             {{-- archived_from_status dropdown --}}
-                            <div x-show="_vfield === 'archived_from_status'" class="absolute inset-0 h-full w-full">
-                                <x-filter-dropdown
-                                    id="orders-value-archived-dropdown"
-                                    name="value"
-                                    :value="$value"
-                                    :options="[
-                                        ['value' => 'done', 'label' => 'مكتمل'],
-                                        ['value' => 'canceled', 'label' => 'ملغي'],
-                                    ]"
-                                    placeholder="اختر الحالة السابقة"
-                                />
-                            </div>
+                            <template x-if="valueField === 'archived_from_status'">
+                                <div class="absolute inset-0 h-full w-full">
+                                    <x-filter-dropdown
+                                        id="orders-value-archived-dropdown"
+                                        name="value"
+                                        :value="$value"
+                                        :options="[
+                                            ['value' => 'done', 'label' => 'مكتمل'],
+                                            ['value' => 'canceled', 'label' => 'ملغي'],
+                                        ]"
+                                        placeholder="اختر الحالة السابقة"
+                                    />
+                                </div>
+                            </template>
 
                         </div>
                     </div>
 
                     {{-- Submit / reset --}}
-                    <div class="flex flex-col">
-                        <span aria-hidden="true" style="height: 20px; margin-bottom: 4px; display: block; visibility: hidden; line-height: 20px;">.</span>
-                        <div class="flex h-12 items-stretch gap-2" style="height: 3rem;">
-                            <button type="submit" class="flex-1 h-12 bg-[#0d1b4b] text-white font-black rounded-xl text-sm hover:bg-[#1a2d6b] transition" style="height: 3rem;">تصفية</button>
-                            <a href="{{ route('orders.index', ['status' => $status, 'per_page' => $perPage]) }}" class="inline-flex h-12 items-center px-4 border border-[#0d1b4b]/15 rounded-xl text-sm font-bold text-[#0d1b4b]/70 bg-white hover:bg-[#fdfbf4] transition" style="height: 3rem;">إعادة ضبط</a>
+                    <div class="filter-field">
+                        <span aria-hidden="true" class="filter-spacer">.</span>
+                        <div class="filter-action-row">
+                            <button type="submit" class="flex-1 h-12 bg-[#0d1b4b] text-white font-black rounded-xl text-sm hover:bg-[#1a2d6b] transition">تصفية</button>
+                            <a href="{{ route('orders.index', ['status' => $status, 'per_page' => $perPage]) }}" class="inline-flex h-12 items-center px-4 border border-[#0d1b4b]/15 rounded-xl text-sm font-bold text-[#0d1b4b]/70 bg-white hover:bg-[#fdfbf4] transition">إعادة ضبط</a>
                         </div>
                     </div>
                 </form>
