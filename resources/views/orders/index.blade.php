@@ -95,7 +95,19 @@
                                         @if($order->payment_method === 'shamcash' && $order->shamcash_transaction_number)
                                             <div class="flex gap-2">
                                                 <span class="text-[#0d1b4b]/45 w-24 shrink-0">رقم العملية:</span>
-                                                <span class="text-[#0d1b4b] font-semibold" dir="ltr">{{ $order->shamcash_transaction_number }}</span>
+                                                <div class="flex items-center gap-2">
+                                                    <span class="text-[#0d1b4b] font-semibold" dir="ltr">#{{ ltrim($order->shamcash_transaction_number, '#') }}</span>
+                                                    <button type="button"
+                                                            data-copy-value="#{{ ltrim($order->shamcash_transaction_number, '#') }}"
+                                                            onclick="copyTextFromButton(this)"
+                                                            data-default-html="<svg class='w-4 h-4' fill='none' stroke='currentColor' viewBox='0 0 24 24'><rect x='9' y='9' width='11' height='11' rx='2' ry='2' stroke-width='2'></rect><path d='M5 15V5a2 2 0 0 1 2-2h10' stroke-width='2'></path></svg>"
+                                                            data-copied-html="<svg class='w-4 h-4' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path d='M20 6L9 17l-5-5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'></path></svg>"
+                                                            aria-label="Copy transaction number"
+                                                            title="Copy"
+                                                            class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-white border border-[#0d1b4b]/20 text-[#0d1b4b] hover:bg-[#f8fafc] transition">
+                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2" ry="2" stroke-width="2"></rect><path d="M5 15V5a2 2 0 0 1 2-2h10" stroke-width="2"></path></svg>
+                                                    </button>
+                                                </div>
                                             </div>
                                         @endif
                                     </div>
@@ -181,4 +193,30 @@
             @endif
         </div>
     </div>
+<script>
+    async function copyTextFromButton(button) {
+        const text = button?.dataset?.copyValue ?? '';
+        if (!text) return;
+        const defaultHtml = button.dataset.defaultHtml || button.innerHTML;
+        const copiedHtml = button.dataset.copiedHtml || defaultHtml;
+
+        try {
+            await navigator.clipboard.writeText(text);
+            button.innerHTML = copiedHtml;
+            setTimeout(() => { button.innerHTML = defaultHtml; }, 1200);
+        } catch (e) {
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            ta.style.position = 'fixed';
+            ta.style.opacity = '0';
+            document.body.appendChild(ta);
+            ta.focus();
+            ta.select();
+            document.execCommand('copy');
+            document.body.removeChild(ta);
+            button.innerHTML = copiedHtml;
+            setTimeout(() => { button.innerHTML = defaultHtml; }, 1200);
+        }
+    }
+</script>
 </x-app-layout>

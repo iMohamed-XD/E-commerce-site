@@ -440,7 +440,19 @@
                                 <div x-show="paymentMethod === 'shamcash'" x-transition class="space-y-4 rounded-2xl border border-[#d4af37]/35 bg-[#fff9e8] p-4">
                                     <div class="flex items-center justify-between gap-3">
                                         <p class="text-xs font-black text-[#a07c1e] uppercase tracking-widest">بيانات حساب شام كاش</p>
-                                        <p class="text-sm font-black text-[#0d1b4b]" dir="ltr">{{ $shop->shamcash_account_number }}</p>
+                                        <div class="flex items-center gap-2">
+                                            <p class="text-sm font-black text-[#0d1b4b]" dir="ltr">{{ $shop->shamcash_account_number }}</p>
+                                            <button type="button"
+                                                    data-copy-value="{{ $shop->shamcash_account_number }}"
+                                                    onclick="copyTextFromButton(this)"
+                                                    data-default-html="<svg class='w-4 h-4' fill='none' stroke='currentColor' viewBox='0 0 24 24'><rect x='9' y='9' width='11' height='11' rx='2' ry='2' stroke-width='2'></rect><path d='M5 15V5a2 2 0 0 1 2-2h10' stroke-width='2'></path></svg>"
+                                                    data-copied-html="<svg class='w-4 h-4' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path d='M20 6L9 17l-5-5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'></path></svg>"
+                                                    aria-label="Copy account number"
+                                                    title="Copy"
+                                                    class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-white border border-[#0d1b4b]/20 text-[#0d1b4b] hover:bg-[#f8fafc] transition">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2" ry="2" stroke-width="2"></rect><path d="M5 15V5a2 2 0 0 1 2-2h10" stroke-width="2"></path></svg>
+                                            </button>
+                                        </div>
                                     </div>
 
                                     <div class="flex justify-center">
@@ -449,8 +461,11 @@
 
                                     <div class="space-y-2">
                                         <label class="text-[10px] font-black text-[#a07c1e] uppercase tracking-[0.2em] px-1">رقم عملية التحويل</label>
-                                        <input type="text" name="shamcash_transaction_number" x-bind:disabled="paymentMethod !== 'shamcash'" class="w-full bg-white border border-[#0d1b4b]/15 rounded-2xl px-5 py-4 text-[#0d1b4b] font-bold placeholder-[#0d1b4b]/30 focus:ring-2 focus:ring-[#d4af37]/25 transition" placeholder="أدخل رقم العملية بعد التحويل">
-                                        <p class="text-xs text-[#0d1b4b]/60">مهم: اكتب رسالة واضحة داخل تطبيق شام كاش، واستخدم نفس الاسم الموجود في حسابك على شام كاش.</p>
+                                        <input type="text" name="shamcash_transaction_number" x-bind:disabled="paymentMethod !== 'shamcash'" class="w-full bg-white border border-[#0d1b4b]/15 rounded-2xl px-5 py-4 text-[#0d1b4b] font-bold placeholder-[#0d1b4b]/30 focus:ring-2 focus:ring-[#d4af37]/25 transition" placeholder="Enter the transaction number (without #)">
+                                        <p class="text-xs text-[#0d1b4b]/60">Note: ShamCash transaction numbers often start with #. Enter the number only, without #.</p>
+                                        @error('shamcash_transaction_number')
+                                            <p class="text-xs font-bold text-red-600">{{ $message }}</p>
+                                        @enderror
                                     </div>
                                 </div>
                             @endif
@@ -475,6 +490,31 @@
         </div>
 
         <script>
+            async function copyTextFromButton(button) {
+                const text = button?.dataset?.copyValue ?? '';
+                if (!text) return;
+                const defaultHtml = button.dataset.defaultHtml || button.innerHTML;
+                const copiedHtml = button.dataset.copiedHtml || defaultHtml;
+
+                try {
+                    await navigator.clipboard.writeText(text);
+                    button.innerHTML = copiedHtml;
+                    setTimeout(() => { button.innerHTML = defaultHtml; }, 1200);
+                } catch (e) {
+                    const ta = document.createElement('textarea');
+                    ta.value = text;
+                    ta.style.position = 'fixed';
+                    ta.style.opacity = '0';
+                    document.body.appendChild(ta);
+                    ta.focus();
+                    ta.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(ta);
+                    button.innerHTML = copiedHtml;
+                    setTimeout(() => { button.innerHTML = defaultHtml; }, 1200);
+                }
+            }
+
             function number_format(number, decimals = 2) {
                 return parseFloat(number).toFixed(decimals).replace(/\d(?=(\d{3})+\.)/g, '$&,');
             }

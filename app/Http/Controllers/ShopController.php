@@ -165,6 +165,11 @@ class ShopController extends Controller
                     'shamcash_transaction_number' => 'يرجى إدخال رقم عملية التحويل عبر شام كاش.',
                 ])->withInput();
             }
+            if (str_starts_with($shamcashTransactionNumber, '#')) {
+                return back()->withErrors([
+                    'shamcash_transaction_number' => 'رقم عملية شام كاش يظهر غالبًا مع الرمز #، يرجى إدخال الرقم فقط بدون #.',
+                ])->withInput();
+            }
         }
 
         $promoCodeUsed = null;
