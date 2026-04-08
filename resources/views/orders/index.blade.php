@@ -109,23 +109,11 @@
                         />
                     </div>
 
-                    {{-- Value input: text or dropdown depending on selected field --}}
-                    <div
-                        class="filter-field md:col-span-2"
-                        x-data="{ valueField: @js((string) $field) }"
-                        x-on:filter-dropdown-change.window="
-                            if ($event.detail?.id === 'orders-field-dropdown')
-                                valueField = $event.detail.value
-                        "
-                    >
+                    {{-- Value input --}}
+                    <div class="filter-field md:col-span-2">
                         <label for="orders-value-text" class="filter-label text-xs font-bold text-[#0d1b4b]/60">القيمة</label>
-
                         <div class="filter-control">
-
-                            {{-- Text input (default) --}}
                             <input
-                                x-bind:class="valueField === 'payment_method' || valueField === 'archived_from_status' ? 'opacity-0 pointer-events-none' : ''"
-                                x-bind:disabled="valueField === 'payment_method' || valueField === 'archived_from_status'"
                                 id="orders-value-text"
                                 name="value"
                                 value="{{ $value }}"
@@ -133,39 +121,6 @@
                                 class="absolute inset-0 h-full w-full bg-white border border-[#0d1b4b]/15 rounded-xl px-3 text-sm text-[#0d1b4b] placeholder-[#0d1b4b]/35"
                                 placeholder="اكتب قيمة البحث أو التصفية"
                             >
-
-                            {{-- payment_method dropdown --}}
-                            <template x-if="valueField === 'payment_method'">
-                                <div class="absolute inset-0 h-full w-full">
-                                    <x-filter-dropdown
-                                        id="orders-value-payment-dropdown"
-                                        name="value"
-                                        :value="$value"
-                                        :options="[
-                                            ['value' => 'cod', 'label' => 'الدفع عند الاستلام'],
-                                            ['value' => 'shamcash', 'label' => 'شام كاش'],
-                                        ]"
-                                        placeholder="اختر طريقة الدفع"
-                                    />
-                                </div>
-                            </template>
-
-                            {{-- archived_from_status dropdown --}}
-                            <template x-if="valueField === 'archived_from_status'">
-                                <div class="absolute inset-0 h-full w-full">
-                                    <x-filter-dropdown
-                                        id="orders-value-archived-dropdown"
-                                        name="value"
-                                        :value="$value"
-                                        :options="[
-                                            ['value' => 'done', 'label' => 'مكتمل'],
-                                            ['value' => 'canceled', 'label' => 'ملغي'],
-                                        ]"
-                                        placeholder="اختر الحالة السابقة"
-                                    />
-                                </div>
-                            </template>
-
                         </div>
                     </div>
 
