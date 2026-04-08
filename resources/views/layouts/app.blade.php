@@ -32,14 +32,18 @@
         .filter-label {
             display: flex;
             height: 20px;
+            width: 100%;
             align-items: flex-end;
+            justify-content: flex-start;
             margin-bottom: 4px;
             line-height: 20px;
+            text-align: right;
         }
 
         .filter-control {
             position: relative;
             width: 100%;
+            min-width: 0;
             height: 3rem;
         }
 
@@ -53,6 +57,7 @@
 
         .filter-action-row {
             display: flex;
+            width: 100%;
             height: 3rem;
             align-items: stretch;
             gap: 0.5rem;

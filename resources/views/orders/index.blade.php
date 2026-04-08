@@ -79,7 +79,7 @@
                     @endforeach
                 </div>
 
-                <form method="GET" action="{{ route('orders.index') }}" class="mt-5 grid grid-cols-1 gap-3 md:grid-cols-4 md:items-start">
+                <form method="GET" action="{{ route('orders.index') }}" class="mt-5 grid grid-cols-1 gap-3 md:grid-cols-[minmax(0,1.05fr)_minmax(0,2.2fr)_minmax(0,1.25fr)] md:items-end">
                     <input type="hidden" name="status" value="{{ $status }}">
                     <input type="hidden" name="per_page" value="{{ $perPage }}">
 

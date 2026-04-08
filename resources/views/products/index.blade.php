@@ -38,7 +38,7 @@
                     </a>
                 </div>
 
-                <form method="GET" action="{{ route('products.index') }}" class="mt-5 grid grid-cols-1 gap-3 md:grid-cols-5 md:items-start">
+                <form method="GET" action="{{ route('products.index') }}" class="mt-5 grid grid-cols-1 gap-3 md:grid-cols-[minmax(0,1.05fr)_minmax(0,2.2fr)_minmax(0,1fr)_minmax(0,1.25fr)] md:items-end">
 
                     {{-- Field dropdown --}}
                     <div class="filter-field">
