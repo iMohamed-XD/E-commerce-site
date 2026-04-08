@@ -201,11 +201,32 @@
                             <div>
                                 <p class="text-[11px] text-[#0d1b4b]/40 uppercase tracking-widest font-bold mb-1">متجرك النشط</p>
                                 <h3 class="text-2xl font-black text-[#0d1b4b]">{{ $shop->name }}</h3>
-                                <a href="{{ url('/shop/' . $shop->slug) }}" target="_blank"
-                                   class="inline-flex items-center gap-1.5 mt-1.5 text-sm text-[#d4af37] hover:text-[#b8922a] font-semibold transition-colors" dir="ltr">
-                                    {{ url('/shop/' . $shop->slug) }}
-                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
-                                </a>
+                                @php($shopUrl = url('/shop/' . $shop->slug))
+                                <div class="mt-1.5 flex flex-wrap items-center gap-2">
+                                    <a href="{{ $shopUrl }}" target="_blank"
+                                       class="inline-flex items-center gap-1.5 text-sm text-[#d4af37] hover:text-[#b8922a] font-semibold transition-colors" dir="ltr">
+                                        {{ $shopUrl }}
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                                    </a>
+                                    <button type="button"
+                                            onclick="copyTextFromButton(this)"
+                                            data-copy-value="{{ $shopUrl }}"
+                                            data-default-html="<svg class='w-4 h-4' fill='none' stroke='currentColor' viewBox='0 0 24 24'><rect x='9' y='9' width='11' height='11' rx='2' ry='2' stroke-width='2'></rect><path d='M5 15V5a2 2 0 0 1 2-2h10' stroke-width='2'></path></svg>"
+                                            data-copied-html="<svg class='w-4 h-4' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path d='M20 6L9 17l-5-5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'></path></svg>"
+                                            class="inline-flex items-center justify-center w-8 h-8 rounded-lg border border-[#0d1b4b]/15 text-[#0d1b4b]/65 hover:text-[#0d1b4b] hover:bg-[#f8faff] transition"
+                                            title="نسخ رابط المتجر"
+                                            aria-label="نسخ رابط المتجر">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2" ry="2" stroke-width="2"></rect><path d="M5 15V5a2 2 0 0 1 2-2h10" stroke-width="2"></path></svg>
+                                    </button>
+                                    <button type="button"
+                                            onclick="shareShopLink('{{ $shopUrl }}')"
+                                            class="inline-flex items-center justify-center w-8 h-8 rounded-lg border border-[#0d1b4b]/15 text-[#0d1b4b]/65 hover:text-[#0d1b4b] hover:bg-[#f8faff] transition"
+                                            title="مشاركة رابط المتجر"
+                                            aria-label="مشاركة رابط المتجر">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C9.047 12.67 9.73 12.2 10.5 12.2c.771 0 1.454.47 1.816 1.142M15 8a3 3 0 11-6 0 3 3 0 016 0zM6 20a6 6 0 1112 0H6z"/></svg>
+                                    </button>
+                                </div>
+                                <p class="mt-2 text-xs text-[#0d1b4b]/45">شارك رابط متجرك مع عملائك عبر وسائل التواصل الاجتماعي مثل واتساب وفيسبوك وانستغرام لزيادة الطلبات.</p>
                             </div>
                             <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-50 border border-green-200">
                                 <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
@@ -512,6 +533,50 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
     <script>
+        async function copyTextFromButton(button) {
+            const text = button?.dataset?.copyValue ?? '';
+            if (!text) return;
+
+            const defaultHtml = button.dataset.defaultHtml || button.innerHTML;
+            const copiedHtml = button.dataset.copiedHtml || defaultHtml;
+
+            try {
+                await navigator.clipboard.writeText(text);
+                button.innerHTML = copiedHtml;
+                setTimeout(() => { button.innerHTML = defaultHtml; }, 1200);
+            } catch (e) {
+                const ta = document.createElement('textarea');
+                ta.value = text;
+                ta.style.position = 'fixed';
+                ta.style.opacity = '0';
+                document.body.appendChild(ta);
+                ta.focus();
+                ta.select();
+                document.execCommand('copy');
+                document.body.removeChild(ta);
+                button.innerHTML = copiedHtml;
+                setTimeout(() => { button.innerHTML = defaultHtml; }, 1200);
+            }
+        }
+
+        async function shareShopLink(url) {
+            if (!url) return;
+            try {
+                if (navigator.share) {
+                    await navigator.share({
+                        title: 'متجري',
+                        text: 'تفضل بزيارة متجري',
+                        url,
+                    });
+                    return;
+                }
+                await navigator.clipboard.writeText(url);
+                alert('تم نسخ رابط المتجر. يمكنك الآن لصقه ومشاركته.');
+            } catch (e) {
+                // no-op
+            }
+        }
+
         document.addEventListener('alpine:init', () => {
             Alpine.data('logoCropper', (initialSlug = '') => ({
                 showCropper: false,

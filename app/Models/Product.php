@@ -12,6 +12,7 @@ class Product extends Model
         'name',
         'description',
         'price',
+        'quantity_available',
         'image_path',
         'is_active',
         'discount_percent',
@@ -20,6 +21,7 @@ class Product extends Model
 
     protected $casts = [
         'is_active' => 'boolean',
+        'quantity_available' => 'integer',
         'discount_active' => 'boolean',
         'discount_percent' => 'decimal:2',
     ];

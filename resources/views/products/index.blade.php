@@ -85,6 +85,9 @@
                                                 </div>
                                                 <div class="ms-4">
                                                     <div class="text-sm font-black text-[#0d1b4b]">{{ $product->name }}</div>
+                                                    <div class="text-xs text-[#0d1b4b]/50 font-semibold mt-1">
+                                                        المتاح: {{ (int) $product->quantity_available }}
+                                                    </div>
                                                     @if($product->discount_percent && $product->discount_active)
                                                         <div class="text-xs text-[#a07c1e] font-bold mt-1 inline-flex items-center gap-1">
                                                             <span class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>

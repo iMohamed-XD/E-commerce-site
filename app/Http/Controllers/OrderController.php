@@ -6,6 +6,7 @@ use App\Models\Order;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class OrderController extends Controller
 {
@@ -28,7 +29,21 @@ class OrderController extends Controller
             'status' => 'required|in:pending,completed,cancelled'
         ]);
 
-        $order->update(['status' => $request->status]);
+        $newStatus = $request->status;
+        $oldStatus = $order->status;
+
+        DB::transaction(function () use ($order, $oldStatus, $newStatus) {
+            if ($oldStatus !== 'cancelled' && $newStatus === 'cancelled') {
+                $order->loadMissing('items.product');
+                foreach ($order->items as $item) {
+                    if ($item->product) {
+                        $item->product->increment('quantity_available', (int) $item->quantity);
+                    }
+                }
+            }
+
+            $order->update(['status' => $newStatus]);
+        });
 
         return redirect()->route('orders.index')->with('success', 'تم تحديث حالة الطلب بنجاح!');
     }

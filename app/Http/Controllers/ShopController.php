@@ -8,7 +8,9 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class ShopController extends Controller
 {
@@ -127,28 +129,7 @@ class ShopController extends Controller
 
         $cart = json_decode($request->cart, true);
         if (empty($cart)) {
-            return back()->withErrors(['cart' => 'عربة التسوق فارغة']);
-        }
-
-        $totalAmount = 0;
-        $orderItems = [];
-
-        foreach ($cart as $item) {
-            $product = $shop->products()->where('id', $item['id'])->where('is_active', true)->first();
-            if ($product) {
-                $priceToUse = $product->effectivePrice();
-                $totalAmount += $priceToUse * $item['quantity'];
-
-                $orderItems[] = [
-                    'product_id' => $product->id,
-                    'quantity' => $item['quantity'],
-                    'price_at_time_of_order' => $priceToUse,
-                ];
-            }
-        }
-
-        if ($totalAmount == 0) {
-            return back()->withErrors(['cart' => 'المنتجات في العربة غير صالحة.']);
+            return back()->withErrors(['cart' => 'عربة التسوق فارغة.'])->withInput();
         }
 
         $shamcashAvailable = $shop->shamcash_is_active && !empty($shop->shamcash_account_number) && !empty($shop->shamcash_qr_path);
@@ -167,41 +148,119 @@ class ShopController extends Controller
             }
             if (str_starts_with($shamcashTransactionNumber, '#')) {
                 return back()->withErrors([
-                    'shamcash_transaction_number' => 'رقم عملية شام كاش يظهر غالبًا مع الرمز #، يرجى إدخال الرقم فقط بدون #.',
+                    'shamcash_transaction_number' => 'رقم العملية يظهر غالباً مع الرمز #، يرجى إدخال الرقم فقط بدون #.',
                 ])->withInput();
             }
         }
 
         $promoCodeUsed = null;
+        $promoDiscountPercent = 0;
         if ($request->filled('promo_code')) {
             $promo = $shop->promoCodes()->where('code', strtoupper(trim($request->promo_code)))->first();
             if ($promo && $promo->isValid()) {
-                $discount = ($totalAmount * $promo->discount_percentage) / 100;
-                $totalAmount -= $discount;
+                $promoDiscountPercent = (float) $promo->discount_percentage;
                 $promoCodeUsed = $promo->code . ' (-' . $promo->discount_percentage . '%)';
             }
         }
 
-        $order = Order::create([
-            'shop_id' => $shop->id,
-            'buyer_name' => $request->buyer_name,
-            'buyer_email' => $request->buyer_email,
-            'buyer_phone' => $request->buyer_phone,
-            'buyer_address' => $request->buyer_address,
-            'promo_code_used' => $promoCodeUsed,
-            'payment_method' => $paymentMethod,
-            'shamcash_transaction_number' => $shamcashTransactionNumber,
-            'total_amount' => $totalAmount,
-            'status' => 'pending',
-        ]);
+        try {
+            DB::transaction(function () use (
+                $shop,
+                $cart,
+                $request,
+                $paymentMethod,
+                $shamcashTransactionNumber,
+                $promoCodeUsed,
+                $promoDiscountPercent
+            ) {
+                $quantitiesByProduct = [];
+                foreach ($cart as $item) {
+                    $productId = (int) ($item['id'] ?? 0);
+                    $quantity = (int) ($item['quantity'] ?? 0);
+                    if ($productId <= 0 || $quantity <= 0) {
+                        continue;
+                    }
+                    $quantitiesByProduct[$productId] = ($quantitiesByProduct[$productId] ?? 0) + $quantity;
+                }
 
-        foreach ($orderItems as $item) {
-            OrderItem::create([
-                'order_id' => $order->id,
-                'product_id' => $item['product_id'],
-                'quantity' => $item['quantity'],
-                'price_at_time_of_order' => $item['price_at_time_of_order'],
-            ]);
+                if (empty($quantitiesByProduct)) {
+                    throw ValidationException::withMessages([
+                        'cart' => 'عربة التسوق فارغة أو غير صالحة.',
+                    ]);
+                }
+
+                $products = $shop->products()
+                    ->whereIn('id', array_keys($quantitiesByProduct))
+                    ->where('is_active', true)
+                    ->lockForUpdate()
+                    ->get()
+                    ->keyBy('id');
+
+                $totalAmount = 0;
+                $orderItems = [];
+
+                foreach ($quantitiesByProduct as $productId => $quantityRequested) {
+                    $product = $products->get($productId);
+                    if (!$product) {
+                        continue;
+                    }
+
+                    if ((int) $product->quantity_available < $quantityRequested) {
+                        throw ValidationException::withMessages([
+                            'cart' => "الكمية المتاحة من {$product->name} غير كافية. المتوفر حالياً: {$product->quantity_available}.",
+                        ]);
+                    }
+
+                    $priceToUse = $product->effectivePrice();
+                    $totalAmount += $priceToUse * $quantityRequested;
+
+                    $orderItems[] = [
+                        'product_id' => $product->id,
+                        'quantity' => $quantityRequested,
+                        'price_at_time_of_order' => $priceToUse,
+                    ];
+                }
+
+                if ($totalAmount == 0 || empty($orderItems)) {
+                    throw ValidationException::withMessages([
+                        'cart' => 'منتجات العربة غير صالحة.',
+                    ]);
+                }
+
+                if ($promoDiscountPercent > 0) {
+                    $discount = ($totalAmount * $promoDiscountPercent) / 100;
+                    $totalAmount -= $discount;
+                }
+
+                $order = Order::create([
+                    'shop_id' => $shop->id,
+                    'buyer_name' => $request->buyer_name,
+                    'buyer_email' => $request->buyer_email,
+                    'buyer_phone' => $request->buyer_phone,
+                    'buyer_address' => $request->buyer_address,
+                    'promo_code_used' => $promoCodeUsed,
+                    'payment_method' => $paymentMethod,
+                    'shamcash_transaction_number' => $shamcashTransactionNumber,
+                    'total_amount' => $totalAmount,
+                    'status' => 'pending',
+                ]);
+
+                foreach ($orderItems as $item) {
+                    OrderItem::create([
+                        'order_id' => $order->id,
+                        'product_id' => $item['product_id'],
+                        'quantity' => $item['quantity'],
+                        'price_at_time_of_order' => $item['price_at_time_of_order'],
+                    ]);
+
+                    $product = $products->get($item['product_id']);
+                    if ($product) {
+                        $product->decrement('quantity_available', $item['quantity']);
+                    }
+                }
+            });
+        } catch (ValidationException $e) {
+            return back()->withErrors($e->errors())->withInput();
         }
 
         return redirect()->route('shop.show', $shop->slug)->with('success', 'تم استلام طلبك بنجاح! شكراً لك.');
@@ -302,3 +361,4 @@ class ShopController extends Controller
         return back()->with('success', 'تم تحديث معلومات المتجر بنجاح!');
     }
 }
+

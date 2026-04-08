@@ -45,6 +45,12 @@
                             <x-text-input id="price" class="block mt-1 w-full" type="number" step="0.01" min="0" name="price" :value="old('price')" required />
                             <x-input-error :messages="$errors->get('price')" class="mt-2" />
                         </div>
+                        <div>
+                            <x-input-label for="quantity_available" :value="__('الكمية المتاحة')" />
+                            <x-text-input id="quantity_available" class="block mt-1 w-full" type="number" step="1" min="0" name="quantity_available" :value="old('quantity_available', 0)" required />
+                            <x-input-error :messages="$errors->get('quantity_available')" class="mt-2" />
+                        </div>
+
 
                         <div>
                             <x-input-label for="description" :value="__('وصف المنتج')" />
