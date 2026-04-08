@@ -60,13 +60,13 @@
 
                 @php
                     $statusTabs = [
-                        'pending' => 'قيد الانتظار',
-                        'done' => 'مكتمل',
-                        'canceled' => 'ملغي',
-                        'archived' => 'مؤرشف',
-                        'archived_done' => 'مؤرشف من مكتمل',
+                        'pending'           => 'قيد الانتظار',
+                        'done'              => 'مكتمل',
+                        'canceled'          => 'ملغي',
+                        'archived'          => 'مؤرشف',
+                        'archived_done'     => 'مؤرشف من مكتمل',
                         'archived_canceled' => 'مؤرشف من ملغي',
-                        'all' => 'الكل',
+                        'all'               => 'الكل',
                     ];
                 @endphp
 
@@ -109,7 +109,7 @@
                         />
                     </div>
 
-                    {{-- Value input: text or dropdown depending on selected field --}}
+                    {{-- Value column --}}
                     <div
                         class="md:col-span-2 flex flex-col"
                         x-data="{ _vfield: '{{ $field }}' }"
@@ -120,7 +120,8 @@
                     >
                         <label for="orders-value-text" class="text-xs font-bold text-[#0d1b4b]/60" style="height: 20px; margin-bottom: 4px; display: flex; align-items: flex-end; line-height: 20px;">القيمة</label>
 
-                        <div class="relative w-full" style="height: 3rem;">
+                        {{-- Fixed-size container — nothing inside can change its dimensions --}}
+                        <div style="position: relative; height: 3rem; width: 100%; min-height: 3rem; max-height: 3rem; flex-shrink: 0;">
 
                             {{-- Text input (default) --}}
                             <input
@@ -129,32 +130,39 @@
                                 name="value"
                                 value="{{ $value }}"
                                 type="text"
-                                class="absolute inset-0 h-full w-full bg-white border border-[#0d1b4b]/15 rounded-xl px-3 text-sm text-[#0d1b4b] placeholder-[#0d1b4b]/35"
+                                style="position: absolute; top: 0; inset-inline-start: 0; inset-inline-end: 0; bottom: 0; height: 100%; width: 100%; box-sizing: border-box;"
+                                class="bg-white border border-[#0d1b4b]/15 rounded-xl px-3 text-sm text-[#0d1b4b] placeholder-[#0d1b4b]/35"
                                 placeholder="اكتب قيمة البحث أو التصفية"
                             >
 
                             {{-- payment_method dropdown --}}
-                            <div x-show="_vfield === 'payment_method'" class="absolute inset-0 h-full w-full">
+                            <div
+                                x-show="_vfield === 'payment_method'"
+                                style="position: absolute; top: 0; inset-inline-start: 0; inset-inline-end: 0; bottom: 0; height: 100%; width: 100%;"
+                            >
                                 <x-filter-dropdown
                                     id="orders-value-payment-dropdown"
                                     name="value"
                                     :value="$value"
                                     :options="[
-                                        ['value' => 'cod', 'label' => 'الدفع عند الاستلام'],
-                                        ['value' => 'shamcash', 'label' => 'شام كاش'],
+                                        ['value' => 'cod',       'label' => 'الدفع عند الاستلام'],
+                                        ['value' => 'shamcash',  'label' => 'شام كاش'],
                                     ]"
                                     placeholder="اختر طريقة الدفع"
                                 />
                             </div>
 
                             {{-- archived_from_status dropdown --}}
-                            <div x-show="_vfield === 'archived_from_status'" class="absolute inset-0 h-full w-full">
+                            <div
+                                x-show="_vfield === 'archived_from_status'"
+                                style="position: absolute; top: 0; inset-inline-start: 0; inset-inline-end: 0; bottom: 0; height: 100%; width: 100%;"
+                            >
                                 <x-filter-dropdown
                                     id="orders-value-archived-dropdown"
                                     name="value"
                                     :value="$value"
                                     :options="[
-                                        ['value' => 'done', 'label' => 'مكتمل'],
+                                        ['value' => 'done',     'label' => 'مكتمل'],
                                         ['value' => 'canceled', 'label' => 'ملغي'],
                                     ]"
                                     placeholder="اختر الحالة السابقة"
@@ -187,14 +195,14 @@
                             $normalizedStatus = match ($order->status) {
                                 'completed' => 'done',
                                 'cancelled' => 'canceled',
-                                default => $order->status,
+                                default     => $order->status,
                             };
 
                             $statusConfig = [
-                                'pending' => ['label' => 'قيد الانتظار', 'classes' => 'bg-[#d4af37]/15 text-[#a07c1e] border-[#d4af37]/35'],
-                                'done' => ['label' => 'مكتمل', 'classes' => 'bg-green-50 text-green-700 border-green-200'],
-                                'canceled' => ['label' => 'ملغي', 'classes' => 'bg-red-50 text-red-600 border-red-200'],
-                                'archived' => ['label' => 'مؤرشف', 'classes' => 'bg-[#0d1b4b]/8 text-[#0d1b4b]/70 border-[#0d1b4b]/20'],
+                                'pending'  => ['label' => 'قيد الانتظار', 'classes' => 'bg-[#d4af37]/15 text-[#a07c1e] border-[#d4af37]/35'],
+                                'done'     => ['label' => 'مكتمل',        'classes' => 'bg-green-50 text-green-700 border-green-200'],
+                                'canceled' => ['label' => 'ملغي',          'classes' => 'bg-red-50 text-red-600 border-red-200'],
+                                'archived' => ['label' => 'مؤرشف',        'classes' => 'bg-[#0d1b4b]/8 text-[#0d1b4b]/70 border-[#0d1b4b]/20'],
                             ];
                             $sc = $statusConfig[$normalizedStatus] ?? $statusConfig['pending'];
                         @endphp
@@ -207,9 +215,9 @@
                                     @if($normalizedStatus === 'archived')
                                         @php
                                             $archivedFrom = match ($order->archived_from_status) {
-                                                'done', 'completed' => 'مكتمل',
-                                                'canceled', 'cancelled' => 'ملغي',
-                                                default => 'غير معروف',
+                                                'done', 'completed'       => 'مكتمل',
+                                                'canceled', 'cancelled'   => 'ملغي',
+                                                default                   => 'غير معروف',
                                             };
                                         @endphp
                                         <span class="px-3 py-1 rounded-full text-xs font-semibold border border-[#0d1b4b]/20 bg-[#0d1b4b]/5 text-[#0d1b4b]/70">
