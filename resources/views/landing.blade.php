@@ -97,7 +97,7 @@
         </div>
 
         <!-- ─── Navbar ───────────────────────────────────────────────── -->
-        <nav class="relative w-full p-6 lg:px-12 flex justify-between items-center z-50 backdrop-blur-md bg-white/80 border-b border-[#0d1b4b]/8 shadow-sm">
+        <nav class="sticky top-0 w-full p-6 lg:px-12 flex justify-between items-center z-50 backdrop-blur-md bg-white/80 border-b border-[#0d1b4b]/8 shadow-sm">
 
             {{-- LOGO — right side in RTL --}}
             <div class="flex items-center gap-3">
