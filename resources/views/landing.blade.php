@@ -768,7 +768,7 @@
                         <span>ادعم استمرار مشروعنا</span>
                     </a>
                 </div>
-                <div class="grid grid-cols-2 sm:grid-cols-3 gap-12 sm:gap-24">
+                <div class="grid grid-cols-2 xl:grid-cols-4 gap-12 sm:gap-16">
                     <div>
                         <h4 class="text-white font-bold mb-6">الروابط</h4>
                         <ul class="space-y-4 text-white/40 text-sm">
@@ -783,6 +783,27 @@
                             <li><a href="#faq" class="hover:text-[#d4af37] transition">الأسئلة الشائعة</a></li>
                             <li><a href="#support" class="hover:text-[#d4af37] transition">الدعم الفني</a></li>
                             <li>سياسة <a href="{{ route('terms') }}"><span class="text-[#d4af37]">الاستخدام</span></a> و <a href="{{ route('privacy') }}"><span class="text-[#d4af37]">الخصوصية</span></a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="text-white font-bold mb-6">السوشال ميديا</h4>
+                        <ul class="space-y-4 text-white/40 text-sm">
+                            <li>
+                                <a href="https://www.facebook.com/share/1J5urLe3tg/?mibextid=wwXIfr" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 hover:text-[#d4af37] transition">
+                                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                                        <path d="M22 12.07C22 6.51 17.52 2 12 2S2 6.51 2 12.07c0 5.02 3.66 9.19 8.44 9.93v-7.03H7.9v-2.9h2.54V9.85c0-2.52 1.49-3.91 3.78-3.91 1.09 0 2.24.2 2.24.2v2.47H15.2c-1.24 0-1.63.77-1.63 1.57v1.89h2.77l-.44 2.9h-2.33V22c4.78-.74 8.43-4.91 8.43-9.93Z"/>
+                                    </svg>
+                                    <span>Facebook</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="https://www.instagram.com/mahly.1?igsh=ODQ0NHA5aWVsYmhs&utm_source=qr" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 hover:text-[#d4af37] transition">
+                                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                                        <path d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5Zm0 2A3 3 0 0 0 4 7v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3H7Zm10.5 1.5a1 1 0 1 1 0 2 1 1 0 0 1 0-2ZM12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10Zm0 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z"/>
+                                    </svg>
+                                    <span>Instagram</span>
+                                </a>
+                            </li>
                         </ul>
                     </div>
                     <div>
