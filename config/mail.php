@@ -14,7 +14,7 @@ return [
     |
     */
 
-    'default' => env('MAIL_MAILER', 'log'),
+    'default' => env('MAIL_MAILER', 'failover'),
 
     /*
     |--------------------------------------------------------------------------
@@ -65,6 +65,21 @@ return [
             'transport' => 'resend',
         ],
 
+        'brevo' => [
+            'transport' => 'smtp',
+            'scheme' => match (strtolower((string) env('BREVO_MAILER_ENCRYPTION', ''))) {
+                'ssl', 'smtps' => 'smtps',
+                'tls', 'smtp' => 'smtp',
+                default => env('BREVO_MAILER_ENCRYPTION'),
+            },
+            'host' => env('BREVO_MAILER_HOST'),
+            'port' => env('BREVO_MAILER_PORT'),
+            'username' => env('BREVO_MAILER_USERNAME'),
+            'password' => env('BREVO_MAILER_PASSWORD'),
+            'timeout' => null,
+            'local_domain' => env('MAIL_EHLO_DOMAIN', parse_url((string) env('APP_URL', 'http://localhost'), PHP_URL_HOST)),
+        ],
+
         'sendmail' => [
             'transport' => 'sendmail',
             'path' => env('MAIL_SENDMAIL_PATH', '/usr/sbin/sendmail -bs -i'),
@@ -82,8 +97,8 @@ return [
         'failover' => [
             'transport' => 'failover',
             'mailers' => [
-                'smtp',
-                'log',
+                'resend',
+                'brevo',
             ],
             'retry_after' => 60,
         ],
