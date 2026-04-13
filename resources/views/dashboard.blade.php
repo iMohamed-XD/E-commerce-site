@@ -26,7 +26,15 @@
         $totalCategories = $shop ? $shop->categories()->count() : 0;
         $totalProducts = $shop ? $shop->products()->count() : 0;
         $totalOrders = $shop ? $shop->orders()->count() : 0;
-        $totalRevenue = $shop ? $shop->orders()->whereIn('status', ['done', 'completed'])->sum('total_amount') : 0;
+        $totalRevenueUsd = 0;
+        $totalRevenueSyp = 0;
+        if ($shop) {
+            $completedOrdersQuery = $shop->orders()->whereIn('status', ['done', 'completed']);
+            $totalRevenueUsd = (float) (clone $completedOrdersQuery)->sum('final_total_usd');
+            $totalRevenueSyp = (float) (clone $completedOrdersQuery)->sum('final_total_syp');
+            $legacyRevenueSyp = (float) (clone $completedOrdersQuery)->whereNull('final_total_syp')->sum('total_amount');
+            $totalRevenueSyp += $legacyRevenueSyp;
+        }
         $needsCategoryOnboarding = $shop ? $totalCategories === 0 : false;
         $needsProductOnboarding = $shop ? $totalProducts === 0 : false;
         $showSellerOnboarding = $shop ? ($needsCategoryOnboarding || $needsProductOnboarding) : false;
@@ -372,8 +380,11 @@
                                 <div class="w-10 h-10 rounded-xl bg-[#d4af37]/15 flex items-center justify-center mx-auto mb-3">
                                     <svg class="w-5 h-5 text-[#a07c1e]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                                 </div>
-                                <p class="text-3xl font-black text-[#a07c1e]">{{ number_format($totalRevenue, 0) }}</p>
-                                <p class="text-xs text-[#a07c1e]/60 font-medium mt-1">الأرباح المكتملة (ل.س)</p>
+                                <div class="space-y-1.5">
+                                    <p class="text-2xl font-black text-[#a07c1e]" dir="ltr">${{ number_format($totalRevenueUsd, 2) }}</p>
+                                    <p class="text-lg font-black text-[#0d1b4b]/75" dir="rtl">{{ number_format($totalRevenueSyp, 0) }} ل.س</p>
+                                    <p class="text-xs text-[#a07c1e]/60 font-medium">الإيراد المكتمل (دولار + ليرة)</p>
+                                </div>
                             </div>
                         </div>
 
