@@ -23,6 +23,7 @@ class AdminUserSeeder extends Seeder
                 ['email' => 'mahlyteam@gmail.com'],
                 [
                     'name' => 'Mohammad Feras Amin',
+                    'phone_number' => '0987654321',
                     'role' => 'admin',
                     'password' => Hash::make($adminPassword),
                     'email_verified_at' => now(),
@@ -34,6 +35,7 @@ class AdminUserSeeder extends Seeder
                 ['email' => 'mahlyteam@gmail.com'],
                 [
                     'name' => 'Mohammad Feras Amin',
+                    'phone_number' => '0987654321',
                     'role' => 'admin',
                     'password' => Hash::make('Mahly!Admin@456'), // Default fallback for local testing
                     'email_verified_at' => now(),

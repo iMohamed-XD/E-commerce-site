@@ -29,8 +29,10 @@ class UserFactory extends Factory
         return [
             'name' => $faker->name(),
             'email' => $faker->unique()->safeEmail(),
+            'phone_number' => $faker->numerify('09########'),
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
+            'role' => 'simple_buyer',
             'remember_token' => Str::random(10),
         ];
     }

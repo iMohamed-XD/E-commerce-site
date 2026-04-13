@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Order;
+use App\Services\ProductStockService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -10,6 +11,11 @@ use Illuminate\Support\Facades\Gate;
 
 class OrderController extends Controller
 {
+    public function __construct(
+        protected ProductStockService $productStockService,
+    ) {
+    }
+
     public function index(Request $request)
     {
         $shop = Auth::user()->shop;
@@ -30,7 +36,7 @@ class OrderController extends Controller
         $field = $request->string('field')->toString();
         $value = trim((string) $request->input('value', ''));
 
-        $ordersQuery = $shop->orders()->with('items.product')->latest();
+        $ordersQuery = $shop->orders()->with(['items.product', 'items.productOption'])->latest();
 
         $this->applyStatusFilter($ordersQuery, $status);
         $this->applyAttributeFilter($ordersQuery, $field, $value);
@@ -66,11 +72,10 @@ class OrderController extends Controller
 
         DB::transaction(function () use ($order, $oldStatus, $newStatus) {
             if ($oldStatus !== 'canceled' && $newStatus === 'canceled') {
-                $order->loadMissing('items.product');
+                $order->loadMissing(['items.product', 'items.productOption']);
+
                 foreach ($order->items as $item) {
-                    if ($item->product) {
-                        $item->product->increment('quantity_available', (int) $item->quantity);
-                    }
+                    $this->productStockService->restoreOrderItem($item);
                 }
             }
 
@@ -104,21 +109,25 @@ class OrderController extends Controller
 
         if ($status === 'done') {
             $query->whereIn('status', ['done', 'completed']);
+
             return;
         }
 
         if ($status === 'canceled') {
             $query->whereIn('status', ['canceled', 'cancelled']);
+
             return;
         }
 
         if ($status === 'archived_done') {
             $query->where('status', 'archived')->whereIn('archived_from_status', ['done', 'completed']);
+
             return;
         }
 
         if ($status === 'archived_canceled') {
             $query->where('status', 'archived')->whereIn('archived_from_status', ['canceled', 'cancelled']);
+
             return;
         }
 
@@ -137,9 +146,13 @@ class OrderController extends Controller
             'buyer_email',
             'buyer_phone',
             'buyer_address',
+            'buyer_city',
+            'delivery_estimate',
             'promo_code_used',
             'payment_method',
             'total_amount',
+            'final_total_usd',
+            'final_total_syp',
             'status',
             'archived_from_status',
             'shamcash_transaction_number',
@@ -152,11 +165,13 @@ class OrderController extends Controller
 
         if ($field === 'id') {
             $query->where('id', (int) $value);
+
             return;
         }
 
-        if ($field === 'total_amount') {
-            $query->where('total_amount', (float) $value);
+        if (in_array($field, ['total_amount', 'final_total_usd', 'final_total_syp'], true)) {
+            $query->where($field, (float) $value);
+
             return;
         }
 
@@ -169,6 +184,7 @@ class OrderController extends Controller
             } else {
                 $query->where('status', $normalized);
             }
+
             return;
         }
 
@@ -181,11 +197,13 @@ class OrderController extends Controller
             } else {
                 $query->where('archived_from_status', $normalized);
             }
+
             return;
         }
 
         if ($field === 'created_at') {
             $query->whereDate('created_at', $value);
+
             return;
         }
 

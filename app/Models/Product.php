@@ -13,6 +13,7 @@ class Product extends Model
         'description',
         'price',
         'quantity_available',
+        'has_options',
         'image_path',
         'is_active',
         'discount_percent',
@@ -22,6 +23,7 @@ class Product extends Model
     protected $casts = [
         'is_active' => 'boolean',
         'quantity_available' => 'integer',
+        'has_options' => 'boolean',
         'discount_active' => 'boolean',
         'discount_percent' => 'decimal:2',
     ];
@@ -52,9 +54,42 @@ class Product extends Model
         return $this->belongsTo(Shop::class);
     }
 
+    public function productOptions()
+    {
+        return $this->hasMany(ProductOption::class)->orderBy('id');
+    }
+
     public function productImages()
     {
         return $this->hasMany(ProductImage::class)->orderBy('sort_order');
+    }
+
+    public function totalStock(): int
+    {
+        if (!$this->has_options) {
+            return (int) $this->quantity_available;
+        }
+
+        $options = $this->relationLoaded('productOptions')
+            ? $this->productOptions
+            : $this->productOptions()->get();
+
+        return (int) $options->sum('quantity');
+    }
+
+    public function isInStock(): bool
+    {
+        return $this->totalStock() > 0;
+    }
+
+    public function priceInSyp(float $rate): float
+    {
+        return round((float) $this->price * $rate, 2);
+    }
+
+    public function effectivePriceInSyp(float $rate): float
+    {
+        return round($this->effectivePrice() * $rate, 2);
     }
 
     public function allImages(): array

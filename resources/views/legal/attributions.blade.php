@@ -9,6 +9,9 @@
             ['title' => 'Cart icon',
             'link'=> 'https://www.flaticon.com/free-icons/cart',
             'content' => 'Cart icons created by Freepik - Flaticon'],
+            ['title' => 'ExchangeRate-API',
+            'link'=> 'https://exchangerate-api.com',
+            'content' => 'Exchange rate data provided by ExchangeRate-API'],
             ]"
         cta-text="العودة للتسجيل"
         cta-link="{{ route('register') }}"

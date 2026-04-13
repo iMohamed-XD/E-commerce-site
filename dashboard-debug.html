@@ -1,0 +1,1014 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="Fze937NPk236JyRBNmLodcMy7wTFKRp0Oi0RoBZs">
+
+    <title>Laravel</title>
+    <link rel="icon" href="http://localhost:8000/favicon.png" type="image/png">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
+
+    <script type="module" src="http://[::1]:5173/@vite/client"></script><link rel="stylesheet" href="http://[::1]:5173/resources/css/app.css" /><script type="module" src="http://[::1]:5173/resources/js/app.js"></script>
+    <style>
+        body { font-family: 'Tajawal', sans-serif !important; }
+        [x-cloak] { display: none !important; }
+
+        .hero-dotgrid {
+            background-image: radial-gradient(circle, #0d1b4b12 1px, transparent 1px);
+            background-size: 28px 28px;
+        }
+
+        .filter-field {
+            display: flex;
+            min-width: 0;
+            flex-direction: column;
+        }
+
+        .filter-label {
+            display: flex;
+            height: 20px;
+            width: 100%;
+            align-items: flex-end;
+            justify-content: flex-start;
+            margin-bottom: 4px;
+            line-height: 20px;
+            text-align: right;
+        }
+
+        .filter-control {
+            position: relative;
+            width: 100%;
+            min-width: 0;
+            height: 3rem;
+        }
+
+        .filter-spacer {
+            display: block;
+            height: 20px;
+            margin-bottom: 4px;
+            visibility: hidden;
+            line-height: 20px;
+        }
+
+        .filter-action-row {
+            display: flex;
+            width: 100%;
+            height: 3rem;
+            align-items: stretch;
+            gap: 0.5rem;
+        }
+    </style>
+</head>
+<body class="font-sans antialiased text-[#0d1b4b]">
+
+    
+    <div class="fixed inset-0 z-0 pointer-events-none">
+        <div class="absolute inset-0 bg-gradient-to-b from-[#eef2ff] via-white to-[#fdfbf4]"></div>
+        <div class="absolute inset-0 hero-dotgrid opacity-60"></div>
+        <div class="absolute top-0 right-0 w-[600px] h-[400px] bg-[#d4af37]/8 rounded-full blur-[120px]"></div>
+        <div class="absolute bottom-0 left-0 w-[500px] h-[400px] bg-[#0d1b4b]/5 rounded-full blur-[100px]"></div>
+    </div>
+
+    <div class="relative z-10 min-h-screen flex flex-col">
+
+        <nav x-data="{ open: false }" class="backdrop-blur-md bg-white/80 border-b border-[#0d1b4b]/8 sticky top-0 z-50 shadow-sm">
+    <!-- Primary Navigation Menu -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between h-20">
+            <div class="flex items-center">
+                <!-- Logo -->
+                <div class="shrink-0 flex items-center">
+                    <a href="http://localhost:8000/dashboard" class="flex items-center group">
+                        <div class="relative bg-white/80 backdrop-blur-xl p-2.5 rounded-xl border border-[#0d1b4b]/10 shadow-md group-hover:border-[#d4af37]/40 group-hover:shadow-[0_4px_20px_rgba(212,175,55,0.15)] transition-all duration-500 overflow-hidden">
+                            <!-- Subtle Gleam on Hover -->
+                            <div class="absolute inset-0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 bg-gradient-to-r from-transparent via-[#d4af37]/10 to-transparent"></div>
+
+                            <img src="http://localhost:8000/logo.png" class="drop-shadow-[0_0_10px_rgba(255,255,255,0.4)] transition-all duration-300 block h-9 w-auto hover:brightness-110 transition-all duration-300" alt="محلي">
+                        </div>
+                    </a>
+                </div>
+
+                <div class="hidden space-x-8 space-x-reverse sm:-my-px sm:ms-10 sm:flex">
+                    
+                                            <a class="inline-flex items-center px-1 pt-1 border-b-2 border-[#d4af37] text-sm font-black leading-5 text-[#0d1b4b] focus:outline-none focus:border-[#b8922a] transition duration-150 ease-in-out text-sm font-medium transition-colors hover:text-[#0d1b4b] focus:text-[#0d1b4b] focus:outline-none focus:ring-2 focus:ring-[#d4af37]/40 rounded-md" href="http://localhost:8000/dashboard">
+    لوحة التحكم
+</a>
+                        <a class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-bold leading-5 text-[#0d1b4b]/55 hover:text-[#0d1b4b] hover:border-[#d4af37]/50 focus:outline-none focus:text-[#0d1b4b] focus:border-[#d4af37] transition duration-150 ease-in-out text-sm font-medium transition-colors hover:text-[#0d1b4b] focus:text-[#0d1b4b] focus:outline-none focus:ring-2 focus:ring-[#d4af37]/40 rounded-md" href="http://localhost:8000/categories">
+    التصنيفات
+</a>
+                        <a class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-bold leading-5 text-[#0d1b4b]/55 hover:text-[#0d1b4b] hover:border-[#d4af37]/50 focus:outline-none focus:text-[#0d1b4b] focus:border-[#d4af37] transition duration-150 ease-in-out text-sm font-medium transition-colors hover:text-[#0d1b4b] focus:text-[#0d1b4b] focus:outline-none focus:ring-2 focus:ring-[#d4af37]/40 rounded-md" href="http://localhost:8000/products">
+    المنتجات
+</a>
+                        <a class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-bold leading-5 text-[#0d1b4b]/55 hover:text-[#0d1b4b] hover:border-[#d4af37]/50 focus:outline-none focus:text-[#0d1b4b] focus:border-[#d4af37] transition duration-150 ease-in-out text-sm font-medium transition-colors hover:text-[#0d1b4b] focus:text-[#0d1b4b] focus:outline-none focus:ring-2 focus:ring-[#d4af37]/40 rounded-md" href="http://localhost:8000/orders">
+    الطلبات
+</a>
+                        <a class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-bold leading-5 text-[#0d1b4b]/55 hover:text-[#0d1b4b] hover:border-[#d4af37]/50 focus:outline-none focus:text-[#0d1b4b] focus:border-[#d4af37] transition duration-150 ease-in-out text-sm font-medium transition-colors hover:text-[#0d1b4b] focus:text-[#0d1b4b] focus:outline-none focus:ring-2 focus:ring-[#d4af37]/40 rounded-md" href="http://localhost:8000/promo-codes">
+    أكواد الخصم
+</a>
+                        <a class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-bold leading-5 text-[#0d1b4b]/55 hover:text-[#0d1b4b] hover:border-[#d4af37]/50 focus:outline-none focus:text-[#0d1b4b] focus:border-[#d4af37] transition duration-150 ease-in-out text-sm font-medium transition-colors hover:text-[#0d1b4b] focus:text-[#0d1b4b] focus:outline-none focus:ring-2 focus:ring-[#d4af37]/40 rounded-md" href="http://localhost:8000/dashboard/feedback">
+    تقييم المنصة
+</a>
+                        <a href="http://localhost:8000/support" class="inline-flex items-center px-4 py-2 bg-pink-500 hover:bg-pink-600 text-white text-xs font-black rounded-xl transition-all shadow-lg shadow-pink-500/20 gap-2 self-center mr-4">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"/></svg>
+                            <span>ادعمنا</span>
+                        </a>
+                                    </div>
+            </div>
+
+            <div class="hidden sm:flex sm:items-center sm:ms-6">
+                <div class="ms-3 relative">
+                    <div class="relative" x-data="{ open: false }" @click.outside="open = false" @close.stop="open = false">
+    <div @click="open = ! open">
+        <button class="inline-flex items-center px-4 py-2 border border-[#0d1b4b]/15 text-sm leading-4 font-medium rounded-xl text-[#0d1b4b]/70 bg-white hover:bg-[#fdfbf4] hover:text-[#0d1b4b] focus:outline-none focus:ring-2 focus:ring-[#d4af37]/40 transition ease-in-out duration-150 shadow-sm">
+                                <div class="flex items-center gap-2">
+                                    <div class="h-6 w-6 rounded-full bg-[#0d1b4b] flex items-center justify-center text-[10px] text-white font-bold">
+                                        T
+                                    </div>
+                                    Test User
+                                </div>
+
+                                <div class="ms-2">
+                                    <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                    </svg>
+                                </div>
+                            </button>
+    </div>
+
+    <div x-show="open"
+            x-transition:enter="transition ease-out duration-200"
+            x-transition:enter-start="opacity-0 scale-95"
+            x-transition:enter-end="opacity-100 scale-100"
+            x-transition:leave="transition ease-in duration-75"
+            x-transition:leave-start="opacity-100 scale-100"
+            x-transition:leave-end="opacity-0 scale-95"
+            class="absolute z-50 mt-2 w-48 rounded-md shadow-lg ltr:origin-top-left rtl:origin-top-right start-0"
+            style="display: none;"
+            @click="open = false">
+        <div class="rounded-md ring-1 ring-black ring-opacity-5 py-1 bg-white border border-[#0d1b4b]/10 shadow-xl">
+            <div class="px-4 py-2 border-b border-[#0d1b4b]/10">
+                                <div class="text-xs text-[#0d1b4b]/45">تم تسجيل الدخول كـ</div>
+                                <div class="text-sm font-medium text-[#0d1b4b] truncate">test@example.com</div>
+                            </div>
+
+                            <a class="block w-full px-4 py-2 text-start text-sm leading-5 text-[#0d1b4b]/70 hover:bg-[#0d1b4b]/6 hover:text-[#0d1b4b] focus:outline-none focus:bg-[#0d1b4b]/8 transition duration-150 ease-in-out hover:bg-[#0d1b4b]/6 transition-colors" href="http://localhost:8000/profile">الملف الشخصي</a>
+
+                                                            <a class="block w-full px-4 py-2 text-start text-sm leading-5 text-[#0d1b4b]/70 hover:bg-[#0d1b4b]/6 hover:text-[#0d1b4b] focus:outline-none focus:bg-[#0d1b4b]/8 transition duration-150 ease-in-out hover:bg-[#d4af37]/10 transition-colors text-[#a07c1e] font-semibold" href="http://localhost:8000/shop/Deserunt%20culpa%20cum%20e" target="_blank">عرض متجري</a>
+                            
+                            <div class="border-t border-[#0d1b4b]/10"></div>
+
+                            <!-- Authentication -->
+                            <form method="POST" action="http://localhost:8000/logout">
+                                <input type="hidden" name="_token" value="Fze937NPk236JyRBNmLodcMy7wTFKRp0Oi0RoBZs" autocomplete="off">                                <a class="block w-full px-4 py-2 text-start text-sm leading-5 text-[#0d1b4b]/70 hover:bg-[#0d1b4b]/6 hover:text-[#0d1b4b] focus:outline-none focus:bg-[#0d1b4b]/8 transition duration-150 ease-in-out hover:bg-red-50 hover:text-red-600 transition-colors" href="http://localhost:8000/logout" onclick="event.preventDefault();
+                                                    this.closest('form').submit();">تسجيل الخروج</a>
+                            </form>
+        </div>
+    </div>
+</div>
+                </div>
+            </div>
+
+            <!-- Hamburger -->
+            <div class="-me-2 flex items-center sm:hidden">
+                <button @click="open = ! open" class="inline-flex items-center justify-center p-2 rounded-xl text-[#0d1b4b]/45 hover:text-[#0d1b4b] hover:bg-[#0d1b4b]/8 focus:outline-none transition duration-150 ease-in-out">
+                    <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
+                        <path :class="{'hidden': open, 'inline-flex': ! open }" class="inline-flex" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        <path :class="{'hidden': ! open, 'inline-flex': open }" class="hidden" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Responsive Navigation Menu -->
+    <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden bg-white/95 border-t border-[#0d1b4b]/10 backdrop-blur-md">
+        <div class="pt-2 pb-3 space-y-1">
+            
+                            <a class="block w-full ps-3 pe-4 py-2 border-l-4 border-[#d4af37] text-start text-base font-bold text-[#0d1b4b] bg-[#d4af37]/10 focus:outline-none focus:text-[#0d1b4b] focus:bg-[#d4af37]/15 focus:border-[#b8922a] transition duration-150 ease-in-out text-right" href="http://localhost:8000/dashboard">
+    لوحة التحكم
+</a>
+                <a class="block w-full ps-3 pe-4 py-2 border-l-4 border-transparent text-start text-base font-medium text-[#0d1b4b]/60 hover:text-[#0d1b4b] hover:bg-[#0d1b4b]/5 hover:border-[#0d1b4b]/20 focus:outline-none focus:text-[#0d1b4b] focus:bg-[#0d1b4b]/5 focus:border-[#0d1b4b]/25 transition duration-150 ease-in-out text-right" href="http://localhost:8000/categories">
+    التصنيفات
+</a>
+                <a class="block w-full ps-3 pe-4 py-2 border-l-4 border-transparent text-start text-base font-medium text-[#0d1b4b]/60 hover:text-[#0d1b4b] hover:bg-[#0d1b4b]/5 hover:border-[#0d1b4b]/20 focus:outline-none focus:text-[#0d1b4b] focus:bg-[#0d1b4b]/5 focus:border-[#0d1b4b]/25 transition duration-150 ease-in-out text-right" href="http://localhost:8000/products">
+    المنتجات
+</a>
+                <a class="block w-full ps-3 pe-4 py-2 border-l-4 border-transparent text-start text-base font-medium text-[#0d1b4b]/60 hover:text-[#0d1b4b] hover:bg-[#0d1b4b]/5 hover:border-[#0d1b4b]/20 focus:outline-none focus:text-[#0d1b4b] focus:bg-[#0d1b4b]/5 focus:border-[#0d1b4b]/25 transition duration-150 ease-in-out text-right" href="http://localhost:8000/orders">
+    الطلبات
+</a>
+                <a class="block w-full ps-3 pe-4 py-2 border-l-4 border-transparent text-start text-base font-medium text-[#0d1b4b]/60 hover:text-[#0d1b4b] hover:bg-[#0d1b4b]/5 hover:border-[#0d1b4b]/20 focus:outline-none focus:text-[#0d1b4b] focus:bg-[#0d1b4b]/5 focus:border-[#0d1b4b]/25 transition duration-150 ease-in-out text-right" href="http://localhost:8000/promo-codes">
+    أكواد الخصم
+</a>
+                <a class="block w-full ps-3 pe-4 py-2 border-l-4 border-transparent text-start text-base font-medium text-[#0d1b4b]/60 hover:text-[#0d1b4b] hover:bg-[#0d1b4b]/5 hover:border-[#0d1b4b]/20 focus:outline-none focus:text-[#0d1b4b] focus:bg-[#0d1b4b]/5 focus:border-[#0d1b4b]/25 transition duration-150 ease-in-out text-right" href="http://localhost:8000/dashboard/feedback">
+    تقييم المنصة
+</a>
+                <div class="px-4 py-2">
+                    <a href="http://localhost:8000/support" class="flex items-center justify-center gap-2 w-full py-3 bg-pink-500 text-white rounded-xl font-black shadow-lg shadow-pink-500/20">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"/></svg>
+                        <span>ادعم المنصة</span>
+                    </a>
+                </div>
+                    </div>
+
+        <!-- Responsive Settings Options -->
+        <div class="pt-4 pb-1 border-t border-[#0d1b4b]/10">
+            <div class="px-4 flex items-center justify-between">
+                <div>
+                    <div class="font-bold text-base text-[#0d1b4b]">Test User</div>
+                    <div class="font-medium text-sm text-[#0d1b4b]/50">test@example.com</div>
+                </div>
+                <div class="h-10 w-10 rounded-full bg-[#0d1b4b] flex items-center justify-center text-white font-bold">
+                    T
+                </div>
+            </div>
+
+            <div class="mt-3 space-y-1">
+                <a class="block w-full ps-3 pe-4 py-2 border-l-4 border-transparent text-start text-base font-medium text-[#0d1b4b]/60 hover:text-[#0d1b4b] hover:bg-[#0d1b4b]/5 hover:border-[#0d1b4b]/20 focus:outline-none focus:text-[#0d1b4b] focus:bg-[#0d1b4b]/5 focus:border-[#0d1b4b]/25 transition duration-150 ease-in-out text-right" href="http://localhost:8000/profile">
+    الملف الشخصي
+</a>
+
+                <!-- Authentication -->
+                <form method="POST" action="http://localhost:8000/logout">
+                    <input type="hidden" name="_token" value="Fze937NPk236JyRBNmLodcMy7wTFKRp0Oi0RoBZs" autocomplete="off">                    <a class="block w-full ps-3 pe-4 py-2 border-l-4 border-transparent text-start text-base font-medium text-[#0d1b4b]/60 hover:text-[#0d1b4b] hover:bg-[#0d1b4b]/5 hover:border-[#0d1b4b]/20 focus:outline-none focus:text-[#0d1b4b] focus:bg-[#0d1b4b]/5 focus:border-[#0d1b4b]/25 transition duration-150 ease-in-out text-right text-red-600" href="http://localhost:8000/logout" onclick="event.preventDefault();
+                                        this.closest('form').submit();">
+    تسجيل الخروج
+</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</nav>
+
+        
+                    <header class="backdrop-blur-md bg-white/80 border-b border-[#0d1b4b]/8 shadow-sm">
+                <div class="max-w-7xl mx-auto py-5 px-4 sm:px-6 lg:px-8">
+                    <h2 class="font-black text-lg text-[#0d1b4b] tracking-tight">
+            لوحة التحكم
+        </h2>
+        <style>
+            [x-cloak] {
+                display: none !important;
+            }
+        </style>
+                </div>
+            </header>
+        
+        
+        <main class="flex-grow">
+            <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css" rel="stylesheet">
+
+    <div class="py-10 px-4 sm:px-6 lg:px-8" x-data='logoCropper("Deserunt culpa cum e")'>
+        <div class="max-w-7xl mx-auto space-y-6">
+
+            
+            
+            
+                                
+                    
+                    
+                    
+                    <div class="bg-white/70 backdrop-blur-xl border border-[#0d1b4b]/10 rounded-3xl shadow-xl shadow-[#0d1b4b]/6 p-8">
+
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+                            <div>
+                                <p class="text-[11px] text-[#0d1b4b]/40 uppercase tracking-widest font-bold mb-1">متجرك النشط</p>
+                                <h3 class="text-2xl font-black text-[#0d1b4b]">Donna Heath</h3>
+                                <div class="mt-1.5 flex flex-wrap items-center gap-2">
+                                    <a href="http://localhost:8000/shop/Deserunt culpa cum e" target="_blank"
+                                       class="inline-flex items-center gap-1.5 text-sm text-[#d4af37] hover:text-[#b8922a] font-semibold transition-colors" dir="ltr">
+                                        http://localhost:8000/shop/Deserunt culpa cum e
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                                    </a>
+                                    <button type="button"
+                                            onclick="copyTextFromButton(this)"
+                                            data-copy-value="http://localhost:8000/shop/Deserunt culpa cum e"
+                                            data-default-html="<svg class='w-4 h-4' fill='none' stroke='currentColor' viewBox='0 0 24 24'><rect x='9' y='9' width='11' height='11' rx='2' ry='2' stroke-width='2'></rect><path d='M5 15V5a2 2 0 0 1 2-2h10' stroke-width='2'></path></svg>"
+                                            data-copied-html="<svg class='w-4 h-4' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path d='M20 6L9 17l-5-5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'></path></svg>"
+                                            class="inline-flex items-center justify-center w-8 h-8 rounded-lg border border-[#0d1b4b]/15 text-[#0d1b4b]/65 hover:text-[#0d1b4b] hover:bg-[#f8faff] transition"
+                                            title="نسخ رابط المتجر"
+                                            aria-label="نسخ رابط المتجر">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2" ry="2" stroke-width="2"></rect><path d="M5 15V5a2 2 0 0 1 2-2h10" stroke-width="2"></path></svg>
+                                    </button>
+                                    <button type="button"
+                                            onclick="shareShopLink('http://localhost:8000/shop/Deserunt culpa cum e')"
+                                            class="inline-flex items-center justify-center w-8 h-8 rounded-lg border border-[#0d1b4b]/15 text-[#0d1b4b]/65 hover:text-[#0d1b4b] hover:bg-[#f8faff] transition"
+                                            title="مشاركة رابط المتجر"
+                                            aria-label="مشاركة رابط المتجر">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C9.047 12.67 9.73 12.2 10.5 12.2c.771 0 1.454.47 1.816 1.142M15 8a3 3 0 11-6 0 3 3 0 016 0zM6 20a6 6 0 1112 0H6z"/></svg>
+                                    </button>
+                                </div>
+                                <p class="mt-2 text-xs text-[#0d1b4b]/45">شارك رابط متجرك مع عملائك عبر وسائل التواصل الاجتماعي مثل واتساب وفيسبوك وانستغرام لزيادة الطلبات.</p>
+                            </div>
+                            <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-50 border border-green-200">
+                                <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                                <span class="text-xs text-green-700 font-bold">متجر نشط</span>
+                            </div>
+                        </div>
+
+                        
+                        
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div class="p-6 rounded-2xl bg-[#0d1b4b]/4 border border-[#0d1b4b]/8 text-center hover:bg-[#0d1b4b]/6 transition-colors">
+                                <div class="w-10 h-10 rounded-xl bg-[#0d1b4b]/8 flex items-center justify-center mx-auto mb-3">
+                                    <svg class="w-5 h-5 text-[#0d1b4b]/60" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+                                </div>
+                                <p class="text-3xl font-black text-[#0d1b4b]">1</p>
+                                <p class="text-xs text-[#0d1b4b]/45 font-medium mt-1">إجمالي المنتجات</p>
+                            </div>
+                            <div class="p-6 rounded-2xl bg-green-50 border border-green-100 text-center hover:bg-green-100/60 transition-colors">
+                                <div class="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center mx-auto mb-3">
+                                    <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                                </div>
+                                <p class="text-3xl font-black text-green-800">1</p>
+                                <p class="text-xs text-green-700/60 font-medium mt-1">إجمالي الطلبات</p>
+                            </div>
+                            <div class="p-6 rounded-2xl bg-[#d4af37]/8 border border-[#d4af37]/20 text-center hover:bg-[#d4af37]/12 transition-colors">
+                                <div class="w-10 h-10 rounded-xl bg-[#d4af37]/15 flex items-center justify-center mx-auto mb-3">
+                                    <svg class="w-5 h-5 text-[#a07c1e]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                </div>
+                                <p class="text-3xl font-black text-[#a07c1e]">0</p>
+                                <p class="text-xs text-[#a07c1e]/60 font-medium mt-1">الأرباح المكتملة (ل.س)</p>
+                            </div>
+                        </div>
+
+                        
+                        <div class="mt-8 pt-6 border-t border-[#0d1b4b]/8 flex flex-wrap gap-3">
+                            <a href="http://localhost:8000/products"
+                               class="inline-flex items-center gap-2 px-5 py-2.5 bg-[#0d1b4b] text-white text-sm font-bold rounded-xl hover:bg-[#1a2d6b] transition-all shadow-md shadow-[#0d1b4b]/20 active:scale-95">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+                                المنتجات
+                            </a>
+                            <a href="http://localhost:8000/orders"
+                               class="inline-flex items-center gap-2 px-5 py-2.5 bg-green-600 text-white text-sm font-bold rounded-xl hover:bg-green-700 transition-all shadow-md shadow-green-600/20 active:scale-95">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                                الطلبات
+                            </a>
+                            <a href="http://localhost:8000/promo-codes"
+                               class="inline-flex items-center gap-2 px-5 py-2.5 bg-[#d4af37]/10 border border-[#d4af37]/30 text-[#a07c1e] text-sm font-bold rounded-xl hover:bg-[#d4af37]/20 hover:border-[#d4af37]/50 transition-all active:scale-95">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>
+                                الكوبونات
+                            </a>
+                            <a href="http://localhost:8000/categories"
+                               class="inline-flex items-center gap-2 px-5 py-2.5 bg-[#0d1b4b]/5 border border-[#0d1b4b]/12 text-[#0d1b4b]/70 text-sm font-bold rounded-xl hover:bg-[#0d1b4b]/8 hover:border-[#0d1b4b]/20 transition-all active:scale-95">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+                                التصنيفات
+                            </a>
+                        </div>
+                    </div>
+
+                    
+                    <div class="bg-white/70 backdrop-blur-xl border border-[#0d1b4b]/10 rounded-3xl shadow-xl shadow-[#0d1b4b]/6 overflow-hidden">
+
+                        <div class="px-8 pt-8 pb-6 border-b border-[#0d1b4b]/8 flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-[#0d1b4b]/6 flex items-center justify-center flex-shrink-0">
+                                <svg class="w-5 h-5 text-[#0d1b4b]/50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37a1.724 1.724 0 002.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                            </div>
+                            <div>
+                                <h4 class="text-lg font-black text-[#0d1b4b]">إعدادات المتجر</h4>
+                                <p class="text-xs text-[#0d1b4b]/40 mt-0.5">تحديث بيانات متجرك وهويته البصرية</p>
+                            </div>
+                        </div>
+
+                        <div class="p-8">
+                            <form method="POST" action="http://localhost:8000/shop" enctype="multipart/form-data" class="space-y-6 max-w-4xl">
+                                <input type="hidden" name="_token" value="Fze937NPk236JyRBNmLodcMy7wTFKRp0Oi0RoBZs" autocomplete="off">                                <input type="hidden" name="_method" value="PATCH">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div>
+                                        <label class="block text-sm font-bold text-[#0d1b4b]/70" for="edit_name">
+    اسم المتجر
+</label>
+                                        <input
+        class="bg-white border border-[#0d1b4b]/15 text-[#0d1b4b]
+            placeholder-[#0d1b4b]/30
+            focus:border-[#d4af37] focus:ring-2 focus:ring-[#d4af37]/20
+            rounded-xl shadow-sm
+            py-2.5 px-4
+            transition-all duration-200
+            outline-none
+         block mt-1.5 w-full" id="edit_name" type="text" name="name" value="Donna Heath" required="required" x-model="name"
+>
+                                                                            </div>
+                                    <div>
+                                        <label class="block text-sm font-bold text-[#0d1b4b]/70" for="edit_slug">
+    رابط المتجر (بالإنجليزية)
+</label>
+                                        <input
+        class="bg-white border border-[#0d1b4b]/15 text-[#0d1b4b]
+            placeholder-[#0d1b4b]/30
+            focus:border-[#d4af37] focus:ring-2 focus:ring-[#d4af37]/20
+            rounded-xl shadow-sm
+            py-2.5 px-4
+            transition-all duration-200
+            outline-none
+         block mt-1.5 w-full font-mono text-sm" id="edit_slug" type="text" name="slug" value="Deserunt culpa cum e" required="required" x-model="slug" x-on:input="manualSlug = true"
+>
+                                        <div class="mt-2 flex flex-wrap items-center gap-2">
+                                            <p class="text-[11px] text-[#0d1b4b]/40" dir="ltr">http://localhost:8000/shop/<span x-text="slug" class="text-[#0d1b4b]/70 font-semibold"></span></p>
+                                            <template x-if="isCheckingSlug">
+                                                <span class="text-[10px] text-[#0d1b4b]/40 animate-pulse font-medium">جاري التحقق...</span>
+                                            </template>
+                                            <template x-if="!isCheckingSlug && slug && !slugAvailable">
+                                                <span class="inline-flex items-center gap-1 text-[10px] text-red-500 font-bold">
+                                                    <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></svg>
+                                                    مستخدم بالفعل
+                                                </span>
+                                            </template>
+                                            <template x-if="!isCheckingSlug && slug && slugAvailable && slug !== 'Deserunt culpa cum e'">
+                                                <span class="inline-flex items-center gap-1 text-[10px] text-green-600 font-bold">
+                                                    <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                                                    متاح
+                                                </span>
+                                            </template>
+                                        </div>
+                                                                            </div>
+                                </div>
+
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    
+                                    <div>
+                                        <label class="block text-sm font-bold text-[#0d1b4b]/70" for="edit_logo">
+    تحديث الشعار
+</label>
+                                        <div class="mt-1.5">
+                                            <label for="edit_logo" class="flex items-center gap-3 px-4 py-3 rounded-xl border border-[#0d1b4b]/15 bg-white cursor-pointer hover:border-[#d4af37]/50 hover:bg-[#fdfbf4] transition-all duration-200">
+                                                <div class="w-8 h-8 rounded-lg bg-[#d4af37]/10 flex items-center justify-center flex-shrink-0">
+                                                    <svg class="w-4 h-4 text-[#a07c1e]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>
+                                                </div>
+                                                <span class="text-sm text-[#0d1b4b]/45">اختر شعاراً جديداً...</span>
+                                                <input id="edit_logo" type="file" name="logo" accept="image/*" class="hidden" x-on:change="loadFile" />
+                                            </label>
+                                        </div>
+                                        <input type="hidden" name="cropped_logo" :value="croppedData">
+                                        
+                                        <div x-show="croppedData" class="mt-4 flex items-center gap-4" x-cloak>
+                                            <img :src="croppedData" class="w-16 h-16 rounded-xl object-cover border-2 border-[#d4af37]/40 shadow-sm" alt="معاينة">
+                                            <button type="button"
+                                                x-on:click="croppedData = ''; document.getElementById('edit_logo').value = ''"
+                                                class="text-xs text-red-500 hover:text-red-700 font-semibold transition-colors">
+                                                إزالة
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    
+                                    <div>
+                                        <label class="block text-sm font-bold text-[#0d1b4b]/70" for="edit_hero">
+    تحديث صورة الغلاف
+</label>
+                                        <div class="mt-1.5">
+                                            <label for="edit_hero" class="flex items-center gap-3 px-4 py-3 rounded-xl border border-[#0d1b4b]/15 bg-white cursor-pointer hover:border-[#d4af37]/50 hover:bg-[#fdfbf4] transition-all duration-200">
+                                                <div class="w-8 h-8 rounded-lg bg-[#0d1b4b]/6 flex items-center justify-center flex-shrink-0">
+                                                    <svg class="w-4 h-4 text-[#0d1b4b]/50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                                </div>
+                                                <span class="text-sm text-[#0d1b4b]/45">اختر صورة الغلاف...</span>
+                                                <input id="edit_hero" type="file" name="hero_image" accept="image/*" class="hidden" />
+                                            </label>
+                                        </div>
+                                                                            </div>
+                                </div>
+
+                                
+                                <div>
+                                    <label class="block text-sm font-bold text-[#0d1b4b]/70" for="edit_description">
+    وصف المتجر
+</label>
+                                    <textarea id="edit_description" name="description" rows="3"
+                                        class="block mt-1.5 w-full bg-white border border-[#0d1b4b]/15 text-[#0d1b4b] placeholder-[#0d1b4b]/30
+                                               focus:border-[#d4af37] focus:ring-2 focus:ring-[#d4af37]/20 rounded-xl shadow-sm py-2.5 px-4
+                                               outline-none transition-all duration-200 resize-none">Odit dolorum eos ad</textarea>
+                                                                    </div>
+
+                                <div class="rounded-2xl border border-[#0d1b4b]/10 bg-[#f8faff] p-5 space-y-4">
+                                    <div class="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                                        <div>
+                                            <h4 class="text-sm font-black text-[#0d1b4b]">موقع المتجر والتوصيل</h4>
+                                            <p class="mt-1 text-[11px] text-[#0d1b4b]/45">حدّث العنوان والمدينة لتبقى تقديرات التوصيل دقيقة للطلبات الجديدة.</p>
+                                        </div>
+                                        <label class="inline-flex items-center gap-2 text-xs font-bold text-[#0d1b4b]/70 cursor-pointer">
+                                            <input
+                                                type="checkbox"
+                                                name="same_day_delivery_enabled"
+                                                value="1"
+                                                class="rounded border-[#0d1b4b]/25 text-[#0d1b4b] focus:ring-[#d4af37]/30"
+                                                checked
+                                            >
+                                            تفعيل توصيل نفس اليوم داخل المدينة نفسها
+                                        </label>
+                                    </div>
+
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div class="md:col-span-2">
+                                            <label class="block text-sm font-bold text-[#0d1b4b]/70" for="edit_location_text">
+    نص الموقع / العنوان التفصيلي
+</label>
+                                            <input
+        class="bg-white border border-[#0d1b4b]/15 text-[#0d1b4b]
+            placeholder-[#0d1b4b]/30
+            focus:border-[#d4af37] focus:ring-2 focus:ring-[#d4af37]/20
+            rounded-xl shadow-sm
+            py-2.5 px-4
+            transition-all duration-200
+            outline-none
+         block mt-1.5 w-full" id="edit_location_text" type="text" name="location_text" value="Pariatur Aliquam is" placeholder="مثال: دمشق، المالكي، مقابل الحديقة الشرقية" data-location-input="data-location-input" autocomplete="off" required="required"
+>
+                                            <p class="mt-2 text-[11px] text-[#0d1b4b]/45">حدّث العنوان التفصيلي متى شئت، وسيبقى مستقلا عن اختيار المدينة.</p>
+                                                                                    </div>
+
+                                        <div>
+                                            <label class="block text-sm font-bold text-[#0d1b4b]/70" for="edit_city">
+    المدينة
+</label>
+                                            <select
+                                                id="edit_city_select"
+                                                name="city"
+                                                class="block mt-1.5 w-full rounded-xl border border-[#0d1b4b]/15 bg-white px-4 py-2.5 text-[#0d1b4b] shadow-sm focus:border-[#d4af37] focus:ring-2 focus:ring-[#d4af37]/20"
+                                                required
+                                            >
+                                                <option value="" disabled selected>اختر المدينة</option>
+                                                                                                    <option value="دمشق" >دمشق</option>
+                                                                                                    <option value="حلب" >حلب</option>
+                                                                                                    <option value="حمص" >حمص</option>
+                                                                                                    <option value="حماة" >حماة</option>
+                                                                                                    <option value="اللاذقية" >اللاذقية</option>
+                                                                                                    <option value="طرطوس" >طرطوس</option>
+                                                                                                    <option value="إدلب" >إدلب</option>
+                                                                                                    <option value="درعا" >درعا</option>
+                                                                                                    <option value="دير الزور" >دير الزور</option>
+                                                                                                    <option value="الحسكة" >الحسكة</option>
+                                                                                                    <option value="الرقة" >الرقة</option>
+                                                                                                    <option value="السويداء" >السويداء</option>
+                                                                                                    <option value="القنيطرة" >القنيطرة</option>
+                                                                                            </select>
+                                            <input
+        class="bg-white border border-[#0d1b4b]/15 text-[#0d1b4b]
+            placeholder-[#0d1b4b]/30
+            focus:border-[#d4af37] focus:ring-2 focus:ring-[#d4af37]/20
+            rounded-xl shadow-sm
+            py-2.5 px-4
+            transition-all duration-200
+            outline-none
+         hidden" id="edit_city" type="hidden" name="legacy_city" value="Quibusdam aut dolore" placeholder="مثال: دمشق" data-city-input="data-city-input" required="required"
+>
+                                                                                    </div>
+
+                                        <div>
+                                            <label class="block text-sm font-bold text-[#0d1b4b]/70" for="edit_delivery_fee_usd">
+    رسوم التوصيل (دولار)
+</label>
+                                            <input
+        class="bg-white border border-[#0d1b4b]/15 text-[#0d1b4b]
+            placeholder-[#0d1b4b]/30
+            focus:border-[#d4af37] focus:ring-2 focus:ring-[#d4af37]/20
+            rounded-xl shadow-sm
+            py-2.5 px-4
+            transition-all duration-200
+            outline-none
+         block mt-1.5 w-full" id="edit_delivery_fee_usd" type="number" name="delivery_fee_usd" value="3.49" min="0" step="0.01" placeholder="0.00"
+>
+                                            <p class="mt-2 text-[11px] text-[#0d1b4b]/45">حدّث رسوم التوصيل بالدولار متى شئت، وسيشاهدها المشتري أيضًا بالليرة السورية عند الطلب.</p>
+                                                                                    </div>
+
+                                    </div>
+
+                                </div>
+
+                                <div class="rounded-2xl border border-[#0d1b4b]/10 bg-[#f8faff] p-5 space-y-4">
+                                    <div class="flex items-center justify-between gap-3">
+                                        <h4 class="text-sm font-black text-[#0d1b4b]">إعدادات شام كاش</h4>
+                                        <label class="inline-flex items-center gap-2 text-xs font-bold text-[#0d1b4b]/70 cursor-pointer">
+                                            <input type="checkbox" name="shamcash_is_active" value="1" class="rounded border-[#0d1b4b]/25 text-[#0d1b4b] focus:ring-[#d4af37]/30" checked>
+                                            تفعيل شام كاش
+                                        </label>
+                                    </div>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="block text-sm font-bold text-[#0d1b4b]/70" for="edit_shamcash_account_number">
+    رقم حساب شام كاش
+</label>
+                                            <input
+        class="bg-white border border-[#0d1b4b]/15 text-[#0d1b4b]
+            placeholder-[#0d1b4b]/30
+            focus:border-[#d4af37] focus:ring-2 focus:ring-[#d4af37]/20
+            rounded-xl shadow-sm
+            py-2.5 px-4
+            transition-all duration-200
+            outline-none
+         block mt-1.5 w-full" id="edit_shamcash_account_number" type="text" name="shamcash_account_number" value="942" placeholder="أدخل رقم الحساب"
+>
+                                                                                    </div>
+                                        <div>
+                                            <label class="block text-sm font-bold text-[#0d1b4b]/70" for="edit_shamcash_qr">
+    QR شام كاش
+</label>
+                                            <input id="edit_shamcash_qr" type="file" name="shamcash_qr" accept="image/*" class="block mt-1.5 w-full text-sm text-[#0d1b4b]/70 file:mr-2 file:rounded-lg file:border-0 file:bg-[#0d1b4b] file:px-3 file:py-2 file:text-xs file:font-bold file:text-white hover:file:bg-[#1a2d6b]" />
+                                                                                    </div>
+                                    </div>
+                                                                            <div class="flex items-center gap-4 rounded-xl border border-[#0d1b4b]/10 bg-white p-3">
+                                            <img src="http://localhost/storage/shops/shamcash/NqFSKpgvzAmJtwlCALmoBGgv9oCjs53sSO7jjWGm.jpg" alt="QR شام كاش" class="w-16 h-16 rounded-lg object-cover border border-[#0d1b4b]/10">
+                                            <label class="inline-flex items-center gap-2 text-xs font-bold text-red-600 cursor-pointer">
+                                                <input type="checkbox" name="shamcash_remove_qr" value="1" class="rounded border-red-300 text-red-600 focus:ring-red-200">
+                                                حذف رمز QR الحالي
+                                            </label>
+                                        </div>
+                                                                        <p class="text-[11px] text-[#0d1b4b]/45">يمكنك تفعيل/إيقاف شام كاش وتعديل بياناته في أي وقت.</p>
+                                </div>
+
+                                <div>
+    <label class="block text-sm font-bold text-[#0d1b4b]/70" for="color">
+    لون المتجر
+</label>
+    <p class="mt-1 text-xs text-[#0d1b4b]/45">اختر اللون الأساسي الذي سيشاهده الزبائن في واجهة متجرك.</p>
+
+    <div class="mt-3 grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-3">
+                    <label for="color_navy"
+                   class="group relative block rounded-2xl border border-[#0d1b4b]/12 bg-white p-3 cursor-pointer hover:border-[#d4af37]/50 transition-all">
+                <input id="color_navy"
+                       type="radio"
+                       name="color"
+                       value="navy"
+                       class="sr-only peer"
+                       >
+
+                <div class="absolute top-2 left-2 w-4 h-4 rounded-full border-2 border-[#0d1b4b]/25 peer-checked:border-[#d4af37] peer-checked:bg-[#d4af37] transition-all"></div>
+
+                <div class="h-10 rounded-xl border border-[#0d1b4b]/10 overflow-hidden mt-1 shadow-inner" style="background-color: #0d1b4b;">
+                </div>
+
+                <div class="mt-2 text-center">
+                    <p class="text-xs font-black text-[#0d1b4b]">كحلي</p>
+                </div>
+            </label>
+                    <label for="color_gold"
+                   class="group relative block rounded-2xl border border-[#0d1b4b]/12 bg-white p-3 cursor-pointer hover:border-[#d4af37]/50 transition-all">
+                <input id="color_gold"
+                       type="radio"
+                       name="color"
+                       value="gold"
+                       class="sr-only peer"
+                       >
+
+                <div class="absolute top-2 left-2 w-4 h-4 rounded-full border-2 border-[#0d1b4b]/25 peer-checked:border-[#d4af37] peer-checked:bg-[#d4af37] transition-all"></div>
+
+                <div class="h-10 rounded-xl border border-[#0d1b4b]/10 overflow-hidden mt-1 shadow-inner" style="background-color: #d4af37;">
+                </div>
+
+                <div class="mt-2 text-center">
+                    <p class="text-xs font-black text-[#0d1b4b]">ذهبي</p>
+                </div>
+            </label>
+                    <label for="color_emerald"
+                   class="group relative block rounded-2xl border border-[#0d1b4b]/12 bg-white p-3 cursor-pointer hover:border-[#d4af37]/50 transition-all">
+                <input id="color_emerald"
+                       type="radio"
+                       name="color"
+                       value="emerald"
+                       class="sr-only peer"
+                       >
+
+                <div class="absolute top-2 left-2 w-4 h-4 rounded-full border-2 border-[#0d1b4b]/25 peer-checked:border-[#d4af37] peer-checked:bg-[#d4af37] transition-all"></div>
+
+                <div class="h-10 rounded-xl border border-[#0d1b4b]/10 overflow-hidden mt-1 shadow-inner" style="background-color: #065f46;">
+                </div>
+
+                <div class="mt-2 text-center">
+                    <p class="text-xs font-black text-[#0d1b4b]">زمردي</p>
+                </div>
+            </label>
+                    <label for="color_rose"
+                   class="group relative block rounded-2xl border border-[#0d1b4b]/12 bg-white p-3 cursor-pointer hover:border-[#d4af37]/50 transition-all">
+                <input id="color_rose"
+                       type="radio"
+                       name="color"
+                       value="rose"
+                       class="sr-only peer"
+                       >
+
+                <div class="absolute top-2 left-2 w-4 h-4 rounded-full border-2 border-[#0d1b4b]/25 peer-checked:border-[#d4af37] peer-checked:bg-[#d4af37] transition-all"></div>
+
+                <div class="h-10 rounded-xl border border-[#0d1b4b]/10 overflow-hidden mt-1 shadow-inner" style="background-color: #9f1239;">
+                </div>
+
+                <div class="mt-2 text-center">
+                    <p class="text-xs font-black text-[#0d1b4b]">وردي غامق</p>
+                </div>
+            </label>
+                    <label for="color_slate"
+                   class="group relative block rounded-2xl border border-[#0d1b4b]/12 bg-white p-3 cursor-pointer hover:border-[#d4af37]/50 transition-all">
+                <input id="color_slate"
+                       type="radio"
+                       name="color"
+                       value="slate"
+                       class="sr-only peer"
+                       >
+
+                <div class="absolute top-2 left-2 w-4 h-4 rounded-full border-2 border-[#0d1b4b]/25 peer-checked:border-[#d4af37] peer-checked:bg-[#d4af37] transition-all"></div>
+
+                <div class="h-10 rounded-xl border border-[#0d1b4b]/10 overflow-hidden mt-1 shadow-inner" style="background-color: #1e293b;">
+                </div>
+
+                <div class="mt-2 text-center">
+                    <p class="text-xs font-black text-[#0d1b4b]">رمادي داكن</p>
+                </div>
+            </label>
+                    <label for="color_amber"
+                   class="group relative block rounded-2xl border border-[#0d1b4b]/12 bg-white p-3 cursor-pointer hover:border-[#d4af37]/50 transition-all">
+                <input id="color_amber"
+                       type="radio"
+                       name="color"
+                       value="amber"
+                       class="sr-only peer"
+                       >
+
+                <div class="absolute top-2 left-2 w-4 h-4 rounded-full border-2 border-[#0d1b4b]/25 peer-checked:border-[#d4af37] peer-checked:bg-[#d4af37] transition-all"></div>
+
+                <div class="h-10 rounded-xl border border-[#0d1b4b]/10 overflow-hidden mt-1 shadow-inner" style="background-color: #92400e;">
+                </div>
+
+                <div class="mt-2 text-center">
+                    <p class="text-xs font-black text-[#0d1b4b]">عنبري</p>
+                </div>
+            </label>
+                    <label for="color_violet"
+                   class="group relative block rounded-2xl border border-[#0d1b4b]/12 bg-white p-3 cursor-pointer hover:border-[#d4af37]/50 transition-all">
+                <input id="color_violet"
+                       type="radio"
+                       name="color"
+                       value="violet"
+                       class="sr-only peer"
+                       >
+
+                <div class="absolute top-2 left-2 w-4 h-4 rounded-full border-2 border-[#0d1b4b]/25 peer-checked:border-[#d4af37] peer-checked:bg-[#d4af37] transition-all"></div>
+
+                <div class="h-10 rounded-xl border border-[#0d1b4b]/10 overflow-hidden mt-1 shadow-inner" style="background-color: #4c1d95;">
+                </div>
+
+                <div class="mt-2 text-center">
+                    <p class="text-xs font-black text-[#0d1b4b]">بنفسجي</p>
+                </div>
+            </label>
+                    <label for="color_teal"
+                   class="group relative block rounded-2xl border border-[#0d1b4b]/12 bg-white p-3 cursor-pointer hover:border-[#d4af37]/50 transition-all">
+                <input id="color_teal"
+                       type="radio"
+                       name="color"
+                       value="teal"
+                       class="sr-only peer"
+                       checked>
+
+                <div class="absolute top-2 left-2 w-4 h-4 rounded-full border-2 border-[#0d1b4b]/25 peer-checked:border-[#d4af37] peer-checked:bg-[#d4af37] transition-all"></div>
+
+                <div class="h-10 rounded-xl border border-[#0d1b4b]/10 overflow-hidden mt-1 shadow-inner" style="background-color: #134e4a;">
+                </div>
+
+                <div class="mt-2 text-center">
+                    <p class="text-xs font-black text-[#0d1b4b]">فيروزي</p>
+                </div>
+            </label>
+                    <label for="color_crimson"
+                   class="group relative block rounded-2xl border border-[#0d1b4b]/12 bg-white p-3 cursor-pointer hover:border-[#d4af37]/50 transition-all">
+                <input id="color_crimson"
+                       type="radio"
+                       name="color"
+                       value="crimson"
+                       class="sr-only peer"
+                       >
+
+                <div class="absolute top-2 left-2 w-4 h-4 rounded-full border-2 border-[#0d1b4b]/25 peer-checked:border-[#d4af37] peer-checked:bg-[#d4af37] transition-all"></div>
+
+                <div class="h-10 rounded-xl border border-[#0d1b4b]/10 overflow-hidden mt-1 shadow-inner" style="background-color: #7f1d1d;">
+                </div>
+
+                <div class="mt-2 text-center">
+                    <p class="text-xs font-black text-[#0d1b4b]">قرمزي</p>
+                </div>
+            </label>
+                    <label for="color_charcoal"
+                   class="group relative block rounded-2xl border border-[#0d1b4b]/12 bg-white p-3 cursor-pointer hover:border-[#d4af37]/50 transition-all">
+                <input id="color_charcoal"
+                       type="radio"
+                       name="color"
+                       value="charcoal"
+                       class="sr-only peer"
+                       >
+
+                <div class="absolute top-2 left-2 w-4 h-4 rounded-full border-2 border-[#0d1b4b]/25 peer-checked:border-[#d4af37] peer-checked:bg-[#d4af37] transition-all"></div>
+
+                <div class="h-10 rounded-xl border border-[#0d1b4b]/10 overflow-hidden mt-1 shadow-inner" style="background-color: #18181b;">
+                </div>
+
+                <div class="mt-2 text-center">
+                    <p class="text-xs font-black text-[#0d1b4b]">فحمي</p>
+                </div>
+            </label>
+            </div>
+
+    </div>
+
+                                <div>
+                                    <button type="submit"
+                                        x-bind:disabled="!slugAvailable || isCheckingSlug"
+                                        class="group relative px-8 py-3.5 bg-[#0d1b4b] text-white font-black rounded-2xl
+                                               hover:bg-[#1a2d6b] active:scale-[0.98] transition-all duration-200
+                                               shadow-lg shadow-[#0d1b4b]/20 overflow-hidden
+                                               disabled:opacity-40 disabled:cursor-not-allowed disabled:active:scale-100">
+                                        <span class="relative z-10">حفظ التغييرات</span>
+                                        <div class="absolute inset-0 bg-white/5 translate-y-full group-hover:translate-y-0 transition-transform duration-300 rounded-2xl"></div>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+            
+            
+        </div>
+    </div>
+
+    
+    <div x-show="showCropper" class="fixed inset-0 z-50 flex items-center justify-center p-4" x-cloak>
+        
+        <div x-show="showCropper"
+             x-transition:enter="transition duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+             x-transition:leave="transition duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+             class="absolute inset-0 bg-[#0d1b4b]/50 backdrop-blur-sm"
+             x-on:click="showCropper = false"></div>
+
+        
+        <div x-show="showCropper"
+             x-transition:enter="transition duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+             x-transition:leave="transition duration-150" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
+             class="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl shadow-[#0d1b4b]/20 border border-[#0d1b4b]/10 overflow-hidden">
+
+            <div class="px-6 py-5 border-b border-[#0d1b4b]/8 flex items-center justify-between">
+                <div>
+                    <h3 class="text-base font-black text-[#0d1b4b]">اقتطاع الشعار</h3>
+                    <p class="text-xs text-[#0d1b4b]/40 mt-0.5">حرك وكبّر الشعار ليناسب الإطار الدائري</p>
+                </div>
+                <button x-on:click="showCropper = false"
+                    class="w-8 h-8 rounded-xl bg-[#0d1b4b]/6 flex items-center justify-center hover:bg-[#0d1b4b]/10 transition-colors">
+                    <svg class="w-4 h-4 text-[#0d1b4b]/60" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+
+            <div class="p-6">
+                <div class="w-full max-h-80 overflow-hidden bg-[#0d1b4b]/3 rounded-2xl flex justify-center items-center">
+                    <img id="cropperImage" src="" alt="Source Image" class="max-w-full max-h-80">
+                </div>
+            </div>
+
+            <div class="px-6 pb-6 flex gap-3 justify-end">
+                <button type="button"
+                    x-on:click="showCropper = false; document.getElementById('logo_wizard') ? document.getElementById('logo_wizard').value = '' : null; document.getElementById('edit_logo') ? document.getElementById('edit_logo').value = '' : null"
+                    class="px-5 py-2.5 rounded-xl border border-[#0d1b4b]/15 text-[#0d1b4b]/60 text-sm font-bold hover:border-[#0d1b4b]/25 hover:text-[#0d1b4b] transition-all">
+                    إلغاء
+                </button>
+                <button type="button" x-on:click="saveCrop"
+                    class="px-5 py-2.5 rounded-xl bg-[#d4af37] text-[#0d1b4b] text-sm font-black hover:bg-[#c5a02e] transition-all shadow-md shadow-[#d4af37]/25">
+                    تطبيق الشعار
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
+    <script>
+        async function copyTextFromButton(button) {
+            const text = button?.dataset?.copyValue ?? '';
+            if (!text) return;
+
+            const defaultHtml = button.dataset.defaultHtml || button.innerHTML;
+            const copiedHtml = button.dataset.copiedHtml || defaultHtml;
+
+            try {
+                await navigator.clipboard.writeText(text);
+                button.innerHTML = copiedHtml;
+                setTimeout(() => { button.innerHTML = defaultHtml; }, 1200);
+            } catch (e) {
+                const ta = document.createElement('textarea');
+                ta.value = text;
+                ta.style.position = 'fixed';
+                ta.style.opacity = '0';
+                document.body.appendChild(ta);
+                ta.focus();
+                ta.select();
+                document.execCommand('copy');
+                document.body.removeChild(ta);
+                button.innerHTML = copiedHtml;
+                setTimeout(() => { button.innerHTML = defaultHtml; }, 1200);
+            }
+        }
+
+        async function shareShopLink(url) {
+            if (!url) return;
+            try {
+                if (navigator.share) {
+                    await navigator.share({
+                        title: 'متجري',
+                        text: 'تفضل بزيارة متجري',
+                        url,
+                    });
+                    return;
+                }
+                await navigator.clipboard.writeText(url);
+                alert('تم نسخ رابط المتجر. يمكنك الآن لصقه ومشاركته.');
+            } catch (e) {
+                // no-op
+            }
+        }
+
+        window.logoCropper = function (initialSlug = '') {
+            return {
+                showCropper: false,
+                cropper: null,
+                croppedData: '',
+                name: 'Donna Heath',
+                slug: initialSlug,
+                manualSlug: false,
+                initialSlug: initialSlug,
+                slugAvailable: true,
+                isCheckingSlug: false,
+                slugTimeout: null,
+
+                init() {
+                    this.$watch('slug', () => {
+                        this.checkSlugAvailability();
+                    });
+                },
+
+                async checkSlugAvailability() {
+                    const currentSlug = this.slug.trim();
+                    if (!currentSlug) { this.slugAvailable = true; this.isCheckingSlug = false; return; }
+                    if (currentSlug === this.initialSlug) { this.slugAvailable = true; this.isCheckingSlug = false; return; }
+
+                    this.isCheckingSlug = true;
+                    if (this.slugTimeout) clearTimeout(this.slugTimeout);
+
+                    this.slugTimeout = setTimeout(async () => {
+                        try {
+                            const response = await fetch(`http://localhost:8000/shop/check-slug?slug=${encodeURIComponent(currentSlug)}`, {
+                                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                            });
+                            if (!response.ok) throw new Error('Network error');
+                            const data = await response.json();
+                            this.slugAvailable = data.available;
+                        } catch (e) {
+                            this.slugAvailable = true;
+                        } finally {
+                            this.isCheckingSlug = false;
+                        }
+                    }, 400);
+                },
+
+                updateSlug() {
+                    if (!this.manualSlug) {
+                        this.slug = this.name
+                            .toLowerCase()
+                            .replace(/[^\w\s-]/g, '')
+                            .replace(/[\s_-]+/g, '-')
+                            .replace(/^-+|-+$/g, '');
+                    }
+                },
+
+                loadFile(e) {
+                    const file = e.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = (event) => {
+                            this.showCropper = true;
+                            this.$nextTick(() => {
+                                if (this.cropper) this.cropper.destroy();
+                                const image = document.getElementById('cropperImage');
+                                image.src = event.target.result;
+                                this.cropper = new Cropper(image, {
+                                    aspectRatio: 1,
+                                    viewMode: 1,
+                                    dragMode: 'move',
+                                    autoCropArea: 1,
+                                });
+                            });
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                },
+
+                saveCrop() {
+                    if (this.cropper) {
+                        const canvas = this.cropper.getCroppedCanvas({ width: 300, height: 300, imageSmoothingEnabled: true, imageSmoothingQuality: 'high' });
+                        this.croppedData = canvas.toDataURL('image/png');
+                        this.showCropper = false;
+                    }
+                }
+            };
+        };
+
+    </script>
+        </main>
+
+    </div>
+
+</body>
+</html>

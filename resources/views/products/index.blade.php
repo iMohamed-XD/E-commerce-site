@@ -55,6 +55,7 @@
                                 ['value' => 'category_name', 'label' => 'الفئة'],
                                 ['value' => 'price', 'label' => 'السعر'],
                                 ['value' => 'quantity_available', 'label' => 'الكمية المتاحة'],
+                                ['value' => 'has_options', 'label' => 'نوع المخزون'],
                                 ['value' => 'is_active', 'label' => 'نشط / غير نشط'],
                                 ['value' => 'discount_percent', 'label' => 'نسبة الخصم'],
                                 ['value' => 'discount_active', 'label' => 'حالة الخصم'],
@@ -161,18 +162,31 @@
                                                 <div class="ms-4">
                                                     <div class="text-sm font-black text-[#0d1b4b]">{{ $product->name }}</div>
                                                     <div class="text-xs text-[#0d1b4b]/50 font-semibold mt-1">الفئة: {{ $product->category?->name ?? 'غير مصنف' }}</div>
-                                                    <div class="text-xs text-[#0d1b4b]/50 font-semibold mt-1">المتاح: {{ (int) $product->quantity_available }}</div>
+                                                    <div class="text-xs text-[#0d1b4b]/50 font-semibold mt-1">
+                                                        {{ $product->has_options ? 'مخزون حسب الخيارات' : 'مخزون بسيط' }}
+                                                    </div>
+                                                    <div class="text-xs text-[#0d1b4b]/50 font-semibold mt-1">المتاح: {{ $product->totalStock() }}</div>
+                                                    @if($product->has_options)
+                                                        <div class="text-[11px] text-[#0d1b4b]/45 mt-1 space-y-1">
+                                                            @foreach($product->productOptions->take(3) as $option)
+                                                                <div>{{ $option->label }}: {{ $option->quantity }}</div>
+                                                            @endforeach
+                                                            @if($product->productOptions->count() > 3)
+                                                                <div>+{{ $product->productOptions->count() - 3 }} خيارات إضافية</div>
+                                                            @endif
+                                                        </div>
+                                                    @endif
                                                 </div>
                                             </div>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-[#0d1b4b]/50">
                                             @php $effPrice = $product->effectivePrice(); @endphp
                                             @if($product->hasActiveDiscount())
-                                                <span class="line-through text-[#0d1b4b]/35 block text-xs">{{ number_format($product->price, 2) }} ل.س</span>
-                                                <span class="text-[#a07c1e] font-bold">{{ number_format($effPrice, 2) }} ل.س</span>
+                                                <span class="line-through text-[#0d1b4b]/35 block text-xs">{{ number_format($product->price, 2) }} USD</span>
+                                                <span class="text-[#a07c1e] font-bold">{{ number_format($effPrice, 2) }} USD</span>
                                                 <span class="text-[#a07c1e] text-xs block">(-{{ $product->discount_percent }}%)</span>
                                             @else
-                                                <span class="font-black text-[#0d1b4b]">{{ number_format($product->price, 2) }} ل.س</span>
+                                                <span class="font-black text-[#0d1b4b]">{{ number_format($product->price, 2) }} USD</span>
                                             @endif
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">

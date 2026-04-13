@@ -224,8 +224,11 @@
                     @foreach($products as $product)
                         @php
                             $isDiscounted = $product->hasActiveDiscount();
-                            $currentPrice = $product->effectivePrice();
-                            $isOutOfStock = (int) $product->quantity_available <= 0;
+                            $currentPriceUsd = $product->effectivePrice();
+                            $currentPriceSyp = $product->effectivePriceInSyp($usdToSypRate);
+                            $basePriceSyp = $product->priceInSyp($usdToSypRate);
+                            $totalStock = $product->totalStock();
+                            $isOutOfStock = $totalStock <= 0;
                         @endphp
                         <div x-show="currentFilter === 'all' || currentFilter === '{{ $product->category_id }}'" 
                              x-transition:enter="transition ease-out duration-300"
@@ -263,21 +266,47 @@
                                 
                                 <div class="mb-6">
                                     @if($isDiscounted)
-                                        <div class="flex items-center gap-2">
-                                            <span class="text-2xl font-black text-[#0d1b4b]">{{ number_format($currentPrice, 2) }} <span class="text-xs font-medium text-[#0d1b4b]/45">ل.س</span></span>
-                                            <span class="line-through text-[#0d1b4b]/35 text-sm">{{ number_format($product->price, 0) }}</span>
+                                        <div class="space-y-1.5">
+                                            <div class="flex items-baseline justify-between gap-3">
+                                                <span class="text-2xl font-black text-[#0d1b4b]">${{ number_format($currentPriceUsd, 2) }}</span>
+                                                <span class="line-through text-[#0d1b4b]/35 text-sm">${{ number_format($product->price, 2) }}</span>
+                                            </div>
+                                            <div class="flex items-baseline justify-between gap-3">
+                                                <span class="text-sm font-bold text-[#0d1b4b]/55">{{ number_format($currentPriceSyp, 0) }} ل.س</span>
+                                                <span class="line-through text-[#0d1b4b]/30 text-xs">{{ number_format($basePriceSyp, 0) }} ل.س</span>
+                                            </div>
                                         </div>
                                     @else
-                                        <span class="text-2xl font-black text-[#0d1b4b]">{{ number_format($product->price, 2) }} <span class="text-xs font-medium text-[#0d1b4b]/45">ل.س</span></span>
+                                        <div class="space-y-1">
+                                            <span class="text-2xl font-black text-[#0d1b4b]">${{ number_format($product->price, 2) }}</span>
+                                            <span class="text-sm font-bold text-[#0d1b4b]/55">{{ number_format($basePriceSyp, 0) }} ل.س</span>
+                                        </div>
                                     @endif
                                 </div>
 
-                                <button @click.prevent="addToCart({{ $product->id }}, '{{ addslashes($product->name) }}', {{ $currentPrice }}, '{{ $product->image_path ? Storage::url($product->image_path) : '' }}', {{ (int) $product->quantity_available }})"
+                                @if($product->has_options)
+                                    <a href="{{ route('buyer.product.show', ['shop' => $shop->slug, 'product' => $product->id]) }}"
+                                       class="mt-auto z-10 w-full group/btn relative overflow-hidden text-white font-black py-4 px-6 rounded-2xl transition-all duration-300 flex items-center justify-center gap-3 shadow-xl {{ $isOutOfStock ? 'bg-gray-400 cursor-not-allowed shadow-none pointer-events-none' : 'theme-primary-bg theme-primary-bg-hover' }}">
+                                        <svg class="w-5 h-5 transition-transform group-hover/btn:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 6v12m6-6H6"></path></svg>
+                                        <span>{{ $isOutOfStock ? 'نفدت الخيارات' : 'اختر الخيار أولاً' }}</span>
+                                    </a>
+                                @else
+                                    <button
+                                        @click.prevent="addToCart({
+                                            product_id: {{ $product->id }},
+                                            name: @js($product->name),
+                                            unit_price_usd: {{ $currentPriceUsd }},
+                                            image: @js($product->image_path ? Storage::url($product->image_path) : ''),
+                                            option_id: null,
+                                            option_label: null,
+                                            maxQuantity: {{ $totalStock }}
+                                        })"
                                         @disabled($isOutOfStock)
                                         class="mt-auto z-10 w-full group/btn relative overflow-hidden text-white font-black py-4 px-6 rounded-2xl transition-all duration-300 flex items-center justify-center gap-3 shadow-xl {{ $isOutOfStock ? 'bg-gray-400 cursor-not-allowed shadow-none' : 'theme-primary-bg theme-primary-bg-hover' }}">
-                                    <svg class="w-5 h-5 transition-transform group-hover/btn:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
-                                    <span>{{ $isOutOfStock ? 'نفدت الكمية' : 'أضف للسلة' }}</span>
-                                </button>
+                                        <svg class="w-5 h-5 transition-transform group-hover/btn:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+                                        <span>{{ $isOutOfStock ? 'نفدت الكمية' : 'أضف للسلة' }}</span>
+                                    </button>
+                                @endif
                                 @if($isOutOfStock)
                                     <p class="mt-3 text-xs font-bold text-red-700 text-center">لا يوجد المزيد من هذا المنتج حالياً.</p>
                                 @endif
@@ -360,7 +389,7 @@
                                         </div>
                                     </template>
                                     <ul class="space-y-4">
-                                        <template x-for="item in cart" :key="item.id">
+                                        <template x-for="item in cart" :key="item.cart_key">
                                             <li class="flex gap-4 p-4 bg-[#0d1b4b]/4 rounded-[1.5rem] border border-[#0d1b4b]/10">
                                                 <div class="h-20 w-20 flex-shrink-0 overflow-hidden rounded-xl bg-[#0d1b4b]/5">
                                                     <img :src="item.image" class="h-full w-full object-cover" x-show="item.image">
@@ -370,16 +399,24 @@
                                                 </div>
                                                 <div class="flex flex-1 flex-col justify-between">
                                                     <div class="flex justify-between items-start">
-                                                        <h3 class="text-sm font-black text-[#0d1b4b]" x-text="item.name"></h3>
-                                                        <p class="text-sm font-bold text-[#a07c1e]" x-text="number_format(item.price * item.quantity, 2) + ' ل.س'"></p>
+                                                        <div>
+                                                            <h3 class="text-sm font-black text-[#0d1b4b]" x-text="item.name"></h3>
+                                                            <p x-show="item.option_label" class="mt-1 text-[11px] font-bold text-[#0d1b4b]/50">
+                                                                الخيار: <span x-text="item.option_label"></span>
+                                                            </p>
+                                                        </div>
+                                                        <div class="text-right">
+                                                            <p class="text-sm font-bold text-[#a07c1e]" x-text="'$' + number_format(item.unit_price_usd * item.quantity, 2)"></p>
+                                                            <p class="text-[11px] font-bold text-[#0d1b4b]/45" x-text="number_format(convertUsdToSyp(item.unit_price_usd * item.quantity), 0) + ' ل.س'"></p>
+                                                        </div>
                                                     </div>
                                                     <div class="flex items-center justify-between text-xs pt-2">
                                                         <div class="flex items-center bg-[#0d1b4b]/6 rounded-lg p-1">
-                                                            <button @click="updateQuantity(item.id, item.quantity - 1)" class="w-6 h-6 rounded-md bg-white text-[#0d1b4b] border border-[#0d1b4b]/15 font-black">-</button>
+                                                            <button @click="updateQuantity(item.cart_key, item.quantity - 1)" class="w-6 h-6 rounded-md bg-white text-[#0d1b4b] border border-[#0d1b4b]/15 font-black">-</button>
                                                             <span class="px-3 font-black text-[#0d1b4b]/60" x-text="item.quantity"></span>
-                                                            <button @click="updateQuantity(item.id, item.quantity + 1)" :disabled="!canIncreaseQuantity(item)" class="w-6 h-6 rounded-md bg-white text-[#0d1b4b] border border-[#0d1b4b]/15 font-black disabled:opacity-40 disabled:cursor-not-allowed">+</button>
+                                                            <button @click="updateQuantity(item.cart_key, item.quantity + 1)" :disabled="!canIncreaseQuantity(item)" class="w-6 h-6 rounded-md bg-white text-[#0d1b4b] border border-[#0d1b4b]/15 font-black disabled:opacity-40 disabled:cursor-not-allowed">+</button>
                                                         </div>
-                                                        <button @click="removeFromCart(item.id)" class="text-red-500 font-bold hover:text-red-400 transition">إزالة</button>
+                                                        <button @click="removeFromCart(item.cart_key)" class="text-red-500 font-bold hover:text-red-400 transition">إزالة</button>
                                                     </div>
                                                 </div>
                                             </li>
@@ -406,8 +443,8 @@
                                     <div class="flex justify-between items-center text-sm font-bold border-t border-[#0d1b4b]/10 pt-6">
                                         <span class="text-[#0d1b4b]/45">المجموع الكلي</span>
                                         <div class="text-right">
-                                            <p x-show="promoApplied" class="line-through text-[#0d1b4b]/35 text-xs mb-1" x-text="number_format(cartTotal, 2)"></p>
-                                            <p class="text-2xl font-black text-[#0d1b4b] tracking-tighter" x-text="number_format(finalTotal, 2) + ' ل.س'"></p>
+                                            <p x-show="promoApplied" class="line-through text-[#0d1b4b]/35 text-xs mb-1" x-text="number_format(cartTotalSyp, 2) + ' ل.س'"></p>
+                                            <p class="text-2xl font-black text-[#0d1b4b] tracking-tighter" x-text="number_format(finalTotalSyp, 2) + ' ل.س'"></p>
                                         </div>
                                     </div>
                                 </div>
@@ -424,6 +461,7 @@
 
         <!-- Checkout Form Modal -->
         @php($hasShamCash = $shop->shamcash_is_active && !empty($shop->shamcash_account_number) && !empty($shop->shamcash_qr_path))
+        @php($syrianCities = config('syria_cities.cities', []))
         <div x-show="isCheckoutOpen" class="fixed inset-0 z-[60] overflow-y-auto px-4 py-8" x-cloak>
             <div class="flex items-center justify-center min-h-screen">
                 <div x-show="isCheckoutOpen" x-transition.opacity class="fixed inset-0 bg-[#0d1b4b]/50 backdrop-blur-md" @click="isCheckoutOpen = false"></div>
@@ -461,7 +499,16 @@
                             </div>
                             <div class="space-y-2">
                                 <label class="text-[10px] font-black theme-accent-text uppercase tracking-[0.2em] px-1">عنوان التوصيل</label>
-                                <textarea name="buyer_address" required rows="3" class="w-full bg-white border border-[#0d1b4b]/15 rounded-2xl px-5 py-4 text-[#0d1b4b] font-bold placeholder-[#0d1b4b]/30 focus:ring-2 focus:ring-[#d4af37]/25 transition resize-none" placeholder="المحافظة، المنطقة، أقرب نقطة دالة..."></textarea>
+                                <textarea name="buyer_location_text" x-model="buyerLocationText" required rows="3" class="w-full bg-white border border-[#0d1b4b]/15 rounded-2xl px-5 py-4 text-[#0d1b4b] font-bold placeholder-[#0d1b4b]/30 focus:ring-2 focus:ring-[#d4af37]/25 transition resize-none" placeholder="المحافظة، المنطقة، أقرب نقطة دالة..."></textarea>
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-[10px] font-black theme-accent-text uppercase tracking-[0.2em] px-1">المدينة</label>
+                                <select name="buyer_city" x-model="buyerCity" required class="w-full bg-white border border-[#0d1b4b]/15 rounded-2xl px-5 py-4 text-[#0d1b4b] font-bold focus:ring-2 focus:ring-[#d4af37]/25 transition">
+                                    <option value="">اختر المدينة</option>
+                                    @foreach($syrianCities as $city)
+                                        <option value="{{ $city }}">{{ $city }}</option>
+                                    @endforeach
+                                </select>
                             </div>
                         </div>
 
@@ -523,7 +570,7 @@
 
                             <div class="flex justify-between items-center border-t border-[#0d1b4b]/10 pt-4">
                                 <span class="text-lg font-black text-[#0d1b4b]">المجموع</span>
-                                <span class="text-3xl font-black theme-accent-text" x-text="number_format(finalTotal, 2) + ' ل.س'"></span>
+                                <span class="text-3xl font-black theme-accent-text" x-text="number_format(finalTotalSyp, 2) + ' ل.س'"></span>
                             </div>
                         </div>
 
@@ -542,10 +589,10 @@
 
         <script>
             async function copyTextFromButton(button) {
-                const text = button?.dataset?.copyValue ?? '';
+                const text = button && button.dataset ? (button.dataset.copyValue || '') : '';
                 if (!text) return;
-                const defaultHtml = button.dataset.defaultHtml || button.innerHTML;
-                const copiedHtml = button.dataset.copiedHtml || defaultHtml;
+                const defaultHtml = (button && button.dataset ? button.dataset.defaultHtml : '') || button.innerHTML;
+                const copiedHtml = (button && button.dataset ? button.dataset.copiedHtml : '') || defaultHtml;
 
                 try {
                     await navigator.clipboard.writeText(text);
@@ -573,62 +620,312 @@
             document.addEventListener('alpine:init', () => {
                 Alpine.data('shoppingCart', (shopSlug) => ({
                     isCartOpen: false,
-                    isCheckoutOpen: false,
+                    isCheckoutOpen: @json($errors->any()),
                     currentFilter: 'all',
-                    stockByProduct: @json($products->getCollection()->mapWithKeys(fn($product) => [$product->id => (int) $product->quantity_available])),
+                    exchangeRate: {{ $usdToSypRate }},
+                    shopDeliveryFeeUsd: @json((float) ($shop->delivery_fee_usd ?? 0)),
+                    stockByProduct: @json($stockByProduct),
+                    optionStockById: @json($optionStockById),
+                    sellerCity: @json($canonicalSellerCity),
+                    sameDayDeliveryEnabled: @json((bool) $shop->same_day_delivery_enabled),
+                    buyerLocationText: @json(old('buyer_location_text', '')),
+                    buyerCity: @json(old('buyer_city', '')),
                     cart: [],
-                    promoInput: '',
-                    promoApplied: false,
+                    promoInput: @json(old('promo_code', '')),
+                    promoApplied: @json((bool) old('promo_code')),
                     promoMessage: '',
                     discountPercentage: 0,
-                    paymentMethod: 'cod',
-                    
-                    // Toast State
+                    paymentMethod: @json(old('payment_method', 'cod')),
+                    checkoutSucceeded: @json((bool) session('success')),
                     showToast: false,
                     toastMessage: '',
                     cartAnimating: false,
-                    
+                    ephemeralCart: [],
+
                     init() {
-                        const savedCart = localStorage.getItem('mahly_cart_' + shopSlug);
+                        window.__mahlyActiveShopCart = this;
+
+                        if (this.checkoutSucceeded) {
+                            this.cart = [];
+                            this.ephemeralCart = [];
+                            this.safeStorageRemove(this.storageKey());
+                            return;
+                        }
+
+                        const savedCart = this.safeStorageGet(this.storageKey());
                         if (savedCart) {
                             try {
-                                this.cart = JSON.parse(savedCart);
+                                this.cart = this.normalizeStoredCart(JSON.parse(savedCart));
                             } catch (e) {
                                 this.cart = [];
                             }
+                        } else if (this.ephemeralCart.length > 0) {
+                            this.cart = this.normalizeStoredCart(this.ephemeralCart);
                         }
-                        
-                        this.$watch('cart', value => {
-                            localStorage.setItem('mahly_cart_' + shopSlug, JSON.stringify(value));
+
+                        this.syncCartWithStock();
+                        this.persistCart(this.cart);
+
+                        this.$watch('cart', (value) => {
+                            this.persistCart(value);
                             if (value.length === 0) {
                                 this.removePromo();
                             }
                         });
 
-                        this.syncCartWithStock();
+                        if (this.promoApplied && this.promoInput) {
+                            this.applyPromo();
+                        }
                     },
-                    
+
+                    storageKey() {
+                        return 'mahly_cart_' + shopSlug;
+                    },
+
+                    safeStorageGet(key) {
+                        try {
+                            if (window.localStorage) {
+                                return window.localStorage.getItem(key);
+                            }
+                        } catch (e) {}
+
+                        return null;
+                    },
+
+                    safeStorageSet(key, value) {
+                        try {
+                            if (window.localStorage) {
+                                window.localStorage.setItem(key, value);
+                                return true;
+                            }
+                        } catch (e) {}
+
+                        return false;
+                    },
+
+                    safeStorageRemove(key) {
+                        try {
+                            if (window.localStorage) {
+                                window.localStorage.removeItem(key);
+                                return true;
+                            }
+                        } catch (e) {}
+
+                        return false;
+                    },
+
+                    persistCart(value) {
+                        this.ephemeralCart = this.normalizeStoredCart(value);
+                        this.safeStorageSet(this.storageKey(), JSON.stringify(this.ephemeralCart));
+                    },
+
+                    toNumber(value) {
+                        const parsed = Number.parseFloat(value);
+                        return Number.isFinite(parsed) ? parsed : 0;
+                    },
+
+                    roundMoney(value) {
+                        return Number.parseFloat(this.toNumber(value).toFixed(2));
+                    },
+
+                    convertUsdToSyp(value) {
+                        return this.roundMoney(this.toNumber(value) * this.exchangeRate);
+                    },
+
+                    makeCartKey(productId, optionId = null) {
+                        return String(productId) + ':' + (optionId !== null && optionId !== undefined ? optionId : 'simple');
+                    },
+
+                    normalizeCity(value) {
+                        return (value || '')
+                            .toString()
+                            .toLowerCase()
+                            .replace(/[.،ـ]/g, '')
+                            .replace(/\s+/g, ' ')
+                            .trim();
+                    },
+                    normalizeCartItem(item) {
+                        const source = item || {};
+                        let sourceProductId = source.product_id;
+                        if (sourceProductId === undefined || sourceProductId === null || sourceProductId === '') {
+                            sourceProductId = source.id;
+                        }
+                        const productId = Number.parseInt(sourceProductId || 0, 10);
+                        if (!Number.isFinite(productId) || productId <= 0) {
+                            return null;
+                        }
+                        const rawOptionId = source.option_id;
+                        const optionId = rawOptionId !== null && rawOptionId !== undefined && rawOptionId !== ''
+                            ? Number.parseInt(rawOptionId, 10)
+                            : null;
+                        let sourceQuantity = source.quantity;
+                        if (sourceQuantity === undefined || sourceQuantity === null || sourceQuantity === '') {
+                            sourceQuantity = 1;
+                        }
+                        const quantity = Math.max(1, Number.parseInt(sourceQuantity, 10));
+                        const payloadMaxQuantityParsed = Number.parseInt(source.maxQuantity, 10);
+                        const payloadMaxQuantity = Number.isFinite(payloadMaxQuantityParsed) && payloadMaxQuantityParsed > 0
+                            ? payloadMaxQuantityParsed
+                            : null;
+                        const maxQuantity = optionId
+                            ? this.getAvailableOptionQuantity(optionId, payloadMaxQuantity)
+                            : this.getAvailableQuantity(productId, payloadMaxQuantity);
+                        let sourceName = source.name;
+                        if (sourceName === undefined || sourceName === null || sourceName === '') {
+                            sourceName = 'منتج';
+                        }
+                        let sourceUnitPriceUsd = source.unit_price_usd;
+                        if (sourceUnitPriceUsd === undefined || sourceUnitPriceUsd === null || sourceUnitPriceUsd === '') {
+                            sourceUnitPriceUsd = source.price;
+                        }
+                        let sourceOptionLabel = source.option_label;
+                        if (sourceOptionLabel === undefined || sourceOptionLabel === null || sourceOptionLabel === '') {
+                            sourceOptionLabel = source.product_option_label;
+                        }
+                        return {
+                            id: productId,
+                            product_id: productId,
+                            name: sourceName,
+                            unit_price_usd: this.toNumber(sourceUnitPriceUsd || 0),
+                            image: source.image || '',
+                            quantity,
+                            option_id: optionId,
+                            option_label: (sourceOptionLabel || '').toString().trim() || null,
+                            cart_key: source.cart_key || this.makeCartKey(productId, optionId),
+                            maxQuantity: maxQuantity !== null && maxQuantity > 0 ? maxQuantity : null,
+                        };
+                    },
+                    normalizeStoredCart(items) {
+                        return (Array.isArray(items) ? items : [])
+                            .map((item) => this.normalizeCartItem(item))
+                            .filter(Boolean);
+                    },
+
                     get totalItems() {
                         return this.cart.reduce((total, item) => total + item.quantity, 0);
                     },
-                    
-                    get cartTotal() {
-                        return this.cart.reduce((total, item) => total + (item.price * item.quantity), 0);
+
+                    get cartTotalUsd() {
+                        return this.roundMoney(this.cart.reduce((total, item) => total + (item.unit_price_usd * item.quantity), 0));
                     },
 
-                    get finalTotal() {
-                        if (this.promoApplied && this.discountPercentage > 0) {
-                            return this.cartTotal - (this.cartTotal * (this.discountPercentage / 100));
+                    get cartTotalSyp() {
+                        return this.convertUsdToSyp(this.cartTotalUsd);
+                    },
+
+                    get productSubtotalUsd() {
+                        return this.cartTotalUsd;
+                    },
+
+                    get productSubtotalSyp() {
+                        return this.cartTotalSyp;
+                    },
+
+                    get discountAmountUsd() {
+                        if (!this.promoApplied || this.discountPercentage <= 0) {
+                            return 0;
                         }
-                        return this.cartTotal;
-                    },
-                    
-                    addToCart(id, name, price, image, quantityAvailable = null) {
-                        const available = Number.isFinite(Number(quantityAvailable))
-                            ? Number(quantityAvailable)
-                            : this.getAvailableQuantity(id);
 
-                        if (available <= 0) {
+                        return this.roundMoney(this.productSubtotalUsd * (this.discountPercentage / 100));
+                    },
+
+                    get discountAmountSyp() {
+                        return this.convertUsdToSyp(this.discountAmountUsd);
+                    },
+
+                    get discountedProductsSubtotalUsd() {
+                        return this.roundMoney(this.productSubtotalUsd - this.discountAmountUsd);
+                    },
+
+                    get discountedProductsSubtotalSyp() {
+                        return this.roundMoney(this.productSubtotalSyp - this.discountAmountSyp);
+                    },
+
+                    get deliveryFeeUsd() {
+                        return this.roundMoney(this.shopDeliveryFeeUsd);
+                    },
+
+                    get deliveryFeeSyp() {
+                        return this.convertUsdToSyp(this.deliveryFeeUsd);
+                    },
+
+                    get finalTotalUsd() {
+                        return this.roundMoney(this.discountedProductsSubtotalUsd + this.deliveryFeeUsd);
+                    },
+
+                    get finalTotalSyp() {
+                        return this.roundMoney(this.discountedProductsSubtotalSyp + this.deliveryFeeSyp);
+                    },
+
+                    get deliveryEstimate() {
+                        const buyerCity = this.normalizeCity(this.buyerCity);
+                        const sellerCity = this.normalizeCity(this.sellerCity);
+
+                        if (!this.sameDayDeliveryEnabled || !buyerCity || !sellerCity) {
+                            return 'multiple_days';
+                        }
+
+                        return buyerCity === sellerCity ? 'same_day' : 'multiple_days';
+                    },
+
+                    get deliveryEstimateLabel() {
+                        return this.deliveryEstimate === 'same_day'
+                            ? 'التوصيل المتوقع: خلال اليوم'
+                            : 'التوصيل المتوقع: خلال عدة أيام';
+                    },
+
+                    get deliveryEstimateHint() {
+                        if (!this.buyerCity || !this.buyerCity.toString().trim()) {
+                            return 'إذا لم يتم تحديد المدينة بوضوح فسيتم اعتماد خيار التوصيل خلال عدة أيام.';
+                        }
+
+                        if (!this.sameDayDeliveryEnabled) {
+                            return 'المتجر لا يفعّل توصيل نفس اليوم حاليا، لذلك سيتم اعتماد عدة أيام.';
+                        }
+
+                        if (!this.sellerCity || !this.sellerCity.toString().trim()) {
+                            return 'مدينة المتجر غير محددة حاليا، لذلك سنعتمد تقدير عدة أيام بأمان.';
+                        }
+
+                        return this.deliveryEstimate === 'same_day'
+                            ? 'تمت مطابقة مدينة المشتري مع مدينة المتجر، وسيعاد التحقق من ذلك في الخادم قبل إنشاء الطلب.'
+                            : 'المدينة تختلف عن مدينة المتجر أو لم يتم التحقق منها بالكامل، وسيعاد التحقق من ذلك في الخادم قبل إنشاء الطلب.';
+                    },
+                    getAvailableQuantity(productId, fallbackMaxQuantity = null) {
+                        const stockMap = this.stockByProduct && typeof this.stockByProduct === 'object' ? this.stockByProduct : null;
+                        const value = stockMap ? stockMap[productId] : null;
+                        const parsed = Number.parseInt(value, 10);
+                        if (Number.isFinite(parsed)) {
+                            return Math.max(0, parsed);
+                        }
+                        const fallbackParsed = Number.parseInt(fallbackMaxQuantity, 10);
+                        if (Number.isFinite(fallbackParsed)) {
+                            return Math.max(0, fallbackParsed);
+                        }
+                        return null;
+                    },
+                    getAvailableOptionQuantity(optionId, fallbackMaxQuantity = null) {
+                        const stockMap = this.optionStockById && typeof this.optionStockById === 'object' ? this.optionStockById : null;
+                        const value = stockMap ? stockMap[optionId] : null;
+                        const parsed = Number.parseInt(value, 10);
+                        if (Number.isFinite(parsed)) {
+                            return Math.max(0, parsed);
+                        }
+                        const fallbackParsed = Number.parseInt(fallbackMaxQuantity, 10);
+                        if (Number.isFinite(fallbackParsed)) {
+                            return Math.max(0, fallbackParsed);
+                        }
+                        return null;
+                    },
+                    addToCart(payload) {
+                        const normalizedItem = this.normalizeCartItem(payload);
+                        if (!normalizedItem) return;
+
+                        const available = normalizedItem.option_id
+                            ? this.getAvailableOptionQuantity(normalizedItem.option_id, normalizedItem.maxQuantity)
+                            : this.getAvailableQuantity(normalizedItem.product_id, normalizedItem.maxQuantity);
+
+                        if (available !== null && available <= 0) {
                             this.toastMessage = 'هذا المنتج غير متوفر حالياً.';
                             this.showToast = true;
                             setTimeout(() => {
@@ -637,9 +934,9 @@
                             return;
                         }
 
-                        const existingItem = this.cart.find(item => item.id === id);
+                        const existingItem = this.cart.find((item) => item.cart_key === normalizedItem.cart_key);
                         if (existingItem) {
-                            if (existingItem.quantity >= available) {
+                            if (available !== null && existingItem.quantity >= available) {
                                 this.toastMessage = `لا يمكن طلب أكثر من الكمية المتاحة (${available}).`;
                                 this.showToast = true;
                                 setTimeout(() => {
@@ -647,40 +944,48 @@
                                 }, 2500);
                                 return;
                             }
+
                             existingItem.quantity += 1;
+                            if (available !== null) {
+                                existingItem.maxQuantity = available;
+                            }
                         } else {
                             this.cart.push({
-                                id: id,
-                                name: name,
-                                price: parseFloat(price),
-                                image: image,
+                                ...normalizedItem,
                                 quantity: 1,
-                                maxQuantity: available
+                                maxQuantity: available !== null ? available : normalizedItem.maxQuantity,
                             });
                         }
-                        
-                        // Interaction: Show Toast and Animate Cart instead of opening it
-                        this.toastMessage = `تم إضافة "${name}" إلى السلة`;
+
+                        this.toastMessage = normalizedItem.option_label
+                            ? `تم إضافة "${normalizedItem.name}" - ${normalizedItem.option_label} إلى السلة`
+                            : `تم إضافة "${normalizedItem.name}" إلى السلة`;
                         this.showToast = true;
                         this.cartAnimating = true;
-                        
+
                         setTimeout(() => {
                             this.showToast = false;
                         }, 3000);
-                        
+
                         setTimeout(() => {
                             this.cartAnimating = false;
                         }, 500);
                     },
-                    
-                    updateQuantity(id, quantity) {
+
+                    updateQuantity(cartKey, quantity) {
+                        const item = this.cart.find((entry) => entry.cart_key === cartKey);
+                        if (!item) return;
+
                         if (quantity < 1) {
-                            this.removeFromCart(id);
+                            this.removeFromCart(cartKey);
                             return;
                         }
 
-                        const maxAvailable = this.getAvailableQuantity(id);
-                        if (maxAvailable > 0 && quantity > maxAvailable) {
+                        const maxAvailable = item.option_id
+                            ? this.getAvailableOptionQuantity(item.option_id, item.maxQuantity)
+                            : this.getAvailableQuantity(item.product_id, item.maxQuantity);
+
+                        if (maxAvailable !== null && maxAvailable > 0 && quantity > maxAvailable) {
                             this.toastMessage = `لا يمكن طلب أكثر من الكمية المتاحة (${maxAvailable}).`;
                             this.showToast = true;
                             setTimeout(() => {
@@ -689,40 +994,46 @@
                             return;
                         }
 
-                        const item = this.cart.find(item => item.id === id);
-                        if (item) {
-                            item.quantity = quantity;
-                            item.maxQuantity = maxAvailable > 0 ? maxAvailable : item.maxQuantity;
+                        item.quantity = quantity;
+                        if (maxAvailable !== null && maxAvailable > 0) {
+                            item.maxQuantity = maxAvailable;
                         }
                     },
 
                     canIncreaseQuantity(item) {
-                        const maxAvailable = this.getAvailableQuantity(item.id);
+                        const maxAvailable = item.option_id
+                            ? this.getAvailableOptionQuantity(item.option_id, item.maxQuantity)
+                            : this.getAvailableQuantity(item.product_id, item.maxQuantity);
+
+                        if (maxAvailable === null) {
+                            return true;
+                        }
+
                         return maxAvailable > 0 && item.quantity < maxAvailable;
                     },
 
-                    getAvailableQuantity(productId) {
-                        const value = this.stockByProduct?.[productId];
-                        const parsed = Number.parseInt(value, 10);
-                        return Number.isFinite(parsed) ? parsed : 0;
-                    },
-
                     syncCartWithStock() {
-                        this.cart = (this.cart || [])
+                        this.cart = this.normalizeStoredCart(this.cart)
                             .map((item) => {
-                                const available = this.getAvailableQuantity(item.id);
-                                if (available <= 0) return null;
+                                const available = item.option_id
+                                    ? this.getAvailableOptionQuantity(item.option_id, item.maxQuantity)
+                                    : this.getAvailableQuantity(item.product_id, item.maxQuantity);
+
+                                if (available !== null && available <= 0) {
+                                    return null;
+                                }
+
                                 return {
                                     ...item,
-                                    quantity: Math.min(item.quantity, available),
-                                    maxQuantity: available,
+                                    quantity: available !== null ? Math.min(item.quantity, available) : item.quantity,
+                                    maxQuantity: available !== null ? available : item.maxQuantity,
                                 };
                             })
                             .filter(Boolean);
                     },
-                    
-                    removeFromCart(id) {
-                        this.cart = this.cart.filter(item => item.id !== id);
+
+                    removeFromCart(cartKey) {
+                        this.cart = this.cart.filter((item) => item.cart_key !== cartKey);
                         if (this.cart.length === 0) {
                             this.isCheckoutOpen = false;
                         }
@@ -730,7 +1041,7 @@
 
                     async applyPromo() {
                         if (!this.promoInput.trim()) return;
-                        
+
                         this.promoMessage = 'جاري التحقق...';
                         try {
                             const response = await fetch(`/shop/${shopSlug}/apply-promo`, {
@@ -742,11 +1053,11 @@
                                 },
                                 body: JSON.stringify({ code: this.promoInput })
                             });
-                            
+
                             const data = await response.json();
                             if (data.valid) {
                                 this.promoApplied = true;
-                                this.discountPercentage = data.discount_percentage;
+                                this.discountPercentage = this.toNumber(data.discount_percentage);
                                 this.promoMessage = data.message;
                             } else {
                                 this.promoApplied = false;
@@ -768,13 +1079,18 @@
                     submitCheckout(e) {
                         if (this.cart.length === 0) {
                             e.preventDefault();
-                            alert("عربة التسوق فارغة!");
+                            alert('عربة التسوق فارغة!');
                             return false;
                         }
-                        localStorage.removeItem('mahly_cart_' + shopSlug);
                     }
                 }));
             });
+
         </script>
     </body>
 </html>
+
+
+
+
+

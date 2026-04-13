@@ -97,11 +97,15 @@
                                 ['value' => 'buyer_phone', 'label' => 'رقم الهاتف'],
                                 ['value' => 'buyer_email', 'label' => 'البريد الإلكتروني'],
                                 ['value' => 'buyer_address', 'label' => 'العنوان'],
+                                ['value' => 'buyer_city', 'label' => 'المدينة'],
+                                ['value' => 'delivery_estimate', 'label' => 'مدة التوصيل'],
                                 ['value' => 'promo_code_used', 'label' => 'رمز الخصم'],
                                 ['value' => 'payment_method', 'label' => 'طريقة الدفع'],
                                 ['value' => 'status', 'label' => 'الحالة'],
                                 ['value' => 'archived_from_status', 'label' => 'الحالة قبل الأرشفة'],
                                 ['value' => 'total_amount', 'label' => 'الإجمالي'],
+                                ['value' => 'final_total_usd', 'label' => 'الإجمالي بالدولار'],
+                                ['value' => 'final_total_syp', 'label' => 'الإجمالي بالليرة'],
                                 ['value' => 'shamcash_transaction_number', 'label' => 'رقم عملية شام كاش'],
                                 ['value' => 'created_at', 'label' => 'تاريخ الإنشاء'],
                             ]"
@@ -149,6 +153,17 @@
                                 'cancelled' => 'canceled',
                                 default => $order->status,
                             };
+                            $buyerLocation = $order->buyer_location_text ?: $order->buyer_address;
+                            $subtotalUsd = $order->productSubtotalUsdValue();
+                            $subtotalSyp = $order->productSubtotalSypValue();
+                            $discountUsd = $order->discountAmountUsdValue();
+                            $discountSyp = $order->discountAmountSypValue();
+                            $discountedProductsSubtotalUsd = $order->discountedProductsSubtotalUsdValue();
+                            $discountedProductsSubtotalSyp = $order->discountedProductsSubtotalSypValue();
+                            $deliveryFeeUsd = $order->deliveryFeeUsdValue();
+                            $deliveryFeeSyp = $order->deliveryFeeSypValue();
+                            $finalTotalUsd = $order->finalTotalUsdValue();
+                            $finalTotalSyp = $order->finalTotalSypValue();
 
                             $statusConfig = [
                                 'pending' => ['label' => 'قيد الانتظار', 'classes' => 'bg-[#d4af37]/15 text-[#a07c1e] border-[#d4af37]/35'],
@@ -181,6 +196,11 @@
                                             رمز خصم: {{ $order->promo_code_used }}
                                         </span>
                                     @endif
+                                    @if($order->delivery_estimate)
+                                        <span class="px-3 py-1 rounded-full text-xs font-semibold bg-[#fff9e8] text-[#a07c1e] border border-[#d4af37]/30">
+                                            {{ $order->delivery_estimate_label }}
+                                        </span>
+                                    @endif
                                 </div>
                                 <div class="mt-3 sm:mt-0 text-sm text-[#0d1b4b]/45 text-right">{{ $order->created_at->format('Y-m-d H:i') }}</div>
                             </div>
@@ -194,7 +214,16 @@
                                             <div class="flex gap-2"><span class="text-[#0d1b4b]/45 w-24 shrink-0">البريد:</span><a href="mailto:{{ $order->buyer_email }}" class="text-[#d4af37] hover:text-[#b8922a]" dir="ltr">{{ $order->buyer_email }}</a></div>
                                         @endif
                                         <div class="flex gap-2"><span class="text-[#0d1b4b]/45 w-24 shrink-0">الهاتف:</span><a href="tel:{{ $order->buyer_phone }}" class="text-[#d4af37] hover:text-[#b8922a] font-semibold" dir="ltr">{{ $order->buyer_phone }}</a></div>
-                                        <div class="flex gap-2"><span class="text-[#0d1b4b]/45 w-24 shrink-0">العنوان:</span><span class="text-[#0d1b4b]/80">{{ $order->buyer_address }}</span></div>
+                                        <div class="flex gap-2"><span class="text-[#0d1b4b]/45 w-24 shrink-0">العنوان:</span><span class="text-[#0d1b4b]/80">{{ $buyerLocation }}</span></div>
+                                        @if($order->buyer_city)
+                                            <div class="flex gap-2"><span class="text-[#0d1b4b]/45 w-24 shrink-0">المدينة:</span><span class="text-[#0d1b4b]/80">{{ $order->buyer_city }}</span></div>
+                                        @endif
+                                        @if($order->seller_city_snapshot)
+                                            <div class="flex gap-2"><span class="text-[#0d1b4b]/45 w-24 shrink-0">مدينة المتجر:</span><span class="text-[#0d1b4b]/80">{{ $order->seller_city_snapshot }}</span></div>
+                                        @endif
+                                        @if($order->delivery_estimate)
+                                            <div class="flex gap-2"><span class="text-[#0d1b4b]/45 w-24 shrink-0">التوصيل:</span><span class="text-[#0d1b4b] font-semibold">{{ $order->delivery_estimate_label }}</span></div>
+                                        @endif
                                         <div class="flex gap-2"><span class="text-[#0d1b4b]/45 w-24 shrink-0">طريقة الدفع:</span><span class="text-[#0d1b4b] font-semibold">{{ $order->payment_method === 'shamcash' ? 'شام كاش' : 'الدفع عند الاستلام' }}</span></div>
                                         @if($order->payment_method === 'shamcash' && $order->shamcash_transaction_number)
                                             <div class="flex gap-2"><span class="text-[#0d1b4b]/45 w-24 shrink-0">رقم العملية:</span><span class="text-[#0d1b4b] font-semibold" dir="ltr">#{{ ltrim($order->shamcash_transaction_number, '#') }}</span></div>
@@ -209,16 +238,71 @@
                                             <li class="flex justify-between items-start text-sm py-3 border-b border-[#0d1b4b]/10 last:border-0">
                                                 <div class="flex flex-col">
                                                     <span class="text-[#0d1b4b] font-medium">{{ $item->product ? $item->product->name : 'منتج محذوف' }}</span>
+                                                    @if($item->product_option_label)
+                                                        <span class="text-[#0d1b4b]/45 text-xs">الخيار: {{ $item->product_option_label }}</span>
+                                                    @endif
                                                     <span class="text-[#0d1b4b]/40 text-xs">الكمية: {{ $item->quantity }}</span>
                                                 </div>
-                                                <span class="font-black text-[#0d1b4b]">{{ number_format($item->price_at_time_of_order * $item->quantity, 2) }} ل.س</span>
+                                                <div class="text-left">
+                                                    @if($item->resolvedUnitPriceUsd() !== null)
+                                                        <span class="block font-black text-[#0d1b4b]">${{ number_format($item->resolvedUnitPriceUsd() * $item->quantity, 2) }}</span>
+                                                    @endif
+                                                    <span class="block text-xs font-bold text-[#0d1b4b]/55">{{ number_format($item->resolvedUnitPriceSyp() * $item->quantity, 2) }} ل.س</span>
+                                                </div>
                                             </li>
                                         @endforeach
                                     </ul>
 
-                                    <div class="mt-4 pt-4 border-t border-[#0d1b4b]/10 flex justify-between items-center">
-                                        <span class="text-[#0d1b4b] font-black">إجمالي الطلب:</span>
-                                        <span class="text-[#d4af37] font-black text-2xl tracking-tight">{{ number_format($order->total_amount, 2) }} ل.س</span>
+                                    <div class="mt-4 space-y-3 border-t border-[#0d1b4b]/10 pt-4">
+                                        <div class="flex justify-between items-center gap-4 text-sm font-bold">
+                                            <span class="text-[#0d1b4b]/55">مجموع المنتجات</span>
+                                            <div class="text-left">
+                                                @if($subtotalUsd !== null)
+                                                    <span class="block text-[#0d1b4b]">${{ number_format($subtotalUsd, 2) }}</span>
+                                                @endif
+                                                <span class="block text-[11px] text-[#0d1b4b]/55">{{ number_format($subtotalSyp, 2) }} ل.س</span>
+                                            </div>
+                                        </div>
+
+                                        @if($discountUsd > 0 || $discountSyp > 0)
+                                            <div class="flex justify-between items-center gap-4 text-sm font-bold">
+                                                <span class="text-[#0d1b4b]/55">الخصم</span>
+                                                <div class="text-left">
+                                                    @if($subtotalUsd !== null)
+                                                        <span class="block text-green-700">-${{ number_format($discountUsd, 2) }}</span>
+                                                    @endif
+                                                    <span class="block text-[11px] text-green-700/70">-{{ number_format($discountSyp, 2) }} ل.س</span>
+                                                </div>
+                                            </div>
+
+                                            <div class="flex justify-between items-center gap-4 text-sm font-bold">
+                                                <span class="text-[#0d1b4b]/55">مجموع المنتجات بعد الخصم</span>
+                                                <div class="text-left">
+                                                    @if($discountedProductsSubtotalUsd !== null)
+                                                        <span class="block text-[#0d1b4b]">${{ number_format($discountedProductsSubtotalUsd, 2) }}</span>
+                                                    @endif
+                                                    <span class="block text-[11px] text-[#0d1b4b]/55">{{ number_format($discountedProductsSubtotalSyp, 2) }} ل.س</span>
+                                                </div>
+                                            </div>
+                                        @endif
+
+                                        <div class="flex justify-between items-center gap-4 text-sm font-bold">
+                                            <span class="text-[#0d1b4b]/55">رسوم التوصيل</span>
+                                            <div class="text-left">
+                                                <span class="block text-[#0d1b4b]">${{ number_format($deliveryFeeUsd, 2) }}</span>
+                                                <span class="block text-[11px] text-[#0d1b4b]/55">{{ number_format($deliveryFeeSyp, 2) }} ل.س</span>
+                                            </div>
+                                        </div>
+
+                                        <div class="flex justify-between items-center gap-4 border-t border-[#0d1b4b]/10 pt-4">
+                                            <span class="text-[#0d1b4b] font-black">الإجمالي النهائي</span>
+                                            <div class="text-left">
+                                                @if($finalTotalUsd !== null)
+                                                    <span class="block text-[#d4af37] font-black text-2xl tracking-tight">${{ number_format($finalTotalUsd, 2) }}</span>
+                                                @endif
+                                                <span class="block text-sm font-black text-[#0d1b4b]/60">{{ number_format($finalTotalSyp, 2) }} ل.س</span>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

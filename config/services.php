@@ -41,4 +41,13 @@ return [
         'redirect'      => env('GOOGLE_REDIRECT_URI'),
     ],
 
+    'google_maps' => [
+        'api_key' => env('GOOGLE_MAPS_API_KEY'),
+    ],
+
+    'exchange_rate' => [
+        'url' => env('EXCHANGE_RATE_API_URL', 'https://open.er-api.com/v6/latest/USD'),
+        'key' => env('EXCHANGE_RATE_API_KEY'),
+    ],
+
 ];

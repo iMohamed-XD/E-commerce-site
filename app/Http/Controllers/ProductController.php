@@ -2,14 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreProductRequest;
+use App\Http\Requests\UpdateProductRequest;
 use App\Models\Product;
-use App\Models\Shop;
-use App\Models\Category;
-use App\Models\User;
+use App\Models\ProductImage;
+use App\Services\ProductStockService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
 {
@@ -28,7 +29,7 @@ class ProductController extends Controller
         $field = $request->string('field')->toString();
         $value = trim((string) $request->input('value', ''));
 
-        $productsQuery = $shop->products()->with('category')->latest();
+        $productsQuery = $shop->products()->with(['category', 'productOptions'])->latest();
 
         if ($value !== '') {
             $allowedFields = [
@@ -37,6 +38,7 @@ class ProductController extends Controller
                 'description',
                 'price',
                 'quantity_available',
+                'has_options',
                 'is_active',
                 'discount_percent',
                 'discount_active',
@@ -49,6 +51,8 @@ class ProductController extends Controller
                     $productsQuery->where('id', (int) $value);
                 } elseif (in_array($field, ['price', 'quantity_available', 'discount_percent'], true)) {
                     $productsQuery->where($field, (float) $value);
+                } elseif ($field === 'has_options') {
+                    $productsQuery->where('has_options', in_array(mb_strtolower($value), ['1', 'true', 'yes', 'options', 'variants'], true));
                 } elseif (in_array($field, ['is_active', 'discount_active'], true)) {
                     $normalized = in_array(mb_strtolower($value), ['1', 'true', 'yes', 'active', 'نشط', 'مفعل'], true) ? 1 : 0;
                     $productsQuery->where($field, $normalized);
@@ -72,50 +76,50 @@ class ProductController extends Controller
     public function create()
     {
         $shop = Auth::user()->shop;
-        $categories = $shop->categories;
+        $categories = $shop?->categories ?? collect();
+
         return view('products.create', compact('categories'));
     }
 
-    public function store(Request $request)
+    public function store(StoreProductRequest $request, ProductStockService $productStockService)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'category_id' => 'nullable|exists:categories,id',
-            'description' => 'nullable|string',
-            'price' => 'required|numeric|min:0',
-            'quantity_available' => 'required|integer|min:0',
-            'image' => 'nullable|image|max:2048',
-            'discount_percent' => 'nullable|numeric|min:0|max:100',
-            'secondary_images' => 'nullable|array|max:3',
-            'secondary_images.*' => 'nullable|image|mimes:jpeg,png,webp|max:2048',
-        ]);
-
         $shop = Auth::user()->shop;
+        if (!$shop) {
+            return redirect()->route('dashboard');
+        }
+
+        $validated = $request->validated();
 
         $imagePath = null;
         if ($request->hasFile('image')) {
             $imagePath = $request->file('image')->store('products');
         }
 
+        $discountPercent = isset($validated['discount_percent']) ? (float) $validated['discount_percent'] : null;
+        $hasOptions = !empty($validated['has_options']);
+
         $product = $shop->products()->create([
-            'name' => $request->name,
-            'category_id' => $request->category_id,
-            'description' => $request->description,
-            'price' => $request->price,
-            'quantity_available' => (int) $request->quantity_available,
+            'name' => $validated['name'],
+            'category_id' => $validated['category_id'] ?? null,
+            'description' => $validated['description'] ?? null,
+            'price' => (float) $validated['price'],
+            'quantity_available' => $hasOptions ? 0 : (int) ($validated['quantity_available'] ?? 0),
+            'has_options' => $hasOptions,
             'image_path' => $imagePath,
-            'is_active' => $request->has('is_active'),
-            'discount_percent' => $request->discount_percent ?: null,
-            'discount_active' => $request->filled('discount_percent'),
+            'is_active' => !empty($validated['is_active']),
+            'discount_percent' => $discountPercent,
+            'discount_active' => $discountPercent !== null && $discountPercent > 0,
         ]);
+
+        $productStockService->syncProductOptions($product, $validated['options'] ?? []);
 
         if ($request->hasFile('secondary_images')) {
             $sort = 0;
-            foreach($request->file('secondary_images') as $file) {
+            foreach ($request->file('secondary_images') as $file) {
                 $path = $file->store("products/{$product->id}/secondary");
                 $product->productImages()->create([
                     'path' => $path,
-                    'sort_order' => $sort++
+                    'sort_order' => $sort++,
                 ]);
             }
         }
@@ -126,30 +130,22 @@ class ProductController extends Controller
     public function edit(Product $product)
     {
         Gate::authorize('manage', $product);
-        $categories = Auth::user()->shop->categories;
+
+        $categories = Auth::user()->shop?->categories ?? collect();
+        $product->loadMissing('productOptions');
+
         return view('products.edit', compact('product', 'categories'));
     }
 
-    public function update(Request $request, Product $product)
+    public function update(UpdateProductRequest $request, Product $product, ProductStockService $productStockService)
     {
         Gate::authorize('manage', $product);
 
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'category_id' => 'nullable|exists:categories,id',
-            'description' => 'nullable|string',
-            'price' => 'required|numeric|min:0',
-            'quantity_available' => 'required|integer|min:0',
-            'image' => 'nullable|image|max:2048',
-            'discount_percent' => 'nullable|numeric|min:0|max:100',
-            'secondary_images' => 'nullable|array',
-            'secondary_images.*' => 'nullable|image|mimes:jpeg,png,webp|max:2048',
-        ]);
+        $validated = $request->validated();
 
-        $currentImagesCount = $product->productImages()->count();
         if ($request->hasFile('secondary_images')) {
             $newFilesCount = count($request->file('secondary_images'));
-            if (($currentImagesCount + $newFilesCount) > 3) {
+            if ($newFilesCount > 3) {
                 return back()->withErrors(['secondary_images' => 'لا يمكنك رفع أكثر من 3 صور إضافية.']);
             }
         }
@@ -158,34 +154,39 @@ class ProductController extends Controller
             if ($product->image_path) {
                 Storage::delete($product->image_path);
             }
+
             $product->image_path = $request->file('image')->store('products');
         }
 
+        $discountPercent = isset($validated['discount_percent']) ? (float) $validated['discount_percent'] : null;
+        $hasOptions = !empty($validated['has_options']);
+
         $product->update([
-            'name' => $request->name,
-            'category_id' => $request->category_id,
-            'description' => $request->description,
-            'price' => $request->price,
-            'quantity_available' => (int) $request->quantity_available,
-            'is_active' => $request->has('is_active'),
-            'discount_percent' => $request->discount_percent ?: null,
+            'name' => $validated['name'],
+            'category_id' => $validated['category_id'] ?? null,
+            'description' => $validated['description'] ?? null,
+            'price' => (float) $validated['price'],
+            'quantity_available' => $hasOptions ? 0 : (int) ($validated['quantity_available'] ?? 0),
+            'has_options' => $hasOptions,
+            'is_active' => !empty($validated['is_active']),
+            'discount_percent' => $discountPercent,
+            'discount_active' => $discountPercent !== null && $discountPercent > 0,
         ]);
 
+        $productStockService->syncProductOptions($product, $validated['options'] ?? []);
+
         if ($request->hasFile('secondary_images')) {
-            // Delete old secondary images if replacing (as per the info text "رفع صور جديدة هنا سيقوم بحذف الصور الإضافية السابقة واستبدالها.")
-            foreach($product->productImages as $oldImg) {
-                Storage::delete($oldImg->path);
-                $oldImg->delete();
+            foreach ($product->productImages as $oldImage) {
+                Storage::delete($oldImage->path);
+                $oldImage->delete();
             }
 
-            $sort = $product->productImages()->orderByDesc('sort_order')->first()?->sort_order ?? 0;
-            $sort = $sort >= 0 && $product->productImages()->count() > 0 ? $sort + 1 : 0;
-            
+            $sort = 0;
             foreach ($request->file('secondary_images') as $file) {
                 $path = $file->store("products/{$product->id}/secondary");
                 $product->productImages()->create([
                     'path' => $path,
-                    'sort_order' => $sort++
+                    'sort_order' => $sort++,
                 ]);
             }
         }
@@ -193,35 +194,38 @@ class ProductController extends Controller
         return redirect()->route('products.index')->with('success', 'تم تعديل المنتج بنجاح!');
     }
 
-    public function destroy(Product $product) // Kept Product $product as this is ProductController
+    public function destroy(Product $product)
     {
         Gate::authorize('manage', $product);
 
         if ($product->image_path) {
             Storage::delete($product->image_path);
         }
-        Storage::deleteDirectory("products/{$product->id}");
 
+        Storage::deleteDirectory("products/{$product->id}");
         $product->delete();
 
         return redirect()->route('products.index')->with('success', 'تم حذف المنتج بنجاح!');
     }
 
-    public function destroyImage(Product $product, \App\Models\ProductImage $image)
+    public function destroyImage(Product $product, ProductImage $image)
     {
         Gate::authorize('manage', $product);
+
         if ($image->product_id !== $product->id) {
             abort(404);
         }
+
         Storage::delete($image->path);
         $image->delete();
+
         return response()->json(['success' => true]);
     }
 
     public function bulkAction(Request $request)
     {
         $shop = Auth::user()->shop;
-        
+
         $request->validate([
             'action' => 'required|in:delete,discount,remove_discount',
             'product_ids' => 'required|string',
@@ -237,24 +241,28 @@ class ProductController extends Controller
 
         if ($request->action === 'delete') {
             $products = $productsQuery->get();
-            foreach($products as $product) {
+            foreach ($products as $product) {
                 if ($product->image_path) {
                     Storage::delete($product->image_path);
                 }
+
                 Storage::deleteDirectory("products/{$product->id}");
                 $product->delete();
             }
+
             return redirect()->route('products.index')->with('success', 'تم حذف المنتجات المحددة بنجاح.');
         }
 
         if ($request->action === 'discount') {
-            if (!$request->discount_percent) {
-                return back()->withErrors(['يجب إدخال نسبة الخصم.']);
+            if ($request->discount_percent === null) {
+                return back()->withErrors(['discount_percent' => 'يجب إدخال نسبة الخصم.']);
             }
+
             $productsQuery->update([
                 'discount_percent' => $request->discount_percent,
                 'discount_active' => true,
             ]);
+
             return redirect()->route('products.index')->with('success', 'تم تطبيق الخصم على المنتجات المحددة.');
         }
 
@@ -262,11 +270,13 @@ class ProductController extends Controller
             $productsQuery->update([
                 'discount_active' => false,
             ]);
+
             return redirect()->route('products.index')->with('success', 'تم إزالة الخصم عن المنتجات المحددة.');
         }
 
         return back();
     }
+
     public function toggleDiscount(Product $product)
     {
         Gate::authorize('manage', $product);

@@ -2,49 +2,44 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Models\Shop;
+use App\Http\Requests\CheckoutRequest;
+use App\Http\Requests\StoreShopRequest;
+use App\Http\Requests\UpdateShopRequest;
 use App\Models\Order;
 use App\Models\OrderItem;
-use Illuminate\Support\Facades\Storage;
+use App\Models\Shop;
+use App\Services\CheckoutPricingService;
+use App\Services\ExchangeRateService;
+use App\Services\LocationService;
+use App\Services\ProductStockService;
+use Illuminate\Filesystem\FilesystemAdapter;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 
 class ShopController extends Controller
 {
-    public function store(Request $request)
+    public function __construct(
+        protected LocationService $locationService,
+        protected ProductStockService $productStockService,
+        protected CheckoutPricingService $checkoutPricingService,
+        protected ExchangeRateService $exchangeRateService,
+    ) {
+    }
+
+    public function store(StoreShopRequest $request)
     {
         $publicDisk = Storage::disk('public');
-
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'slug' => 'required|string|max:255|unique:shops,slug',
-            'description' => 'nullable|string',
-            'logo' => 'nullable|image|max:2048',
-            'hero_image' => 'nullable|image|max:4096',
-            'color' => ['required', 'string', Rule::in(array_keys(config('shop_colors', ['navy' => []])))],
-            'shamcash_account_number' => 'nullable|string|max:255',
-            'shamcash_qr' => 'nullable|image|max:4096',
-            'shamcash_is_active' => 'nullable|boolean',
-        ]);
+        $validated = $request->validated();
+        $locationData = $this->locationService->normalizeLocationPayload($validated);
 
         $logoPath = null;
         if ($request->hasFile('logo')) {
             $logoPath = $request->file('logo')->store('shops/logos', 'public');
         } elseif ($request->filled('cropped_logo')) {
-            $imageParts = explode(';base64,', $request->cropped_logo);
-            if (count($imageParts) === 2) {
-                $imageTypeAux = explode('image/', $imageParts[0]);
-                $imageType = $imageTypeAux[1] ?? 'png';
-                $imageBase64 = base64_decode($imageParts[1]);
-                if ($imageBase64 !== false) {
-                    $filename = 'shops/logos/' . uniqid() . '.' . $imageType;
-                    $publicDisk->put($filename, $imageBase64);
-                    $logoPath = $filename;
-                }
-            }
+            $logoPath = $this->storeBase64Image($publicDisk, $request->string('cropped_logo')->toString(), 'shops/logos');
         }
 
         $heroImagePath = null;
@@ -57,20 +52,22 @@ class ShopController extends Controller
             $shamcashQrPath = $request->file('shamcash_qr')->store('shops/shamcash', 'public');
         }
 
-        $shamcashAccountNumber = trim((string) $request->input('shamcash_account_number', ''));
-        $shamcashAccountNumber = $shamcashAccountNumber !== '' ? $shamcashAccountNumber : null;
-        $shamcashIsActive = $request->boolean('shamcash_is_active');
+        $shamcashAccountNumber = trim((string) ($validated['shamcash_account_number'] ?? '')) ?: null;
         $hasShamcashSetup = !empty($shamcashAccountNumber) && !empty($shamcashQrPath);
-        $shamcashIsActive = $shamcashIsActive && $hasShamcashSetup;
+        $shamcashIsActive = !empty($validated['shamcash_is_active']) && $hasShamcashSetup;
 
         Shop::create([
             'user_id' => Auth::id(),
-            'name' => $request->name,
-            'slug' => $request->slug,
-            'description' => $request->description,
+            'name' => $validated['name'],
+            'slug' => $validated['slug'],
+            'description' => $validated['description'] ?? null,
+            'delivery_fee_usd' => round(max(0, (float) ($validated['delivery_fee_usd'] ?? 0)), 2),
+            'location_text' => $locationData['location_text'],
+            'city' => $locationData['city'],
+            'same_day_delivery_enabled' => (bool) ($validated['same_day_delivery_enabled'] ?? false),
             'logo_path' => $logoPath,
             'hero_image_path' => $heroImagePath,
-            'color' => $request->input('color', 'navy'),
+            'color' => $validated['color'] ?? 'navy',
             'shamcash_account_number' => $shamcashAccountNumber,
             'shamcash_qr_path' => $shamcashQrPath,
             'shamcash_is_active' => $shamcashIsActive,
@@ -82,13 +79,14 @@ class ShopController extends Controller
     public function show($slug)
     {
         $shop = Shop::where('slug', $slug)->firstOrFail();
-
+        $usdToSypRate = $this->exchangeRateService->getCurrentUsdToSypRate();
         $search = trim((string) request('search', ''));
+        $canonicalSellerCity = $this->locationService->canonicalizeCity($shop->city);
 
         $productsQuery = $shop->products()
-            ->with('category')
+            ->with(['category', 'productOptions'])
             ->where('is_active', true)
-            ->orderBy('created_at', 'desc');
+            ->orderByDesc('created_at');
 
         if ($search !== '') {
             $productsQuery->where(function ($query) use ($search) {
@@ -102,19 +100,48 @@ class ShopController extends Controller
 
         $products = $productsQuery->paginate(20)->withQueryString();
 
+        $stockProducts = $shop->products()
+            ->with('productOptions')
+            ->where('is_active', true)
+            ->get();
+
+        $stockByProduct = $stockProducts
+            ->mapWithKeys(function ($product) {
+                $totalStock = $product->has_options
+                    ? (int) $product->productOptions->sum('quantity')
+                    : (int) $product->quantity_available;
+
+                return [$product->id => $totalStock];
+            })
+            ->all();
+
+        $optionStockById = $stockProducts
+            ->flatMap(fn ($product) => $product->productOptions->mapWithKeys(fn ($option) => [$option->id => (int) $option->quantity]))
+            ->all();
+
         $categories = $shop->categories()
             ->whereHas('products', function ($query) {
                 $query->where('is_active', true);
-            })->get();
+            })
+            ->get();
 
-        return view('shop.show', compact('shop', 'categories', 'products', 'search'));
+        return view('shop.show', compact(
+            'shop',
+            'categories',
+            'products',
+            'search',
+            'usdToSypRate',
+            'canonicalSellerCity',
+            'stockByProduct',
+            'optionStockById',
+        ));
     }
 
     public function applyPromo(Request $request, $slug)
     {
         $shop = Shop::where('slug', $slug)->firstOrFail();
 
-        $code = strtoupper(trim($request->code));
+        $code = strtoupper(trim((string) $request->input('code', '')));
         $promo = $shop->promoCodes()->where('code', $code)->first();
 
         if (!$promo || !$promo->isValid()) {
@@ -129,40 +156,39 @@ class ShopController extends Controller
         ]);
     }
 
-    public function checkout(Request $request, $slug)
+    public function checkout(CheckoutRequest $request, $slug)
     {
         $shop = Shop::where('slug', $slug)->firstOrFail();
+        $validated = $request->validated();
+        $cart = json_decode($validated['cart'], true);
 
-        $request->validate([
-            'buyer_name' => 'required|string|max:255',
-            'buyer_email' => 'nullable|email|max:255',
-            'buyer_phone' => 'required|string|max:255',
-            'buyer_address' => 'required|string',
-            'cart' => 'required|json',
-            'promo_code' => 'nullable|string',
-            'payment_method' => 'required|in:cod,shamcash',
-            'shamcash_transaction_number' => 'nullable|string|max:255',
-        ]);
-
-        $cart = json_decode($request->cart, true);
-        if (empty($cart)) {
+        if (!is_array($cart) || empty($cart)) {
             return back()->withErrors(['cart' => 'عربة التسوق فارغة.'])->withInput();
         }
 
-        $shamcashAvailable = $shop->shamcash_is_active && !empty($shop->shamcash_account_number) && !empty($shop->shamcash_qr_path);
-        $paymentMethod = $request->input('payment_method', 'cod');
+        $locationData = $this->locationService->normalizeLocationPayload([
+            'location_text' => $validated['buyer_location_text'],
+            'city' => $validated['buyer_city'],
+        ]);
+
+        $shamcashAvailable = $shop->shamcash_is_active
+            && !empty($shop->shamcash_account_number)
+            && !empty($shop->shamcash_qr_path);
+
+        $paymentMethod = $validated['payment_method'] ?? 'cod';
         if ($paymentMethod === 'shamcash' && !$shamcashAvailable) {
             $paymentMethod = 'cod';
         }
 
         $shamcashTransactionNumber = null;
         if ($paymentMethod === 'shamcash') {
-            $shamcashTransactionNumber = trim((string) $request->input('shamcash_transaction_number', ''));
+            $shamcashTransactionNumber = trim((string) ($validated['shamcash_transaction_number'] ?? ''));
             if ($shamcashTransactionNumber === '') {
                 return back()->withErrors([
                     'shamcash_transaction_number' => 'يرجى إدخال رقم عملية التحويل عبر شام كاش.',
                 ])->withInput();
             }
+
             if (str_starts_with($shamcashTransactionNumber, '#')) {
                 return back()->withErrors([
                     'shamcash_transaction_number' => 'رقم العملية يظهر غالباً مع الرمز #، يرجى إدخال الرقم فقط بدون #.',
@@ -172,8 +198,8 @@ class ShopController extends Controller
 
         $promoCodeUsed = null;
         $promoDiscountPercent = 0;
-        if ($request->filled('promo_code')) {
-            $promo = $shop->promoCodes()->where('code', strtoupper(trim($request->promo_code)))->first();
+        if (!empty($validated['promo_code'])) {
+            $promo = $shop->promoCodes()->where('code', strtoupper(trim((string) $validated['promo_code'])))->first();
             if ($promo && $promo->isValid()) {
                 $promoDiscountPercent = (float) $promo->discount_percentage;
                 $promoCodeUsed = $promo->code . ' (-' . $promo->discount_percentage . '%)';
@@ -183,108 +209,69 @@ class ShopController extends Controller
         try {
             DB::transaction(function () use (
                 $shop,
+                $validated,
                 $cart,
-                $request,
+                $locationData,
                 $paymentMethod,
                 $shamcashTransactionNumber,
                 $promoCodeUsed,
-                $promoDiscountPercent
+                $promoDiscountPercent,
             ) {
-                $quantitiesByProduct = [];
-                foreach ($cart as $item) {
-                    $productId = (int) ($item['id'] ?? 0);
-                    $quantity = (int) ($item['quantity'] ?? 0);
-                    if ($productId <= 0 || $quantity <= 0) {
-                        continue;
-                    }
-                    $quantitiesByProduct[$productId] = ($quantitiesByProduct[$productId] ?? 0) + $quantity;
-                }
-
-                if (empty($quantitiesByProduct)) {
-                    throw ValidationException::withMessages([
-                        'cart' => 'عربة التسوق فارغة أو غير صالحة.',
-                    ]);
-                }
-
-                $products = $shop->products()
-                    ->whereIn('id', array_keys($quantitiesByProduct))
-                    ->where('is_active', true)
-                    ->lockForUpdate()
-                    ->get()
-                    ->keyBy('id');
-
-                $totalAmount = 0;
-                $orderItems = [];
-
-                foreach ($quantitiesByProduct as $productId => $quantityRequested) {
-                    $product = $products->get($productId);
-                    if (!$product) {
-                        continue;
-                    }
-
-                    if ((int) $product->quantity_available < $quantityRequested) {
-                        throw ValidationException::withMessages([
-                            'cart' => "الكمية المتاحة من {$product->name} غير كافية. المتوفر حالياً: {$product->quantity_available}.",
-                        ]);
-                    }
-
-                    $priceToUse = $product->effectivePrice();
-                    $totalAmount += $priceToUse * $quantityRequested;
-
-                    $orderItems[] = [
-                        'product_id' => $product->id,
-                        'quantity' => $quantityRequested,
-                        'price_at_time_of_order' => $priceToUse,
-                    ];
-                }
-
-                if ($totalAmount == 0 || empty($orderItems)) {
-                    throw ValidationException::withMessages([
-                        'cart' => 'منتجات العربة غير صالحة.',
-                    ]);
-                }
-
-                if ($promoDiscountPercent > 0) {
-                    $discount = ($totalAmount * $promoDiscountPercent) / 100;
-                    $totalAmount -= $discount;
-                }
+                $resolvedItems = $this->productStockService->resolveCheckoutItems($shop, $cart);
+                $usdToSypRate = $this->exchangeRateService->getCurrentUsdToSypRate();
+                $pricingSnapshot = $this->checkoutPricingService->buildPricingSnapshot(
+                    $resolvedItems,
+                    $usdToSypRate,
+                    $promoDiscountPercent,
+                    (float) ($shop->delivery_fee_usd ?? 0),
+                );
+                $sellerCity = $this->locationService->canonicalizeCity($shop->city);
+                $deliveryEstimate = $this->locationService->estimateDelivery(
+                    $locationData['city'],
+                    $sellerCity,
+                    (bool) $shop->same_day_delivery_enabled,
+                );
 
                 $order = Order::create([
                     'shop_id' => $shop->id,
-                    'buyer_name' => $request->buyer_name,
-                    'buyer_email' => $request->buyer_email,
-                    'buyer_phone' => $request->buyer_phone,
-                    'buyer_address' => $request->buyer_address,
+                    'buyer_name' => $validated['buyer_name'],
+                    'buyer_email' => trim((string) ($validated['buyer_email'] ?? '')) ?: null,
+                    'buyer_phone' => $validated['buyer_phone'],
+                    'buyer_address' => $locationData['location_text'],
+                    'buyer_location_text' => $locationData['location_text'],
+                    'buyer_city' => $locationData['city'],
+                    'seller_city_snapshot' => $sellerCity ?? $shop->city,
+                    'delivery_estimate' => $deliveryEstimate,
                     'promo_code_used' => $promoCodeUsed,
                     'payment_method' => $paymentMethod,
                     'shamcash_transaction_number' => $shamcashTransactionNumber,
-                    'total_amount' => $totalAmount,
+                    'usd_to_syp_rate' => $pricingSnapshot['usd_to_syp_rate'],
+                    'subtotal_usd' => $pricingSnapshot['subtotal_usd'],
+                    'subtotal_syp' => $pricingSnapshot['subtotal_syp'],
+                    'discount_amount_usd' => $pricingSnapshot['discount_amount_usd'],
+                    'discount_amount_syp' => $pricingSnapshot['discount_amount_syp'],
+                    'delivery_fee_usd' => $pricingSnapshot['delivery_fee_usd'],
+                    'delivery_fee_syp' => $pricingSnapshot['delivery_fee_syp'],
+                    'final_total_usd' => $pricingSnapshot['final_total_usd'],
+                    'final_total_syp' => $pricingSnapshot['final_total_syp'],
+                    'total_amount' => $pricingSnapshot['final_total_syp'],
                     'status' => 'pending',
                 ]);
 
-                foreach ($orderItems as $item) {
+                foreach ($pricingSnapshot['line_items'] as $lineItem) {
                     OrderItem::create([
                         'order_id' => $order->id,
-                        'product_id' => $item['product_id'],
-                        'quantity' => $item['quantity'],
-                        'price_at_time_of_order' => $item['price_at_time_of_order'],
+                        'product_id' => $lineItem['product_id'],
+                        'product_option_id' => $lineItem['product_option_id'],
+                        'product_option_label' => $lineItem['product_option_label'],
+                        'quantity' => $lineItem['quantity'],
+                        'price_at_time_of_order' => $lineItem['unit_price_syp'],
+                        'unit_price_usd' => $lineItem['unit_price_usd'],
+                        'unit_price_syp' => $lineItem['unit_price_syp'],
                     ]);
-
-                    $product = $products->get($item['product_id']);
-                    if ($product) {
-                        // Atomic stock deduction guard: prevents quantity from dropping below zero.
-                        $updated = $product->newQuery()
-                            ->where('id', $product->id)
-                            ->where('quantity_available', '>=', (int) $item['quantity'])
-                            ->decrement('quantity_available', (int) $item['quantity']);
-
-                        if ($updated === 0) {
-                            throw ValidationException::withMessages([
-                                'cart' => "الكمية المتاحة من {$product->name} لم تعد كافية، يرجى تعديل السلة والمحاولة مرة أخرى.",
-                            ]);
-                        }
-                    }
                 }
+
+                $this->productStockService->decrementResolvedItems($resolvedItems);
             });
         } catch (ValidationException $e) {
             return back()->withErrors($e->errors())->withInput();
@@ -306,65 +293,49 @@ class ShopController extends Controller
             $query->where('id', '!=', $shopId);
         }
 
-        $exists = $query->exists();
-
-        return response()->json(['available' => !$exists]);
+        return response()->json(['available' => !$query->exists()]);
     }
 
-    public function update(Request $request)
+    public function update(UpdateShopRequest $request)
     {
-        $publicDisk = Storage::disk('public');
-
         $shop = Auth::user()->shop;
         if (!$shop) {
             abort(404);
         }
 
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'slug' => 'required|string|max:255|unique:shops,slug,' . $shop->id,
-            'description' => 'nullable|string',
-            'logo' => 'nullable|image|max:2048',
-            'hero_image' => 'nullable|image|max:4096',
-            'color' => ['required', 'string', Rule::in(array_keys(config('shop_colors', ['navy' => []])))],
-            'shamcash_account_number' => 'nullable|string|max:255',
-            'shamcash_qr' => 'nullable|image|max:4096',
-            'shamcash_is_active' => 'nullable|boolean',
-            'shamcash_remove_qr' => 'nullable|boolean',
-        ]);
+        $publicDisk = Storage::disk('public');
+        $validated = $request->validated();
+        $locationData = $this->locationService->normalizeLocationPayload($validated);
 
-        $shop->name = $request->name;
-        $shop->slug = $request->slug;
-        $shop->description = $request->description;
-        $shop->color = $request->input('color', 'navy');
-        $shop->shamcash_account_number = trim((string) $request->input('shamcash_account_number', '')) ?: null;
+        $shop->name = $validated['name'];
+        $shop->slug = $validated['slug'];
+        $shop->description = $validated['description'] ?? null;
+        $shop->delivery_fee_usd = round(max(0, (float) ($validated['delivery_fee_usd'] ?? 0)), 2);
+        $shop->color = $validated['color'] ?? 'navy';
+        $shop->location_text = $locationData['location_text'];
+        $shop->city = $locationData['city'];
+        $shop->same_day_delivery_enabled = (bool) ($validated['same_day_delivery_enabled'] ?? false);
+        $shop->shamcash_account_number = trim((string) ($validated['shamcash_account_number'] ?? '')) ?: null;
 
         if ($request->hasFile('logo')) {
             if ($shop->logo_path) {
                 $publicDisk->delete($shop->logo_path);
             }
+
             $shop->logo_path = $request->file('logo')->store('shops/logos', 'public');
         } elseif ($request->filled('cropped_logo')) {
             if ($shop->logo_path) {
                 $publicDisk->delete($shop->logo_path);
             }
-            $imageParts = explode(';base64,', $request->cropped_logo);
-            if (count($imageParts) === 2) {
-                $imageTypeAux = explode('image/', $imageParts[0]);
-                $imageType = $imageTypeAux[1] ?? 'png';
-                $imageBase64 = base64_decode($imageParts[1]);
-                if ($imageBase64 !== false) {
-                    $filename = 'shops/logos/' . uniqid() . '.' . $imageType;
-                    $publicDisk->put($filename, $imageBase64);
-                    $shop->logo_path = $filename;
-                }
-            }
+
+            $shop->logo_path = $this->storeBase64Image($publicDisk, $request->string('cropped_logo')->toString(), 'shops/logos');
         }
 
         if ($request->hasFile('hero_image')) {
             if ($shop->hero_image_path) {
                 $publicDisk->delete($shop->hero_image_path);
             }
+
             $shop->hero_image_path = $request->file('hero_image')->store('shops/heroes', 'public');
         }
 
@@ -377,15 +348,35 @@ class ShopController extends Controller
             if ($shop->shamcash_qr_path) {
                 $publicDisk->delete($shop->shamcash_qr_path);
             }
+
             $shop->shamcash_qr_path = $request->file('shamcash_qr')->store('shops/shamcash', 'public');
         }
 
         $hasShamcashSetup = !empty($shop->shamcash_account_number) && !empty($shop->shamcash_qr_path);
-        $shop->shamcash_is_active = $request->boolean('shamcash_is_active') && $hasShamcashSetup;
-
+        $shop->shamcash_is_active = !empty($validated['shamcash_is_active']) && $hasShamcashSetup;
         $shop->save();
 
         return back()->with('success', 'تم تحديث معلومات المتجر بنجاح!');
     }
-}
 
+    protected function storeBase64Image(FilesystemAdapter $disk, string $imageData, string $directory): ?string
+    {
+        $imageParts = explode(';base64,', $imageData);
+        if (count($imageParts) !== 2) {
+            return null;
+        }
+
+        $imageTypeAux = explode('image/', $imageParts[0]);
+        $imageType = $imageTypeAux[1] ?? 'png';
+        $imageBase64 = base64_decode($imageParts[1]);
+
+        if ($imageBase64 === false) {
+            return null;
+        }
+
+        $filename = $directory . '/' . uniqid() . '.' . $imageType;
+        $disk->put($filename, $imageBase64);
+
+        return $filename;
+    }
+}

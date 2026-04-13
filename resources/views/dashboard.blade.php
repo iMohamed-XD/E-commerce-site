@@ -10,9 +10,31 @@
         </style>
     </x-slot>
 
+    @php
+        $currentUser = auth()->user();
+        $shop = $currentUser?->shop;
+        $isSeller = $currentUser?->isSeller() ?? false;
+        $syrianCities = config('syria_cities.cities', []);
+        $syrianCityOptions = collect($syrianCities)->map(fn ($city) => [
+            'value' => $city,
+            'label' => $city,
+        ])->values()->all();
+        $locationService = app(\App\Services\LocationService::class);
+        $createSelectedCity = old('city');
+        $editSelectedCity = $shop ? old('city', $locationService->canonicalizeCity($shop->city) ?? $shop->city) : null;
+        $shopUrl = $shop ? url('/shop/' . $shop->slug) : null;
+        $totalCategories = $shop ? $shop->categories()->count() : 0;
+        $totalProducts = $shop ? $shop->products()->count() : 0;
+        $totalOrders = $shop ? $shop->orders()->count() : 0;
+        $totalRevenue = $shop ? $shop->orders()->whereIn('status', ['done', 'completed'])->sum('total_amount') : 0;
+        $needsCategoryOnboarding = $shop ? $totalCategories === 0 : false;
+        $needsProductOnboarding = $shop ? $totalProducts === 0 : false;
+        $showSellerOnboarding = $shop ? ($needsCategoryOnboarding || $needsProductOnboarding) : false;
+    @endphp
+
     <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css" rel="stylesheet">
 
-    <div class="py-10 px-4 sm:px-6 lg:px-8" x-data="logoCropper('{{ auth()->user()->shop->slug ?? '' }}')">
+    <div class="py-10 px-4 sm:px-6 lg:px-8" x-data='logoCropper(@json($shop?->slug ?? ""))'>
         <div class="max-w-7xl mx-auto space-y-6">
 
             {{-- ── Success Alert ───────────────────────────────────────── --}}
@@ -25,8 +47,7 @@
                 </div>
             @endif
 
-            @if(auth()->user()->isSeller())
-                @if(!auth()->user()->shop)
+            <?php if ($isSeller && !$shop): ?>
 
                     {{-- ════════════════════════════════════════════════════ --}}
                     {{--  SHOP SETUP WIZARD                                  --}}
@@ -52,14 +73,14 @@
                                         <x-input-label for="name" :value="__('اسم المتجر')" />
                                         <x-text-input id="name" class="block mt-1.5 w-full" type="text" name="name"
                                             placeholder="مثال: متجر العطور الأصيلة"
-                                            required autofocus x-model="name" @input="updateSlug" />
+                                            required autofocus x-model="name" x-on:input="updateSlug" />
                                         <x-input-error :messages="$errors->get('name')" class="mt-1.5" />
                                     </div>
                                     <div>
                                         <x-input-label for="slug" :value="__('رابط المتجر (بالإنجليزية)')" />
                                         <x-text-input id="slug" class="block mt-1.5 w-full font-mono text-sm" type="text" name="slug"
                                             placeholder="my-shop-name"
-                                            required x-model="slug" @input="manualSlug = true" />
+                                            required x-model="slug" x-on:input="manualSlug = true" />
                                         <div class="mt-2 flex flex-wrap items-center gap-2">
                                             <p class="text-[11px] text-[#0d1b4b]/40" dir="ltr">{{ url('/shop') }}/<span x-text="slug" class="text-[#0d1b4b]/70 font-semibold"></span></p>
                                             <template x-if="isCheckingSlug">
@@ -109,6 +130,85 @@
                                 </div>
 
                                 <div class="rounded-2xl border border-[#0d1b4b]/10 bg-[#f8faff] p-5 space-y-4">
+                                    <div class="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                                        <div>
+                                            <h4 class="text-sm font-black text-[#0d1b4b]">موقع المتجر والتوصيل</h4>
+                                            <p class="mt-1 text-[11px] text-[#0d1b4b]/45">أدخل عنوان المتجر التفصيلي، ثم اختر المدينة من القائمة المعتمدة لتقدير التوصيل.</p>
+                                        </div>
+                                        <label class="inline-flex items-center gap-2 text-xs font-bold text-[#0d1b4b]/70 cursor-pointer">
+                                            <input
+                                                type="checkbox"
+                                                name="same_day_delivery_enabled"
+                                                value="1"
+                                                class="rounded border-[#0d1b4b]/25 text-[#0d1b4b] focus:ring-[#d4af37]/30"
+                                                {{ old('same_day_delivery_enabled', true) ? 'checked' : '' }}
+                                            >
+                                            تفعيل توصيل نفس اليوم داخل المدينة نفسها
+                                        </label>
+                                    </div>
+
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div class="md:col-span-2">
+                                            <x-input-label for="create_location_text" :value="__('نص الموقع / العنوان التفصيلي')" />
+                                            <x-text-input
+                                                id="create_location_text"
+                                                class="block mt-1.5 w-full"
+                                                type="text"
+                                                name="location_text"
+                                                :value="old('location_text')"
+                                                placeholder="مثال: دمشق، المالكي، مقابل الحديقة الشرقية"
+                                                data-location-input
+                                                autocomplete="off"
+                                                required
+                                            />
+                                            <p class="mt-2 text-[11px] text-[#0d1b4b]/45">هذا الحقل مخصص للعنوان التفصيلي الذي سيستخدمه البائع أو جهة التوصيل.</p>
+                                            <x-input-error :messages="$errors->get('location_text')" class="mt-1.5" />
+                                        </div>
+
+                                        <div
+                                            x-data="{ legacyCity: @js($createSelectedCity) }"
+                                            x-on:filter-dropdown-change="if ($event.detail.id === 'create_city') legacyCity = $event.detail.value"
+                                        >
+                                            <x-input-label for="create_city" :value="__('المدينة')" />
+                                            <div class="mt-1.5">
+                                                <x-filter-dropdown
+                                                    id="create_city"
+                                                    name="city"
+                                                    :value="in_array($createSelectedCity, $syrianCities, true) ? $createSelectedCity : ''"
+                                                    :options="$syrianCityOptions"
+                                                    placeholder="اختر المدينة"
+                                                />
+                                            </div>
+                                            <input
+                                                id="create_city_legacy"
+                                                type="hidden"
+                                                name="legacy_city"
+                                                x-bind:value="legacyCity"
+                                            />
+                                            <x-input-error :messages="$errors->get('city')" class="mt-1.5" />
+                                        </div>
+
+                                        <div>
+                                            <x-input-label for="create_delivery_fee_usd" :value="__('رسوم التوصيل (دولار)')" />
+                                            <x-text-input
+                                                id="create_delivery_fee_usd"
+                                                class="block mt-1.5 w-full"
+                                                type="number"
+                                                name="delivery_fee_usd"
+                                                :value="old('delivery_fee_usd', 0)"
+                                                min="0"
+                                                step="0.01"
+                                                placeholder="0.00"
+                                            />
+                                            <p class="mt-2 text-[11px] text-[#0d1b4b]/45">يُحفظ هذا المبلغ بالدولار، وسيظهر للمشتري أيضًا بالليرة السورية حسب سعر الصرف الحالي.</p>
+                                            <x-input-error :messages="$errors->get('delivery_fee_usd')" class="mt-1.5" />
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                                <div class="rounded-2xl border border-[#0d1b4b]/10 bg-[#f8faff] p-5 space-y-4">
                                     <div class="flex items-center justify-between gap-3">
                                         <h4 class="text-sm font-black text-[#0d1b4b]">إعدادات شام كاش (اختياري)</h4>
                                         <label class="inline-flex items-center gap-2 text-xs font-bold text-[#0d1b4b]/70 cursor-pointer">
@@ -145,7 +245,7 @@
                                                 <svg class="w-4 h-4 text-[#a07c1e]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>
                                             </div>
                                             <span class="text-sm text-[#0d1b4b]/45">اختر شعار المتجر...</span>
-                                            <input id="logo_wizard" type="file" name="logo" accept="image/*" class="hidden" @change="loadFile" />
+                                            <input id="logo_wizard" type="file" name="logo" accept="image/*" class="hidden" x-on:change="loadFile" />
                                         </label>
                                     </div>
                                     <input type="hidden" name="cropped_logo" :value="croppedData">
@@ -156,7 +256,7 @@
                                         <img :src="croppedData" class="w-20 h-20 rounded-2xl object-cover border-2 border-[#d4af37]/40 shadow-md" alt="معاينة الشعار">
                                         <div>
                                             <p class="text-sm font-bold text-[#0d1b4b]">معاينة الشعار</p>
-                                            <button type="button" @click="croppedData = ''; document.getElementById('logo_wizard').value = ''"
+                                            <button type="button" x-on:click="croppedData = ''; document.getElementById('logo_wizard').value = ''"
                                                 class="mt-1 text-xs text-red-500 hover:text-red-700 font-semibold transition-colors">
                                                 إزالة الشعار
                                             </button>
@@ -179,21 +279,12 @@
                         </div>
                     </div>
 
-                @else
+            <?php endif; ?>
+
+            <?php if ($isSeller && $shop): ?>
                     {{-- ════════════════════════════════════════════════════ --}}
                     {{--  SELLER DASHBOARD                                   --}}
                     {{-- ════════════════════════════════════════════════════ --}}
-                    @php
-                        $shop = auth()->user()->shop;
-                        $totalCategories = $shop->categories()->count();
-                        $totalProducts = $shop->products()->count();
-                        $totalOrders   = $shop->orders()->count();
-                        $totalRevenue  = $shop->orders()->whereIn('status', ['done', 'completed'])->sum('total_amount');
-                        $needsCategoryOnboarding = $totalCategories === 0;
-                        $needsProductOnboarding = $totalProducts === 0;
-                        $showSellerOnboarding = $needsCategoryOnboarding || $needsProductOnboarding;
-                    @endphp
-
                     {{-- Shop header --}}
                     <div class="bg-white/70 backdrop-blur-xl border border-[#0d1b4b]/10 rounded-3xl shadow-xl shadow-[#0d1b4b]/6 p-8">
 
@@ -201,7 +292,6 @@
                             <div>
                                 <p class="text-[11px] text-[#0d1b4b]/40 uppercase tracking-widest font-bold mb-1">متجرك النشط</p>
                                 <h3 class="text-2xl font-black text-[#0d1b4b]">{{ $shop->name }}</h3>
-                                @php($shopUrl = url('/shop/' . $shop->slug))
                                 <div class="mt-1.5 flex flex-wrap items-center gap-2">
                                     <a href="{{ $shopUrl }}" target="_blank"
                                        class="inline-flex items-center gap-1.5 text-sm text-[#d4af37] hover:text-[#b8922a] font-semibold transition-colors" dir="ltr">
@@ -234,7 +324,7 @@
                             </div>
                         </div>
 
-                        @if($showSellerOnboarding)
+                        <?php if ($showSellerOnboarding): ?>
                             <div class="mb-8 rounded-2xl border border-[#d4af37]/35 bg-[#fff9e8] p-5">
                                 <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                                     <div>
@@ -260,7 +350,7 @@
                                     </div>
                                 </div>
                             </div>
-                        @endif
+                        <?php endif; ?>
 
                         {{-- Stats --}}
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -340,7 +430,7 @@
                                     <div>
                                         <x-input-label for="edit_slug" :value="__('رابط المتجر (بالإنجليزية)')" />
                                         <x-text-input id="edit_slug" class="block mt-1.5 w-full font-mono text-sm" type="text" name="slug"
-                                            :value="old('slug', $shop->slug)" required x-model="slug" @input="manualSlug = true" />
+                                            :value="old('slug', $shop->slug)" required x-model="slug" x-on:input="manualSlug = true" />
                                         <div class="mt-2 flex flex-wrap items-center gap-2">
                                             <p class="text-[11px] text-[#0d1b4b]/40" dir="ltr">{{ url('/shop') }}/<span x-text="slug" class="text-[#0d1b4b]/70 font-semibold"></span></p>
                                             <template x-if="isCheckingSlug">
@@ -373,7 +463,7 @@
                                                     <svg class="w-4 h-4 text-[#a07c1e]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>
                                                 </div>
                                                 <span class="text-sm text-[#0d1b4b]/45">اختر شعاراً جديداً...</span>
-                                                <input id="edit_logo" type="file" name="logo" accept="image/*" class="hidden" @change="loadFile" />
+                                                <input id="edit_logo" type="file" name="logo" accept="image/*" class="hidden" x-on:change="loadFile" />
                                             </label>
                                         </div>
                                         <input type="hidden" name="cropped_logo" :value="croppedData">
@@ -382,7 +472,7 @@
                                         <div x-show="croppedData" class="mt-4 flex items-center gap-4" x-cloak>
                                             <img :src="croppedData" class="w-16 h-16 rounded-xl object-cover border-2 border-[#d4af37]/40 shadow-sm" alt="معاينة">
                                             <button type="button"
-                                                @click="croppedData = ''; document.getElementById('edit_logo').value = ''"
+                                                x-on:click="croppedData = ''; document.getElementById('edit_logo').value = ''"
                                                 class="text-xs text-red-500 hover:text-red-700 font-semibold transition-colors">
                                                 إزالة
                                             </button>
@@ -416,6 +506,86 @@
                                 </div>
 
                                 <div class="rounded-2xl border border-[#0d1b4b]/10 bg-[#f8faff] p-5 space-y-4">
+                                    <div class="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                                        <div>
+                                            <h4 class="text-sm font-black text-[#0d1b4b]">موقع المتجر والتوصيل</h4>
+                                            <p class="mt-1 text-[11px] text-[#0d1b4b]/45">حدّث العنوان والمدينة لتبقى تقديرات التوصيل دقيقة للطلبات الجديدة.</p>
+                                        </div>
+                                        <label class="inline-flex items-center gap-2 text-xs font-bold text-[#0d1b4b]/70 cursor-pointer">
+                                            <input
+                                                type="checkbox"
+                                                name="same_day_delivery_enabled"
+                                                value="1"
+                                                class="rounded border-[#0d1b4b]/25 text-[#0d1b4b] focus:ring-[#d4af37]/30"
+                                                {{ old('same_day_delivery_enabled', $shop->same_day_delivery_enabled) ? 'checked' : '' }}
+                                            >
+                                            تفعيل توصيل نفس اليوم داخل المدينة نفسها
+                                        </label>
+                                    </div>
+
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div class="md:col-span-2">
+                                            <x-input-label for="edit_location_text" :value="__('نص الموقع / العنوان التفصيلي')" />
+                                            <x-text-input
+                                                id="edit_location_text"
+                                                class="block mt-1.5 w-full"
+                                                type="text"
+                                                name="location_text"
+                                                :value="old('location_text', $shop->location_text)"
+                                                placeholder="مثال: دمشق، المالكي، مقابل الحديقة الشرقية"
+                                                data-location-input
+                                                autocomplete="off"
+                                                required
+                                            />
+                                            <p class="mt-2 text-[11px] text-[#0d1b4b]/45">حدّث العنوان التفصيلي متى شئت، وسيبقى مستقلا عن اختيار المدينة.</p>
+                                            <x-input-error :messages="$errors->get('location_text')" class="mt-1.5" />
+                                        </div>
+
+                                        <div
+                                            x-data="{ legacyCity: @js($editSelectedCity) }"
+                                            x-on:filter-dropdown-change="if ($event.detail.id === 'edit_city') legacyCity = $event.detail.value"
+                                        >
+                                            <x-input-label for="edit_city" :value="__('المدينة')" />
+                                            <div class="mt-1.5">
+                                                <x-filter-dropdown
+                                                    id="edit_city"
+                                                    name="city"
+                                                    :value="in_array($editSelectedCity, $syrianCities, true) ? $editSelectedCity : ''"
+                                                    :options="$syrianCityOptions"
+                                                    placeholder="اختر المدينة"
+                                                />
+                                            </div>
+                                            <input
+                                                id="edit_city_legacy"
+                                                type="hidden"
+                                                name="legacy_city"
+                                                x-bind:value="legacyCity"
+                                                data-city-input
+                                            />
+                                            <x-input-error :messages="$errors->get('city')" class="mt-1.5" />
+                                        </div>
+
+                                        <div>
+                                            <x-input-label for="edit_delivery_fee_usd" :value="__('رسوم التوصيل (دولار)')" />
+                                            <x-text-input
+                                                id="edit_delivery_fee_usd"
+                                                class="block mt-1.5 w-full"
+                                                type="number"
+                                                name="delivery_fee_usd"
+                                                :value="old('delivery_fee_usd', $shop->delivery_fee_usd ?? 0)"
+                                                min="0"
+                                                step="0.01"
+                                                placeholder="0.00"
+                                            />
+                                            <p class="mt-2 text-[11px] text-[#0d1b4b]/45">حدّث رسوم التوصيل بالدولار متى شئت، وسيشاهدها المشتري أيضًا بالليرة السورية عند الطلب.</p>
+                                            <x-input-error :messages="$errors->get('delivery_fee_usd')" class="mt-1.5" />
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                                <div class="rounded-2xl border border-[#0d1b4b]/10 bg-[#f8faff] p-5 space-y-4">
                                     <div class="flex items-center justify-between gap-3">
                                         <h4 class="text-sm font-black text-[#0d1b4b]">إعدادات شام كاش</h4>
                                         <label class="inline-flex items-center gap-2 text-xs font-bold text-[#0d1b4b]/70 cursor-pointer">
@@ -435,7 +605,7 @@
                                             <x-input-error :messages="$errors->get('shamcash_qr')" class="mt-1.5" />
                                         </div>
                                     </div>
-                                    @if($shop->shamcash_qr_path)
+                                    <?php if ($shop->shamcash_qr_path): ?>
                                         <div class="flex items-center gap-4 rounded-xl border border-[#0d1b4b]/10 bg-white p-3">
                                             <img src="{{ Storage::url($shop->shamcash_qr_path) }}" alt="QR شام كاش" class="w-16 h-16 rounded-lg object-cover border border-[#0d1b4b]/10">
                                             <label class="inline-flex items-center gap-2 text-xs font-bold text-red-600 cursor-pointer">
@@ -443,7 +613,7 @@
                                                 حذف رمز QR الحالي
                                             </label>
                                         </div>
-                                    @endif
+                                    <?php endif; ?>
                                     <p class="text-[11px] text-[#0d1b4b]/45">يمكنك تفعيل/إيقاف شام كاش وتعديل بياناته في أي وقت.</p>
                                 </div>
 
@@ -467,9 +637,9 @@
                         </div>
                     </div>
 
-                @endif
+            <?php endif; ?>
 
-            @else
+            <?php if (!$isSeller): ?>
                 {{-- ════════════════════════════════════════════════════ --}}
                 {{--  BUYER DASHBOARD                                    --}}
                 {{-- ════════════════════════════════════════════════════ --}}
@@ -480,7 +650,7 @@
                     <h3 class="text-2xl font-black text-[#0d1b4b] mb-2">أهلاً بك يا {{ auth()->user()->name }}!</h3>
                     <p class="text-[#0d1b4b]/50 max-w-sm mx-auto">تصفح المتاجر واكتشف منتجات جديدة على منصة محلي.</p>
                 </div>
-            @endif
+            <?php endif; ?>
 
         </div>
     </div>
@@ -492,7 +662,7 @@
              x-transition:enter="transition duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
              x-transition:leave="transition duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
              class="absolute inset-0 bg-[#0d1b4b]/50 backdrop-blur-sm"
-             @click="showCropper = false"></div>
+             x-on:click="showCropper = false"></div>
 
         {{-- Modal panel --}}
         <div x-show="showCropper"
@@ -505,7 +675,7 @@
                     <h3 class="text-base font-black text-[#0d1b4b]">اقتطاع الشعار</h3>
                     <p class="text-xs text-[#0d1b4b]/40 mt-0.5">حرك وكبّر الشعار ليناسب الإطار الدائري</p>
                 </div>
-                <button @click="showCropper = false"
+                <button x-on:click="showCropper = false"
                     class="w-8 h-8 rounded-xl bg-[#0d1b4b]/6 flex items-center justify-center hover:bg-[#0d1b4b]/10 transition-colors">
                     <svg class="w-4 h-4 text-[#0d1b4b]/60" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>
@@ -519,11 +689,11 @@
 
             <div class="px-6 pb-6 flex gap-3 justify-end">
                 <button type="button"
-                    @click="showCropper = false; document.getElementById('logo_wizard') ? document.getElementById('logo_wizard').value = '' : null; document.getElementById('edit_logo') ? document.getElementById('edit_logo').value = '' : null"
+                    x-on:click="showCropper = false; document.getElementById('logo_wizard') ? document.getElementById('logo_wizard').value = '' : null; document.getElementById('edit_logo') ? document.getElementById('edit_logo').value = '' : null"
                     class="px-5 py-2.5 rounded-xl border border-[#0d1b4b]/15 text-[#0d1b4b]/60 text-sm font-bold hover:border-[#0d1b4b]/25 hover:text-[#0d1b4b] transition-all">
                     إلغاء
                 </button>
-                <button type="button" @click="saveCrop"
+                <button type="button" x-on:click="saveCrop"
                     class="px-5 py-2.5 rounded-xl bg-[#d4af37] text-[#0d1b4b] text-sm font-black hover:bg-[#c5a02e] transition-all shadow-md shadow-[#d4af37]/25">
                     تطبيق الشعار
                 </button>
@@ -577,12 +747,12 @@
             }
         }
 
-        document.addEventListener('alpine:init', () => {
-            Alpine.data('logoCropper', (initialSlug = '') => ({
+        window.logoCropper = function (initialSlug = '') {
+            return {
                 showCropper: false,
                 cropper: null,
                 croppedData: '',
-                name: {!! json_encode(auth()->user()->shop->name ?? '') !!},
+                name: @js($shop?->name ?? ''),
                 slug: initialSlug,
                 manualSlug: false,
                 initialSlug: initialSlug,
@@ -659,7 +829,8 @@
                         this.showCropper = false;
                     }
                 }
-            }));
-        });
+            };
+        };
+
     </script>
 </x-app-layout>

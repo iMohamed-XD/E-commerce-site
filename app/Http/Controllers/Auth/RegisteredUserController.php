@@ -33,13 +33,19 @@ class RegisteredUserController extends Controller
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => [
-                'required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class,
+                'required',
+                'string',
+                'lowercase',
+                'email',
+                'max:255',
+                'unique:' . User::class,
                 function ($attribute, $value, $fail) {
                     if (\App\Models\BlockedEmail::where('email', $value)->exists()) {
                         $fail('هذا البريد الإلكتروني محظور من المنصة لمخالفة الشروط.');
                     }
                 },
             ],
+            'phone_number' => ['required', 'string', 'min:7', 'max:32'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'role' => ['required', 'in:seller,simple_buyer'],
             'terms' => ['required', 'accepted'],
@@ -48,6 +54,7 @@ class RegisteredUserController extends Controller
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
+            'phone_number' => trim((string) $request->phone_number),
             'password' => Hash::make($request->password),
             'role' => $request->role,
         ]);

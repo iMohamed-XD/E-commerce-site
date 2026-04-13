@@ -9,38 +9,47 @@ use Laravel\Socialite\Facades\Socialite;
 
 class GoogleController extends Controller
 {
-    // Step 1: Redirect user to Google
     public function redirect()
     {
         return Socialite::driver('google')->redirect();
     }
 
-    // Step 2: Handle Google's callback
     public function callback()
     {
         try {
             $googleUser = Socialite::driver('google')->user();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             return redirect('/login')->withErrors('Google authentication failed.');
         }
 
-        // Check for blocked email
         if (\App\Models\BlockedEmail::where('email', $googleUser->getEmail())->exists()) {
             return redirect('/login')->withErrors('هذا البريد الإلكتروني محظور من المنصة لمخالفة الشروط.');
         }
 
-        // Find existing user or create a new one
-        $user = User::updateOrCreate(
-            ['google_id' => $googleUser->getId()],
-            [
-                'name'     => $googleUser->getName(),
-                'email'    => $googleUser->getEmail(),
-                'avatar'   => $googleUser->getAvatar(),
-                'password' => null,
-                'role'              => 'seller',
+        $user = User::query()
+            ->where('google_id', $googleUser->getId())
+            ->orWhere('email', $googleUser->getEmail())
+            ->first();
+
+        if ($user) {
+            $user->fill([
+                'google_id' => $googleUser->getId(),
+                'name' => $googleUser->getName(),
+                'email' => $googleUser->getEmail(),
+                'role' => $user->role ?: 'seller',
                 'email_verified_at' => now(),
-            ]
-        );
+            ]);
+            $user->save();
+        } else {
+            $user = User::create([
+                'google_id' => $googleUser->getId(),
+                'name' => $googleUser->getName(),
+                'email' => $googleUser->getEmail(),
+                'password' => null,
+                'role' => 'seller',
+                'email_verified_at' => now(),
+            ]);
+        }
 
         Auth::login($user, remember: true);
 

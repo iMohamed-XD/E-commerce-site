@@ -11,6 +11,12 @@ class Shop extends Model
         'name',
         'slug',
         'description',
+        'delivery_fee_usd',
+        'location_text',
+        'city',
+        'latitude',
+        'longitude',
+        'same_day_delivery_enabled',
         'logo_path',
         'hero_image_path',
         'color',
@@ -20,6 +26,10 @@ class Shop extends Model
     ];
 
     protected $casts = [
+        'delivery_fee_usd' => 'decimal:2',
+        'latitude' => 'decimal:7',
+        'longitude' => 'decimal:7',
+        'same_day_delivery_enabled' => 'boolean',
         'shamcash_is_active' => 'boolean',
     ];
 
@@ -51,5 +61,10 @@ class Shop extends Model
     public function promoCodes()
     {
         return $this->hasMany(PromoCode::class);
+    }
+
+    public function hasLocation(): bool
+    {
+        return !empty($this->city) || !empty($this->location_text);
     }
 }

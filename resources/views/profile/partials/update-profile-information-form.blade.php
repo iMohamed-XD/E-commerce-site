@@ -5,7 +5,7 @@
         </h2>
 
         <p class="mt-2 text-sm text-[#0d1b4b]/50">
-            {{ __("قم بتحديث معلومات ملفك الشخصي وعنوان بريدك الإلكتروني.") }}
+            {{ __('قم بتحديث معلومات ملفك الشخصي وبريدك الإلكتروني ورقم الهاتف.') }}
         </p>
     </header>
 
@@ -18,13 +18,19 @@
         @method('patch')
 
         <div>
-            <x-input-label for="name" :value="__('Name')" />
+            <x-input-label for="name" :value="__('الاسم')" />
             <x-text-input id="name" name="name" type="text" class="mt-1 block w-full" :value="old('name', $user->name)" required autofocus autocomplete="name" />
             <x-input-error class="mt-2" :messages="$errors->get('name')" />
         </div>
 
         <div>
-            <x-input-label for="email" :value="__('Email')" />
+            <x-input-label for="phone_number" :value="__('رقم الهاتف')" />
+            <x-text-input id="phone_number" name="phone_number" type="text" class="mt-1 block w-full" :value="old('phone_number', $user->phone_number)" required autocomplete="tel" dir="ltr" />
+            <x-input-error class="mt-2" :messages="$errors->get('phone_number')" />
+        </div>
+
+        <div>
+            <x-input-label for="email" :value="__('البريد الإلكتروني')" />
             @if ($user->google_id)
                 <x-text-input
                     id="email"
@@ -62,7 +68,7 @@
         </div>
 
         <div class="flex items-center gap-4">
-            <x-primary-button>{{ __('Save') }}</x-primary-button>
+            <x-primary-button>{{ __('حفظ') }}</x-primary-button>
 
             @if (session('status') === 'profile-updated')
                 <p

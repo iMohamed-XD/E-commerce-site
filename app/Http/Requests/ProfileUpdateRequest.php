@@ -19,6 +19,7 @@ class ProfileUpdateRequest extends FormRequest
         if ($this->user()?->google_id) {
             return [
                 'name' => ['required', 'string', 'max:255'],
+                'phone_number' => ['required', 'string', 'min:7', 'max:32'],
                 'email' => [
                     'nullable',
                     'string',
@@ -32,6 +33,7 @@ class ProfileUpdateRequest extends FormRequest
 
         return [
             'name' => ['required', 'string', 'max:255'],
+            'phone_number' => ['required', 'string', 'min:7', 'max:32'],
             'email' => [
                 'required',
                 'string',

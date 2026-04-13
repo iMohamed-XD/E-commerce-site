@@ -1,4 +1,22 @@
-{{-- products/edit --}}
+@php
+    $seedOptions = collect(old('options', $product->productOptions->map(fn ($option) => [
+        'label' => $option->label,
+        'quantity' => (int) $option->quantity,
+    ])->all()))
+        ->map(fn ($option) => [
+            'label' => trim((string) ($option['label'] ?? '')),
+            'quantity' => (int) ($option['quantity'] ?? 0),
+        ])
+        ->values()
+        ->all();
+
+    if (empty($seedOptions)) {
+        $seedOptions = [['label' => '', 'quantity' => 0]];
+    }
+
+    $hasOptions = old('has_options', $product->has_options);
+@endphp
+
 <x-app-layout>
     <x-slot name="header">
         <div class="flex items-center gap-4">
@@ -13,8 +31,11 @@
         <div class="max-w-3xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white/70 backdrop-blur-xl border border-[#0d1b4b]/10 overflow-hidden shadow-xl shadow-[#0d1b4b]/6 sm:rounded-3xl">
                 <div class="p-8 text-[#0d1b4b]">
-
-                    <form method="POST" action="{{ route('products.update', $product) }}" enctype="multipart/form-data" class="space-y-6">
+                    <form method="POST" action="{{ route('products.update', $product) }}" enctype="multipart/form-data" class="space-y-6"
+                        x-data="productOptionsForm({
+                            hasOptions: {{ $hasOptions ? 'true' : 'false' }},
+                            options: {{ Js::from($seedOptions) }}
+                        })">
                         @csrf
                         @method('PUT')
 
@@ -42,16 +63,82 @@
                         </div>
 
                         <div>
-                            <x-input-label for="price" :value="__('السعر الأصلي (ل.س)')" />
+                            <x-input-label for="price" :value="__('السعر الأساسي (USD)')" />
                             <x-text-input id="price" class="block mt-1 w-full" type="number" step="0.01" min="0" name="price" :value="old('price', $product->price)" required />
+                            <p class="mt-1 text-xs text-[#0d1b4b]/45">يُخزَّن السعر بالدولار، ويُعرض للمشتري بالدولار والليرة السورية حسب سعر الصرف اليومي.</p>
                             <x-input-error :messages="$errors->get('price')" class="mt-2" />
                         </div>
-                        <div>
-                            <x-input-label for="quantity_available" :value="__('الكمية المتاحة')" />
-                            <x-text-input id="quantity_available" class="block mt-1 w-full" type="number" step="1" min="0" name="quantity_available" :value="old('quantity_available', $product->quantity_available)" required />
-                            <x-input-error :messages="$errors->get('quantity_available')" class="mt-2" />
-                        </div>
 
+                        <div class="border border-[#0d1b4b]/10 rounded-2xl p-5 bg-white/80 space-y-4">
+                            <div class="flex items-center justify-between gap-3">
+                                <div>
+                                    <h4 class="text-base font-bold text-[#0d1b4b]">طريقة إدارة المخزون</h4>
+                                    <p class="text-xs text-[#0d1b4b]/45 mt-1">يمكنك التبديل بين كمية واحدة للمنتج أو مخزون مبني على خيارات متعددة.</p>
+                                </div>
+                                <input type="hidden" name="has_options" :value="hasOptions ? 1 : 0">
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <button type="button" @click="hasOptions = false"
+                                    :class="!hasOptions ? 'bg-[#0d1b4b] text-white border-[#0d1b4b]' : 'bg-white text-[#0d1b4b]/70 border-[#0d1b4b]/15'"
+                                    class="rounded-2xl border px-4 py-4 text-right transition">
+                                    <span class="block text-sm font-black">مخزون بسيط</span>
+                                    <span class="block text-xs mt-1 opacity-80">كمية واحدة للمنتج بالكامل.</span>
+                                </button>
+                                <button type="button" @click="enableOptions()"
+                                    :class="hasOptions ? 'bg-[#0d1b4b] text-white border-[#0d1b4b]' : 'bg-white text-[#0d1b4b]/70 border-[#0d1b4b]/15'"
+                                    class="rounded-2xl border px-4 py-4 text-right transition">
+                                    <span class="block text-sm font-black">مخزون حسب الخيارات</span>
+                                    <span class="block text-xs mt-1 opacity-80">مثل المقاسات أو الأوزان أو أنواع العبوات.</span>
+                                </button>
+                            </div>
+
+                            <div x-show="!hasOptions" x-cloak>
+                                <x-input-label for="quantity_available" :value="__('الكمية المتاحة')" />
+                                <x-text-input id="quantity_available" class="block mt-1 w-full" type="number" step="1" min="0" name="quantity_available" :value="old('quantity_available', $product->quantity_available)" x-bind:disabled="hasOptions" />
+                                <x-input-error :messages="$errors->get('quantity_available')" class="mt-2" />
+                            </div>
+
+                            <div x-show="hasOptions" x-cloak class="space-y-4">
+                                <div class="flex items-center justify-between">
+                                    <x-input-label for="options-0-label" :value="__('الخيارات (مثال: مقاس، وزن، عبوة)')" />
+                                    <button type="button" @click="addOption()" class="px-3 py-2 rounded-xl bg-[#d4af37]/10 text-[#a07c1e] text-xs font-black hover:bg-[#d4af37]/20 transition">
+                                        + إضافة خيار
+                                    </button>
+                                </div>
+
+                                <template x-for="(option, index) in options" :key="index">
+                                    <div class="grid grid-cols-1 sm:grid-cols-[minmax(0,1.7fr)_minmax(0,1fr)_auto] gap-3 items-end">
+                                        <div>
+                                            <label class="block text-xs font-bold text-[#0d1b4b]/55 mb-1">اسم الخيار</label>
+                                            <input :id="`options-${index}-label`" type="text" :name="`options[${index}][label]`" x-model="option.label" x-bind:disabled="!hasOptions"
+                                                class="w-full bg-white border border-[#0d1b4b]/15 text-[#0d1b4b] rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#d4af37]/20 focus:border-[#d4af37]"
+                                                placeholder="مثال: كبير">
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-bold text-[#0d1b4b]/55 mb-1">الكمية</label>
+                                            <input type="number" min="0" step="1" :name="`options[${index}][quantity]`" x-model="option.quantity" x-bind:disabled="!hasOptions"
+                                                class="w-full bg-white border border-[#0d1b4b]/15 text-[#0d1b4b] rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#d4af37]/20 focus:border-[#d4af37]">
+                                        </div>
+                                        <button type="button" @click="removeOption(index)" class="h-[46px] px-4 rounded-xl border border-red-200 text-red-600 text-xs font-black hover:bg-red-50 transition">
+                                            حذف
+                                        </button>
+                                    </div>
+                                </template>
+
+                                <x-input-error :messages="$errors->get('options')" class="mt-2" />
+                                @foreach ($errors->get('options.*.label') as $messages)
+                                    @foreach ($messages as $message)
+                                        <p class="text-sm text-red-600">{{ $message }}</p>
+                                    @endforeach
+                                @endforeach
+                                @foreach ($errors->get('options.*.quantity') as $messages)
+                                    @foreach ($messages as $message)
+                                        <p class="text-sm text-red-600">{{ $message }}</p>
+                                    @endforeach
+                                @endforeach
+                            </div>
+                        </div>
 
                         <div>
                             <x-input-label for="description" :value="__('وصف المنتج')" />
@@ -71,12 +158,12 @@
                         </div>
 
                         <div>
-                            <x-input-label for="secondary_images" :value="__('صور إضافية للمنتج (حد أقصى 3 صور، حدد لاستبدال الصور الحالية)')" />
+                            <x-input-label for="secondary_images" :value="__('صور إضافية للمنتج (حد أقصى 3 صور، حدِّد للاستبدال)')" />
                             @if($product->productImages->count() > 0)
-                                <div class="mb-2 flex gap-2">
-                                    @foreach($product->productImages as $pi)
+                                <div class="mb-2 flex gap-2 flex-wrap">
+                                    @foreach($product->productImages as $productImage)
                                         <div class="relative">
-                                            <img src="{{ Storage::url($pi->path) }}" alt="" class="h-16 w-16 object-cover rounded-xl shadow border border-[#0d1b4b]/15">
+                                            <img src="{{ Storage::url($productImage->path) }}" alt="" class="h-16 w-16 object-cover rounded-xl shadow border border-[#0d1b4b]/15">
                                         </div>
                                     @endforeach
                                 </div>
@@ -85,43 +172,40 @@
                             <input id="secondary_images" multiple class="block mt-1 w-full text-sm text-[#0d1b4b]/50 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border file:border-[#0d1b4b]/15 file:text-sm file:font-bold file:bg-white file:text-[#0d1b4b] hover:file:bg-[#fdfbf4]" type="file" name="secondary_images[]" accept="image/*" />
                             <x-input-error :messages="$errors->get('secondary_images')" class="mt-2" />
                             @if($errors->has('secondary_images.*'))
-                                @foreach($errors->get('secondary_images.*') as $errorMsg)
-                                    @foreach((array)$errorMsg as $err)
-                                        <p class="text-sm text-red-600 mt-2">{{ $err }}</p>
+                                @foreach($errors->get('secondary_images.*') as $errorMessages)
+                                    @foreach((array) $errorMessages as $errorMessage)
+                                        <p class="text-sm text-red-600 mt-2">{{ $errorMessage }}</p>
                                     @endforeach
                                 @endforeach
                             @endif
                         </div>
 
-                        <!-- Discount Section -->
                         <div class="border border-[#0d1b4b]/10 rounded-2xl p-5 bg-white/80 space-y-4">
                             <div class="flex items-center justify-between">
-                                <h4 class="text-base font-bold text-[#d4af37]">⚡ إعدادات الخصم (اختياري)</h4>
+                                <h4 class="text-base font-bold text-[#d4af37]">إعدادات الخصم (اختياري)</h4>
                                 @if($product->discount_percent)
-                                    <span class="text-xs text-green-400 font-semibold">خصم مفعّل: {{ $product->discount_percent }}%</span>
+                                    <span class="text-xs text-green-600 font-semibold">خصم مفعّل: {{ $product->discount_percent }}%</span>
                                 @endif
                             </div>
-                            <p class="text-xs text-[#0d1b4b]/45">أدخل نسبة الخصم (مثال: 20 يعني 20% خصم). اتركه فارغاً لعدم تطبيق أي خصم.</p>
-                            <div class="grid grid-cols-1 gap-4">
-                                <div>
-                                    <label class="block text-sm font-bold text-[#0d1b4b]/70 mb-1">نسبة الخصم (%)</label>
-                                    <input type="number" name="discount_percent" step="0.01" min="0" max="100"
-                                        value="{{ old('discount_percent', $product->discount_percent) }}"
-                                        class="w-full bg-white border border-[#0d1b4b]/15 text-[#0d1b4b] rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#d4af37]/20 focus:border-[#d4af37] placeholder-[#0d1b4b]/30"
-                                        placeholder="مثلاً: 20">
-                                    @if($product->price && old('discount_percent', $product->discount_percent))
-                                        <p class="text-xs text-green-400 mt-2 font-semibold">
-                                            السعر بعد الخصم: {{ number_format($product->price * (1 - old('discount_percent', $product->discount_percent) / 100), 2) }} ل.س
-                                        </p>
-                                    @endif
-                                    <x-input-error :messages="$errors->get('discount_percent')" class="mt-2" />
-                                </div>
+                            <p class="text-xs text-[#0d1b4b]/45">أدخل نسبة الخصم المئوية إن أردت إظهار السعر قبل وبعد الخصم.</p>
+                            <div>
+                                <label class="block text-sm font-bold text-[#0d1b4b]/70 mb-1">نسبة الخصم (%)</label>
+                                <input type="number" name="discount_percent" step="0.01" min="0" max="100"
+                                    value="{{ old('discount_percent', $product->discount_percent) }}"
+                                    class="w-full bg-white border border-[#0d1b4b]/15 text-[#0d1b4b] rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#d4af37]/20 focus:border-[#d4af37] placeholder-[#0d1b4b]/30"
+                                    placeholder="مثلاً: 20">
+                                @if($product->price && old('discount_percent', $product->discount_percent))
+                                    <p class="text-xs text-green-600 mt-2 font-semibold">
+                                        السعر بعد الخصم: {{ number_format($product->price * (1 - old('discount_percent', $product->discount_percent) / 100), 2) }} USD
+                                    </p>
+                                @endif
+                                <x-input-error :messages="$errors->get('discount_percent')" class="mt-2" />
                             </div>
                         </div>
 
                         <div class="block mt-4">
                             <label for="is_active" class="inline-flex items-center">
-                                <input id="is_active" type="checkbox" class="rounded border-[#0d1b4b]/20 bg-white text-[#d4af37] shadow-sm focus:ring-[#d4af37]/30" name="is_active" {{ $product->is_active ? 'checked' : '' }}>
+                                <input id="is_active" type="checkbox" class="rounded border-[#0d1b4b]/20 bg-white text-[#d4af37] shadow-sm focus:ring-[#d4af37]/30" name="is_active" value="1" {{ old('is_active', $product->is_active) ? 'checked' : '' }}>
                                 <span class="ms-2 text-sm text-[#0d1b4b]/60">{{ __('نشط (مرئي للمشترين)') }}</span>
                             </label>
                         </div>
@@ -135,4 +219,33 @@
             </div>
         </div>
     </div>
+
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('productOptionsForm', (config) => ({
+                hasOptions: !!config.hasOptions,
+                options: Array.isArray(config.options) && config.options.length ? config.options : [{ label: '', quantity: 0 }],
+
+                enableOptions() {
+                    this.hasOptions = true;
+                    if (!this.options.length) {
+                        this.options = [{ label: '', quantity: 0 }];
+                    }
+                },
+
+                addOption() {
+                    this.options.push({ label: '', quantity: 0 });
+                },
+
+                removeOption(index) {
+                    if (this.options.length === 1) {
+                        this.options[0] = { label: '', quantity: 0 };
+                        return;
+                    }
+
+                    this.options.splice(index, 1);
+                },
+            }));
+        });
+    </script>
 </x-app-layout>
