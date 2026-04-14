@@ -89,6 +89,7 @@
 
         {{-- Page Content --}}
         <main class="flex-grow">
+            <div id="app"></div>
             {{ $slot }}
         </main>
 
