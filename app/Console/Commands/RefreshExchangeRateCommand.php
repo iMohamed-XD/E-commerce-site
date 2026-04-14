@@ -17,9 +17,11 @@ class RefreshExchangeRateCommand extends Command
         try {
             $rate = $exchangeRateService->refreshUsdToSypRate();
         } catch (Throwable $throwable) {
-            $this->error('Failed to refresh the USD to SYP exchange rate: '.$throwable->getMessage());
+            $fallbackRate = $exchangeRateService->getCurrentUsdToSypRate();
+            $this->warn('Failed to refresh the USD to SYP exchange rate from remote API: '.$throwable->getMessage());
+            $this->warn('Using configured fallback/current rate instead: '.$fallbackRate);
 
-            return self::FAILURE;
+            return self::SUCCESS;
         }
 
         $this->info(sprintf(

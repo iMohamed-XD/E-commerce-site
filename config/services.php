@@ -46,7 +46,7 @@ return [
     ],
 
     'exchange_rate' => [
-        'url' => env('EXCHANGE_RATE_API_URL', 'https://open.er-api.com/v6/latest/USD'),
+        'url' => env('EXCHANGE_RATE_API_URL', 'https://lirascope.syria-cloud.sy/api/v1/rates/latest'),
         'key' => env('EXCHANGE_RATE_API_KEY'),
     ],
 
