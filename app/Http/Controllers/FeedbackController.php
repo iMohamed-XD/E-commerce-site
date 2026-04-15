@@ -3,13 +3,20 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class FeedbackController extends Controller
 {
     public function show()
     {
         $feedback = auth()->user()->feedback;
-        return view('dashboard.feedback', compact('feedback'));
+
+        return Inertia::render('Feedback/Index', [
+            'feedback' => $feedback ? [
+                'rating' => (int) $feedback->rating,
+                'content' => (string) $feedback->content,
+            ] : null,
+        ]);
     }
 
     public function store(Request $request)

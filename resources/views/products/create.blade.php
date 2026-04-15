@@ -30,7 +30,8 @@
                         x-data="productOptionsForm({
                             hasOptions: {{ old('has_options') ? 'true' : 'false' }},
                             options: {{ Js::from($seedOptions) }}
-                        })">
+                        })"
+                        x-on:submit="isSubmitting = true">
                         @csrf
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -180,7 +181,10 @@
                         </div>
 
                         <div class="flex items-center gap-4 mt-6">
-                            <x-primary-button>{{ __('حفظ المنتج') }}</x-primary-button>
+                            <x-primary-button x-bind:disabled="isSubmitting">
+                                <span x-show="!isSubmitting">{{ __('حفظ المنتج') }}</span>
+                                <span x-show="isSubmitting">جارٍ الحفظ...</span>
+                            </x-primary-button>
                             <a href="{{ route('products.index') }}" class="text-[#0d1b4b]/45 hover:text-[#0d1b4b] ml-4">إلغاء</a>
                         </div>
                     </form>
@@ -194,6 +198,7 @@
             Alpine.data('productOptionsForm', (config) => ({
                 hasOptions: !!config.hasOptions,
                 options: Array.isArray(config.options) && config.options.length ? config.options : [{ label: '', quantity: 0 }],
+                isSubmitting: false,
 
                 enableOptions() {
                     this.hasOptions = true;

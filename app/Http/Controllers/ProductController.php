@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
+use Inertia\Inertia;
 
 class ProductController extends Controller
 {
@@ -70,7 +71,43 @@ class ProductController extends Controller
 
         $products = $productsQuery->paginate($perPage)->withQueryString();
 
-        return view('products.index', compact('products', 'shop', 'perPage', 'field', 'value'));
+        $products->getCollection()->transform(function (Product $product) {
+            return [
+                'id' => $product->id,
+                'name' => $product->name,
+                'categoryName' => $product->category?->name ?? 'غير مصنف',
+                'hasOptions' => (bool) $product->has_options,
+                'totalStock' => $product->totalStock(),
+                'options' => $product->has_options
+                    ? $product->productOptions->take(3)->map(fn ($option) => [
+                        'label' => $option->label,
+                        'quantity' => $option->quantity,
+                    ])->values()->all()
+                    : [],
+                'extraOptionsCount' => $product->has_options ? max(0, $product->productOptions->count() - 3) : 0,
+                'price' => (float) $product->price,
+                'effectivePrice' => (float) $product->effectivePrice(),
+                'hasActiveDiscount' => $product->hasActiveDiscount(),
+                'discountPercent' => $product->discount_percent !== null ? (float) $product->discount_percent : null,
+                'discountActive' => (bool) $product->discount_active,
+                'imageUrl' => $product->image_path ? Storage::url($product->image_path) : null,
+                'editUrl' => route('products.edit', $product),
+                'destroyUrl' => route('products.destroy', $product),
+                'toggleDiscountUrl' => route('products.toggle_discount', $product),
+            ];
+        });
+
+        return Inertia::render('Products/Index', [
+            'shop' => [
+                'name' => $shop->name,
+            ],
+            'products' => $products->toArray(),
+            'filters' => [
+                'perPage' => $perPage,
+                'field' => $field,
+                'value' => $value,
+            ],
+        ]);
     }
 
     public function create()
@@ -290,3 +327,5 @@ class ProductController extends Controller
         return back()->with('success', 'تم تحديث حالة الخصم!');
     }
 }
+
+

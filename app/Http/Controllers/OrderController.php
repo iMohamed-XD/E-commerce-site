@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Inertia\Inertia;
 
 class OrderController extends Controller
 {
@@ -43,7 +44,88 @@ class OrderController extends Controller
 
         $orders = $ordersQuery->paginate($perPage)->withQueryString();
 
-        return view('orders.index', compact('orders', 'shop', 'status', 'perPage', 'field', 'value'));
+        $orders->getCollection()->transform(function (Order $order) {
+            $normalizedStatus = $this->normalizeStatus($order->status);
+            $buyerLocation = $order->buyer_location_text ?: $order->buyer_address;
+
+            $statusConfig = [
+                'pending' => ['label' => 'قيد الانتظار', 'classes' => 'bg-[#d4af37]/15 text-[#a07c1e] border-[#d4af37]/35'],
+                'done' => ['label' => 'مكتمل', 'classes' => 'bg-green-50 text-green-700 border-green-200'],
+                'canceled' => ['label' => 'ملغي', 'classes' => 'bg-red-50 text-red-600 border-red-200'],
+                'archived' => ['label' => 'مؤرشف', 'classes' => 'bg-[#0d1b4b]/8 text-[#0d1b4b]/70 border-[#0d1b4b]/20'],
+            ];
+
+            $statusMeta = $statusConfig[$normalizedStatus] ?? $statusConfig['pending'];
+
+            $archivedFromLabel = null;
+            if ($normalizedStatus === 'archived') {
+                $archivedFromLabel = match ($order->archived_from_status) {
+                    'done', 'completed' => 'مكتمل',
+                    'canceled', 'cancelled' => 'ملغي',
+                    default => 'غير معروف',
+                };
+            }
+
+            return [
+                'id' => $order->id,
+                'status' => $normalizedStatus,
+                'statusLabel' => $statusMeta['label'],
+                'statusClasses' => $statusMeta['classes'],
+                'archivedFromLabel' => $archivedFromLabel,
+                'promoCodeUsed' => $order->promo_code_used,
+                'deliveryEstimateLabel' => $order->delivery_estimate ? $order->delivery_estimate_label : null,
+                'createdAt' => $order->created_at->format('Y-m-d H:i'),
+
+                'buyerName' => $order->buyer_name,
+                'buyerEmail' => $order->buyer_email,
+                'buyerPhone' => $order->buyer_phone,
+                'buyerLocation' => $buyerLocation,
+                'buyerCity' => $order->buyer_city,
+                'sellerCitySnapshot' => $order->seller_city_snapshot,
+                'paymentMethodLabel' => $order->payment_method === 'shamcash' ? 'شام كاش' : 'الدفع عند الاستلام',
+                'shamcashTransactionNumber' => $order->payment_method === 'shamcash' ? $order->shamcash_transaction_number : null,
+
+                'items' => $order->items->map(function ($item) {
+                    return [
+                        'id' => $item->id,
+                        'productName' => $item->product ? $item->product->name : 'منتج محذوف',
+                        'optionLabel' => $item->product_option_label,
+                        'quantity' => $item->quantity,
+                        'unitPriceUsd' => $item->resolvedUnitPriceUsd(),
+                        'unitPriceSyp' => $item->resolvedUnitPriceSyp(),
+                    ];
+                })->values()->all(),
+
+                'subtotalUsd' => $order->productSubtotalUsdValue(),
+                'subtotalSyp' => $order->productSubtotalSypValue(),
+                'discountUsd' => $order->discountAmountUsdValue(),
+                'discountSyp' => $order->discountAmountSypValue(),
+                'discountedProductsSubtotalUsd' => $order->discountedProductsSubtotalUsdValue(),
+                'discountedProductsSubtotalSyp' => $order->discountedProductsSubtotalSypValue(),
+                'deliveryFeeUsd' => $order->deliveryFeeUsdValue(),
+                'deliveryFeeSyp' => $order->deliveryFeeSypValue(),
+                'finalTotalUsd' => $order->finalTotalUsdValue(),
+                'finalTotalSyp' => $order->finalTotalSypValue(),
+
+                'canMarkDone' => $normalizedStatus === 'pending',
+                'canCancel' => $normalizedStatus === 'pending',
+                'canArchive' => in_array($normalizedStatus, ['done', 'canceled'], true),
+                'updateStatusUrl' => route('orders.updateStatus', $order),
+            ];
+        });
+
+        return Inertia::render('Orders/Index', [
+            'shop' => [
+                'name' => $shop->name,
+            ],
+            'orders' => $orders->toArray(),
+            'filters' => [
+                'status' => $status,
+                'perPage' => $perPage,
+                'field' => $field,
+                'value' => $value,
+            ],
+        ]);
     }
 
     public function updateStatus(Request $request, Order $order)

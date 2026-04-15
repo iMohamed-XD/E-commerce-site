@@ -6,6 +6,7 @@ use App\Models\PromoCode;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
 
 class PromoCodeController extends Controller
 {
@@ -17,8 +18,23 @@ class PromoCodeController extends Controller
             return redirect()->route('dashboard');
         }
 
-        $promoCodes = $shop->promoCodes()->latest()->get();
-        return view('promo_codes.index', compact('promoCodes', 'shop'));
+        $promoCodes = $shop->promoCodes()->latest()->get()->map(function (PromoCode $promoCode) {
+            return [
+                'id' => $promoCode->id,
+                'code' => $promoCode->code,
+                'discountPercentage' => (float) $promoCode->discount_percentage,
+                'isActive' => (bool) $promoCode->is_active,
+                'toggleUrl' => route('promo-codes.toggle', $promoCode),
+                'destroyUrl' => route('promo-codes.destroy', $promoCode),
+            ];
+        })->values()->all();
+
+        return Inertia::render('PromoCodes/Index', [
+            'promoCodes' => $promoCodes,
+            'shop' => [
+                'name' => $shop->name,
+            ],
+        ]);
     }
 
     public function store(Request $request)
@@ -47,6 +63,7 @@ class PromoCodeController extends Controller
 
         return redirect()->route('promo-codes.index')->with('success', 'تم حذف كود الخصم بنجاح!');
     }
+
     public function toggle(PromoCode $promoCode)
     {
         Gate::authorize('manage', $promoCode);

@@ -1,4 +1,4 @@
-<x-app-layout>
+﻿<x-app-layout>
     <x-slot name="header">
         <h2 class="font-black text-lg text-[#0d1b4b] tracking-tight">
             {{ __('لوحة التحكم') }}
@@ -43,6 +43,55 @@
                 transform: translateY(0) scale(0.96);
             }
 
+            .interactive-action-btn .action-icon {
+                transform-origin: center;
+                will-change: transform, filter;
+            }
+
+            .interactive-action-btn:hover .action-icon-products {
+                animation: action-products-cube 680ms cubic-bezier(0.22, 1, 0.36, 1);
+            }
+
+            .interactive-action-btn:hover .action-icon-orders {
+                animation: action-orders-bounce 700ms cubic-bezier(0.2, 0.9, 0.2, 1);
+            }
+
+            .interactive-action-btn:hover .action-icon-coupons {
+                animation: action-coupons-tag 760ms ease;
+            }
+
+            .interactive-action-btn:hover .action-icon-categories {
+                animation: action-categories-grid 700ms ease;
+            }
+
+            @keyframes action-products-cube {
+                0% { transform: rotate(0deg) scale(1); }
+                35% { transform: rotate(-8deg) scale(1.12); }
+                65% { transform: rotate(6deg) scale(1.06); }
+                100% { transform: rotate(0deg) scale(1); }
+            }
+
+            @keyframes action-orders-bounce {
+                0% { transform: translateY(0) scale(1); }
+                30% { transform: translateY(-2px) scale(1.08); }
+                55% { transform: translateY(1px) scale(0.97); }
+                100% { transform: translateY(0) scale(1); }
+            }
+
+            @keyframes action-coupons-tag {
+                0% { transform: rotate(0deg) scale(1); }
+                25% { transform: rotate(-10deg) scale(1.08); }
+                50% { transform: rotate(7deg) scale(1.03); }
+                75% { transform: rotate(-4deg) scale(1.02); }
+                100% { transform: rotate(0deg) scale(1); }
+            }
+
+            @keyframes action-categories-grid {
+                0% { transform: scale(1); filter: brightness(1); }
+                45% { transform: scale(1.12); filter: brightness(1.08); }
+                100% { transform: scale(1); filter: brightness(1); }
+            }
+
             .stat-card {
                 transition:
                     transform 220ms ease,
@@ -69,11 +118,79 @@
                 animation: stat-icon-wiggle 420ms ease;
             }
 
+            .revenue-icon-wrap {
+                position: relative;
+                overflow: visible;
+            }
+
+            .revenue-icon-wrap::before {
+                content: "";
+                position: absolute;
+                inset: -8px;
+                border-radius: 0.9rem;
+                background: radial-gradient(circle, rgba(212, 175, 55, 0.24) 0%, rgba(212, 175, 55, 0) 70%);
+                opacity: 0;
+                transform: scale(0.9);
+                transition: opacity 220ms ease, transform 260ms ease;
+            }
+
+            .stat-card:hover .revenue-icon-wrap::before {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            .revenue-icon {
+                filter: drop-shadow(0 0 0 rgba(212, 175, 55, 0));
+            }
+
+            .stat-card:hover .revenue-icon {
+                animation: revenue-icon-glow 1200ms ease-in-out infinite;
+            }
+
+            .revenue-coin {
+                position: absolute;
+                width: 6px;
+                height: 6px;
+                border-radius: 999px;
+                background: radial-gradient(circle, #f8e7a1 0%, #d4af37 70%);
+                opacity: 0;
+                pointer-events: none;
+            }
+
+            .revenue-coin-a { top: -2px; right: -3px; }
+            .revenue-coin-b { bottom: -2px; left: -3px; }
+
+            .stat-card:hover .revenue-coin-a {
+                animation: revenue-coin-float-a 900ms ease-in-out infinite;
+            }
+
+            .stat-card:hover .revenue-coin-b {
+                animation: revenue-coin-float-b 1100ms ease-in-out infinite;
+            }
+
             @keyframes stat-icon-wiggle {
                 0% { transform: rotate(0deg); }
                 30% { transform: rotate(-8deg); }
                 60% { transform: rotate(7deg); }
                 100% { transform: rotate(0deg); }
+            }
+
+            @keyframes revenue-icon-glow {
+                0% { transform: translateY(0) scale(1); filter: drop-shadow(0 0 0 rgba(212, 175, 55, 0)); }
+                50% { transform: translateY(-1px) scale(1.08); filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.45)); }
+                100% { transform: translateY(0) scale(1); filter: drop-shadow(0 0 0 rgba(212, 175, 55, 0)); }
+            }
+
+            @keyframes revenue-coin-float-a {
+                0% { opacity: 0; transform: translate(0, 0) scale(0.8); }
+                25% { opacity: 1; }
+                100% { opacity: 0; transform: translate(8px, -8px) scale(1); }
+            }
+
+            @keyframes revenue-coin-float-b {
+                0% { opacity: 0; transform: translate(0, 0) scale(0.8); }
+                30% { opacity: 1; }
+                100% { opacity: 0; transform: translate(-8px, -8px) scale(1); }
             }
         </style>
     </x-slot>
@@ -462,8 +579,10 @@
                                 <p class="text-xs text-green-700/60 font-medium mt-1">إجمالي الطلبات</p>
                             </div>
                             <div class="stat-card p-6 rounded-2xl bg-[#d4af37]/8 border border-[#d4af37]/20 text-center hover:bg-[#d4af37]/12 transition-colors">
-                                <div class="stat-icon-wrap w-10 h-10 rounded-xl bg-[#d4af37]/15 flex items-center justify-center mx-auto mb-3">
-                                    <svg class="stat-icon w-5 h-5 text-[#a07c1e]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                <div class="stat-icon-wrap revenue-icon-wrap w-10 h-10 rounded-xl bg-[#d4af37]/15 flex items-center justify-center mx-auto mb-3">
+                                    <svg class="stat-icon revenue-icon w-5 h-5 text-[#a07c1e]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                    <span class="revenue-coin revenue-coin-a"></span>
+                                    <span class="revenue-coin revenue-coin-b"></span>
                                 </div>
                                 <div class="space-y-1.5">
                                     <p class="text-2xl font-black text-[#a07c1e]" dir="ltr">${{ number_format($totalRevenueUsd, 2) }}</p>
@@ -477,22 +596,22 @@
                         <div class="mt-8 pt-6 border-t border-[#0d1b4b]/8 flex flex-wrap gap-3">
                             <a href="{{ route('products.index') }}"
                                class="interactive-action-btn inline-flex items-center gap-2 px-5 py-2.5 bg-[#0d1b4b] text-white text-sm font-bold rounded-xl hover:bg-[#1a2d6b] transition-all shadow-md shadow-[#0d1b4b]/20 active:scale-95">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+                                <svg class="action-icon action-icon-products w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
                                 المنتجات
                             </a>
                             <a href="{{ route('orders.index') }}"
                                class="interactive-action-btn inline-flex items-center gap-2 px-5 py-2.5 bg-green-600 text-white text-sm font-bold rounded-xl hover:bg-green-700 transition-all shadow-md shadow-green-600/20 active:scale-95">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                                <svg class="action-icon action-icon-orders w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
                                 الطلبات
                             </a>
                             <a href="{{ route('promo-codes.index') }}"
                                class="interactive-action-btn inline-flex items-center gap-2 px-5 py-2.5 bg-[#d4af37]/10 border border-[#d4af37]/30 text-[#a07c1e] text-sm font-bold rounded-xl hover:bg-[#d4af37]/20 hover:border-[#d4af37]/50 transition-all active:scale-95">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>
+                                <svg class="action-icon action-icon-coupons w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>
                                 الكوبونات
                             </a>
                             <a href="{{ route('categories.index') }}"
                                class="interactive-action-btn inline-flex items-center gap-2 px-5 py-2.5 bg-[#0d1b4b]/5 border border-[#0d1b4b]/12 text-[#0d1b4b]/70 text-sm font-bold rounded-xl hover:bg-[#0d1b4b]/8 hover:border-[#0d1b4b]/20 transition-all active:scale-95">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+                                <svg class="action-icon action-icon-categories w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
                                 التصنيفات
                             </a>
                         </div>

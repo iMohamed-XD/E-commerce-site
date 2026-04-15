@@ -1,6 +1,6 @@
 import React, { PropsWithChildren } from 'react';
 import { Head, Link, usePage } from '@inertiajs/react';
-import { FlashBanner } from '../Components/ui/FlashBanner';
+import { FlashBanner } from '../components/ui/FlashBanner';
 import type { SharedPageProps } from '../types/inertia';
 
 interface GuestLayoutProps extends PropsWithChildren {

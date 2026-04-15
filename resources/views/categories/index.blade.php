@@ -22,13 +22,16 @@
                     <h3 class="text-lg font-black text-[#0d1b4b]">إضافة تصنيف جديد</h3>
                 </div>
                 <div class="p-6">
-                    <form method="POST" action="{{ route('categories.store') }}" class="flex flex-col sm:flex-row gap-4 items-end">
+                    <form method="POST" action="{{ route('categories.store') }}" class="flex flex-col sm:flex-row gap-4 items-end" x-data="{ isSubmitting: false }" x-on:submit="isSubmitting = true">
                         @csrf
                         <div class="flex-grow">
                             <label class="block text-sm font-bold text-[#0d1b4b]/70 mb-1">اسم التصنيف</label>
                             <input type="text" name="name" required class="block w-full bg-white border border-[#0d1b4b]/15 text-[#0d1b4b] placeholder-[#0d1b4b]/30 rounded-xl shadow-sm focus:border-[#d4af37] focus:ring-2 focus:ring-[#d4af37]/20 text-sm p-3" placeholder="مثال: ملابس رجالية، إلكترونيات...">
                         </div>
-                        <button type="submit" class="w-full sm:w-auto px-8 py-3 bg-[#0d1b4b] hover:bg-[#1a2d6b] text-white font-black rounded-xl text-sm transition shadow-lg shadow-[#0d1b4b]/20">حفظ التصنيف</button>
+                        <button type="submit" x-bind:disabled="isSubmitting" class="group relative w-full overflow-hidden rounded-2xl bg-[#0d1b4b] px-8 py-3.5 text-base font-black text-white shadow-lg shadow-[#0d1b4b]/20 transition-all duration-200 hover:bg-[#1a2d6b] active:scale-[0.98] sm:w-auto disabled:opacity-70 disabled:cursor-not-allowed">
+                            <span class="relative z-10" x-text="isSubmitting ? 'جارٍ الحفظ...' : 'إضافة تصنيف جديد'"></span>
+                            <span class="absolute inset-0 translate-y-full rounded-2xl bg-white/5 transition-transform duration-300 group-hover:translate-y-0"></span>
+                        </button>
                     </form>
                 </div>
             </div>
