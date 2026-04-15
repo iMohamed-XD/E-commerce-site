@@ -7,6 +7,74 @@
             [x-cloak] {
                 display: none !important;
             }
+
+            .dashboard-animated button {
+                transition:
+                    transform 180ms ease,
+                    box-shadow 220ms ease,
+                    filter 220ms ease;
+                will-change: transform;
+            }
+
+            .dashboard-animated button:hover:not(:disabled) {
+                transform: translateY(-1px);
+                filter: saturate(1.04);
+                box-shadow: 0 10px 22px rgba(13, 27, 75, 0.12);
+            }
+
+            .dashboard-animated button:active:not(:disabled) {
+                transform: translateY(0) scale(0.98);
+            }
+
+            .interactive-action-btn {
+                transition:
+                    transform 180ms ease,
+                    box-shadow 220ms ease,
+                    filter 220ms ease;
+                will-change: transform;
+            }
+
+            .interactive-action-btn:hover {
+                transform: translateY(-1px) scale(1.02);
+                box-shadow: 0 10px 22px rgba(13, 27, 75, 0.12);
+            }
+
+            .interactive-action-btn:active {
+                transform: translateY(0) scale(0.96);
+            }
+
+            .stat-card {
+                transition:
+                    transform 220ms ease,
+                    box-shadow 260ms ease;
+            }
+
+            .stat-card:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 12px 26px rgba(13, 27, 75, 0.08);
+            }
+
+            .stat-icon-wrap {
+                transition:
+                    transform 260ms ease,
+                    box-shadow 260ms ease;
+            }
+
+            .stat-card:hover .stat-icon-wrap {
+                transform: translateY(-2px) scale(1.08);
+                box-shadow: 0 0 0 6px rgba(13, 27, 75, 0.06);
+            }
+
+            .stat-card:hover .stat-icon {
+                animation: stat-icon-wiggle 420ms ease;
+            }
+
+            @keyframes stat-icon-wiggle {
+                0% { transform: rotate(0deg); }
+                30% { transform: rotate(-8deg); }
+                60% { transform: rotate(7deg); }
+                100% { transform: rotate(0deg); }
+            }
         </style>
     </x-slot>
 
@@ -42,7 +110,7 @@
 
     <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css" rel="stylesheet">
 
-    <div class="py-10 px-4 sm:px-6 lg:px-8" x-data='logoCropper(@json($shop?->slug ?? ""))'>
+    <div class="dashboard-animated py-10 px-4 sm:px-6 lg:px-8" x-data='logoCropper(@json($shop?->slug ?? ""))'>
         <div class="max-w-7xl mx-auto space-y-6">
 
             {{-- ── Success Alert ───────────────────────────────────────── --}}
@@ -73,7 +141,7 @@
                         </div>
 
                         <div class="p-8">
-                            <form method="POST" action="{{ route('shop.store') }}" enctype="multipart/form-data" class="space-y-6">
+                            <form method="POST" action="{{ route('shop.store') }}" enctype="multipart/form-data" class="space-y-6" x-data="{ isSubmitting: false }" x-on:submit="isSubmitting = true">
                                 @csrf
 
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -232,7 +300,24 @@
                                         </div>
                                         <div>
                                             <x-input-label for="create_shamcash_qr" :value="__('QR شام كاش')" />
-                                            <input id="create_shamcash_qr" type="file" name="shamcash_qr" accept="image/*" class="block mt-1.5 w-full text-sm text-[#0d1b4b]/70 file:mr-2 file:rounded-lg file:border-0 file:bg-[#0d1b4b] file:px-3 file:py-2 file:text-xs file:font-bold file:text-white hover:file:bg-[#1a2d6b]" />
+                                            <div class="mt-1.5" x-data="{ fileName: 'اختر ملف QR...' }">
+                                                <label for="create_shamcash_qr" class="flex items-center gap-3 px-4 py-3 rounded-xl border border-[#0d1b4b]/15 bg-white cursor-pointer hover:border-[#d4af37]/50 hover:bg-[#fdfbf4] transition-all duration-200">
+                                                    <div class="w-8 h-8 rounded-lg bg-[#0d1b4b]/6 flex items-center justify-center flex-shrink-0">
+                                                        <svg class="w-4 h-4 text-[#0d1b4b]/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 16v-8m0 8l-3-3m3 3l3-3M6 20h12a2 2 0 002-2V8a2 2 0 00-2-2h-3.172a2 2 0 01-1.414-.586L12.586 4.586A2 2 0 0011.172 4H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                                        </svg>
+                                                    </div>
+                                                    <span class="text-sm text-[#0d1b4b]/45" x-text="fileName"></span>
+                                                </label>
+                                                <input
+                                                    id="create_shamcash_qr"
+                                                    type="file"
+                                                    name="shamcash_qr"
+                                                    accept="image/*"
+                                                    class="hidden"
+                                                    x-on:change="fileName = $event.target.files?.[0]?.name ?? 'اختر ملف QR...'"
+                                                />
+                                            </div>
                                             <x-input-error :messages="$errors->get('shamcash_qr')" class="mt-1.5" />
                                         </div>
                                     </div>
@@ -274,12 +359,12 @@
 
                                 <div class="pt-2">
                                     <button type="submit"
-                                        x-bind:disabled="!slugAvailable || isCheckingSlug"
+                                        x-bind:disabled="!slugAvailable || isCheckingSlug || isSubmitting"
                                         class="group relative px-8 py-3.5 bg-[#d4af37] text-[#0d1b4b] font-black rounded-2xl
                                                hover:bg-[#c5a02e] active:scale-[0.98] transition-all duration-200
                                                shadow-lg shadow-[#d4af37]/25 overflow-hidden
                                                disabled:opacity-40 disabled:cursor-not-allowed disabled:active:scale-100">
-                                        <span class="relative z-10">إنشاء المتجر وحفظ البيانات</span>
+                                        <span class="relative z-10" x-text="isSubmitting ? 'جارٍ إنشاء المتجر...' : 'إنشاء المتجر وحفظ البيانات'"></span>
                                         <div class="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 rounded-2xl"></div>
                                     </button>
                                 </div>
@@ -311,14 +396,14 @@
                                             data-copy-value="{{ $shopUrl }}"
                                             data-default-html="<svg class='w-4 h-4' fill='none' stroke='currentColor' viewBox='0 0 24 24'><rect x='9' y='9' width='11' height='11' rx='2' ry='2' stroke-width='2'></rect><path d='M5 15V5a2 2 0 0 1 2-2h10' stroke-width='2'></path></svg>"
                                             data-copied-html="<svg class='w-4 h-4' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path d='M20 6L9 17l-5-5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'></path></svg>"
-                                            class="inline-flex items-center justify-center w-8 h-8 rounded-lg border border-[#0d1b4b]/15 text-[#0d1b4b]/65 hover:text-[#0d1b4b] hover:bg-[#f8faff] transition"
+                                            class="interactive-action-btn inline-flex items-center justify-center w-8 h-8 rounded-lg border border-[#0d1b4b]/15 text-[#0d1b4b]/65 hover:text-[#0d1b4b] hover:bg-[#f8faff] transition"
                                             title="نسخ رابط المتجر"
                                             aria-label="نسخ رابط المتجر">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2" ry="2" stroke-width="2"></rect><path d="M5 15V5a2 2 0 0 1 2-2h10" stroke-width="2"></path></svg>
                                     </button>
                                     <button type="button"
                                             onclick="shareShopLink('{{ $shopUrl }}')"
-                                            class="inline-flex items-center justify-center w-8 h-8 rounded-lg border border-[#0d1b4b]/15 text-[#0d1b4b]/65 hover:text-[#0d1b4b] hover:bg-[#f8faff] transition"
+                                            class="interactive-action-btn inline-flex items-center justify-center w-8 h-8 rounded-lg border border-[#0d1b4b]/15 text-[#0d1b4b]/65 hover:text-[#0d1b4b] hover:bg-[#f8faff] transition"
                                             title="مشاركة رابط المتجر"
                                             aria-label="مشاركة رابط المتجر">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C9.047 12.67 9.73 12.2 10.5 12.2c.771 0 1.454.47 1.816 1.142M15 8a3 3 0 11-6 0 3 3 0 016 0zM6 20a6 6 0 1112 0H6z"/></svg>
@@ -362,23 +447,23 @@
 
                         {{-- Stats --}}
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                            <div class="p-6 rounded-2xl bg-[#0d1b4b]/4 border border-[#0d1b4b]/8 text-center hover:bg-[#0d1b4b]/6 transition-colors">
-                                <div class="w-10 h-10 rounded-xl bg-[#0d1b4b]/8 flex items-center justify-center mx-auto mb-3">
-                                    <svg class="w-5 h-5 text-[#0d1b4b]/60" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+                            <div class="stat-card p-6 rounded-2xl bg-[#0d1b4b]/4 border border-[#0d1b4b]/8 text-center hover:bg-[#0d1b4b]/6 transition-colors">
+                                <div class="stat-icon-wrap w-10 h-10 rounded-xl bg-[#0d1b4b]/8 flex items-center justify-center mx-auto mb-3">
+                                    <svg class="stat-icon w-5 h-5 text-[#0d1b4b]/60" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
                                 </div>
                                 <p class="text-3xl font-black text-[#0d1b4b]">{{ $totalProducts }}</p>
                                 <p class="text-xs text-[#0d1b4b]/45 font-medium mt-1">إجمالي المنتجات</p>
                             </div>
-                            <div class="p-6 rounded-2xl bg-green-50 border border-green-100 text-center hover:bg-green-100/60 transition-colors">
-                                <div class="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center mx-auto mb-3">
-                                    <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                            <div class="stat-card p-6 rounded-2xl bg-green-50 border border-green-100 text-center hover:bg-green-100/60 transition-colors">
+                                <div class="stat-icon-wrap w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center mx-auto mb-3">
+                                    <svg class="stat-icon w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
                                 </div>
                                 <p class="text-3xl font-black text-green-800">{{ $totalOrders }}</p>
                                 <p class="text-xs text-green-700/60 font-medium mt-1">إجمالي الطلبات</p>
                             </div>
-                            <div class="p-6 rounded-2xl bg-[#d4af37]/8 border border-[#d4af37]/20 text-center hover:bg-[#d4af37]/12 transition-colors">
-                                <div class="w-10 h-10 rounded-xl bg-[#d4af37]/15 flex items-center justify-center mx-auto mb-3">
-                                    <svg class="w-5 h-5 text-[#a07c1e]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            <div class="stat-card p-6 rounded-2xl bg-[#d4af37]/8 border border-[#d4af37]/20 text-center hover:bg-[#d4af37]/12 transition-colors">
+                                <div class="stat-icon-wrap w-10 h-10 rounded-xl bg-[#d4af37]/15 flex items-center justify-center mx-auto mb-3">
+                                    <svg class="stat-icon w-5 h-5 text-[#a07c1e]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                                 </div>
                                 <div class="space-y-1.5">
                                     <p class="text-2xl font-black text-[#a07c1e]" dir="ltr">${{ number_format($totalRevenueUsd, 2) }}</p>
@@ -391,22 +476,22 @@
                         {{-- Action buttons --}}
                         <div class="mt-8 pt-6 border-t border-[#0d1b4b]/8 flex flex-wrap gap-3">
                             <a href="{{ route('products.index') }}"
-                               class="inline-flex items-center gap-2 px-5 py-2.5 bg-[#0d1b4b] text-white text-sm font-bold rounded-xl hover:bg-[#1a2d6b] transition-all shadow-md shadow-[#0d1b4b]/20 active:scale-95">
+                               class="interactive-action-btn inline-flex items-center gap-2 px-5 py-2.5 bg-[#0d1b4b] text-white text-sm font-bold rounded-xl hover:bg-[#1a2d6b] transition-all shadow-md shadow-[#0d1b4b]/20 active:scale-95">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
                                 المنتجات
                             </a>
                             <a href="{{ route('orders.index') }}"
-                               class="inline-flex items-center gap-2 px-5 py-2.5 bg-green-600 text-white text-sm font-bold rounded-xl hover:bg-green-700 transition-all shadow-md shadow-green-600/20 active:scale-95">
+                               class="interactive-action-btn inline-flex items-center gap-2 px-5 py-2.5 bg-green-600 text-white text-sm font-bold rounded-xl hover:bg-green-700 transition-all shadow-md shadow-green-600/20 active:scale-95">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
                                 الطلبات
                             </a>
                             <a href="{{ route('promo-codes.index') }}"
-                               class="inline-flex items-center gap-2 px-5 py-2.5 bg-[#d4af37]/10 border border-[#d4af37]/30 text-[#a07c1e] text-sm font-bold rounded-xl hover:bg-[#d4af37]/20 hover:border-[#d4af37]/50 transition-all active:scale-95">
+                               class="interactive-action-btn inline-flex items-center gap-2 px-5 py-2.5 bg-[#d4af37]/10 border border-[#d4af37]/30 text-[#a07c1e] text-sm font-bold rounded-xl hover:bg-[#d4af37]/20 hover:border-[#d4af37]/50 transition-all active:scale-95">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>
                                 الكوبونات
                             </a>
                             <a href="{{ route('categories.index') }}"
-                               class="inline-flex items-center gap-2 px-5 py-2.5 bg-[#0d1b4b]/5 border border-[#0d1b4b]/12 text-[#0d1b4b]/70 text-sm font-bold rounded-xl hover:bg-[#0d1b4b]/8 hover:border-[#0d1b4b]/20 transition-all active:scale-95">
+                               class="interactive-action-btn inline-flex items-center gap-2 px-5 py-2.5 bg-[#0d1b4b]/5 border border-[#0d1b4b]/12 text-[#0d1b4b]/70 text-sm font-bold rounded-xl hover:bg-[#0d1b4b]/8 hover:border-[#0d1b4b]/20 transition-all active:scale-95">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
                                 التصنيفات
                             </a>
@@ -427,7 +512,7 @@
                         </div>
 
                         <div class="p-8">
-                            <form method="POST" action="{{ route('shop.update') }}" enctype="multipart/form-data" class="space-y-6 max-w-4xl">
+                            <form method="POST" action="{{ route('shop.update') }}" enctype="multipart/form-data" class="space-y-6 max-w-4xl" x-data="{ isSubmitting: false }" x-on:submit="isSubmitting = true">
                                 @csrf
                                 @method('PATCH')
 
@@ -612,7 +697,24 @@
                                         </div>
                                         <div>
                                             <x-input-label for="edit_shamcash_qr" :value="__('QR شام كاش')" />
-                                            <input id="edit_shamcash_qr" type="file" name="shamcash_qr" accept="image/*" class="block mt-1.5 w-full text-sm text-[#0d1b4b]/70 file:mr-2 file:rounded-lg file:border-0 file:bg-[#0d1b4b] file:px-3 file:py-2 file:text-xs file:font-bold file:text-white hover:file:bg-[#1a2d6b]" />
+                                            <div class="mt-1.5" x-data="{ fileName: 'اختر ملف QR...' }">
+                                                <label for="edit_shamcash_qr" class="flex items-center gap-3 px-4 py-3 rounded-xl border border-[#0d1b4b]/15 bg-white cursor-pointer hover:border-[#d4af37]/50 hover:bg-[#fdfbf4] transition-all duration-200">
+                                                    <div class="w-8 h-8 rounded-lg bg-[#0d1b4b]/6 flex items-center justify-center flex-shrink-0">
+                                                        <svg class="w-4 h-4 text-[#0d1b4b]/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 16v-8m0 8l-3-3m3 3l3-3M6 20h12a2 2 0 002-2V8a2 2 0 00-2-2h-3.172a2 2 0 01-1.414-.586L12.586 4.586A2 2 0 0011.172 4H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                                        </svg>
+                                                    </div>
+                                                    <span class="text-sm text-[#0d1b4b]/45" x-text="fileName"></span>
+                                                </label>
+                                                <input
+                                                    id="edit_shamcash_qr"
+                                                    type="file"
+                                                    name="shamcash_qr"
+                                                    accept="image/*"
+                                                    class="hidden"
+                                                    x-on:change="fileName = $event.target.files?.[0]?.name ?? 'اختر ملف QR...'"
+                                                />
+                                            </div>
                                             <x-input-error :messages="$errors->get('shamcash_qr')" class="mt-1.5" />
                                         </div>
                                     </div>
@@ -635,12 +737,12 @@
 
                                 <div>
                                     <button type="submit"
-                                        x-bind:disabled="!slugAvailable || isCheckingSlug"
+                                        x-bind:disabled="!slugAvailable || isCheckingSlug || isSubmitting"
                                         class="group relative px-8 py-3.5 bg-[#0d1b4b] text-white font-black rounded-2xl
                                                hover:bg-[#1a2d6b] active:scale-[0.98] transition-all duration-200
                                                shadow-lg shadow-[#0d1b4b]/20 overflow-hidden
                                                disabled:opacity-40 disabled:cursor-not-allowed disabled:active:scale-100">
-                                        <span class="relative z-10">حفظ التغييرات</span>
+                                        <span class="relative z-10" x-text="isSubmitting ? 'جارٍ حفظ التغييرات...' : 'حفظ التغييرات'"></span>
                                         <div class="absolute inset-0 bg-white/5 translate-y-full group-hover:translate-y-0 transition-transform duration-300 rounded-2xl"></div>
                                     </button>
                                 </div>

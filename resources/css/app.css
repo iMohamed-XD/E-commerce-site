@@ -1,3 +1,10 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer utilities {
+    .hero-dotgrid {
+        background-image: radial-gradient(circle, #0d1b4b12 1px, transparent 1px);
+        background-size: 28px 28px;
+    }
+}

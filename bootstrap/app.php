@@ -14,6 +14,10 @@ return Application::configure(basePath: dirname(__DIR__))
         // Trust reverse-proxy headers (e.g. Coolify) so generated URLs keep https scheme.
         $middleware->trustProxies(at: '*');
 
+        $middleware->web(append: [
+            \App\Http\Middleware\HandleInertiaRequests::class,
+        ]);
+
         $middleware->alias([
             'seller' => \App\Http\Middleware\EnsureUserIsSeller::class,
             'admin' => \App\Http\Middleware\EnsureUserIsAdmin::class,
