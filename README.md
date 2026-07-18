@@ -2,7 +2,7 @@
 
 Multi-vendor e-commerce platform for Arabic-speaking sellers. Sellers spin up a branded storefront under a unique slug, manage products/orders/promos from a dashboard, and buyers check out without needing an account. Built with Laravel 12, PostgreSQL, Blade + Alpine.js, and Tailwind CSS, with RTL support and Arabic typography throughout.
 
-> **Status:** No longer deployed. This was previously live at mahly.org; it now exists as a portfolio project. The instructions below run it locally.
+> **Status:** No longer deployed. This was previously live at app.mahly.org; it now exists as a portfolio project. The instructions below run it locally.
 
 ## Screenshots
 
